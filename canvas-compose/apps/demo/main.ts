@@ -1,5 +1,6 @@
 import { Composer } from '@canvas-compose/composer';
 import { CanvasRenderer } from '@canvas-compose/renderer';
+import { EventDispatcher } from '@canvas-compose/event';
 import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@canvas-compose/components';
 import { useTheme, useThemeSwitcher, defaultTheme, darkTheme } from '@canvas-compose/theme';
 import { signal, effect } from '@canvas-compose/reactivity';
@@ -15,6 +16,10 @@ if (!ctx) {
 
 // 创建渲染器
 const renderer = new CanvasRenderer(canvas);
+
+// 事件分发器
+let dispatcher: EventDispatcher | null = null;
+let detachEvents: (() => void) | null = null;
 
 // 创建信号用于状态管理
 const count = signal(0);
@@ -442,6 +447,13 @@ function render() {
   renderer.setRoot(rootNode);
   composer.endCompose();
   composer.recompose();
+
+  // 更新事件分发器
+  if (detachEvents) {
+    detachEvents();
+  }
+  dispatcher = new EventDispatcher(rootNode);
+  detachEvents = dispatcher.attachToCanvas(canvas);
 }
 
 // 初始渲染
