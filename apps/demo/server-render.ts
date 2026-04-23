@@ -1,23 +1,16 @@
 import { Composer } from '@pug/composer';
-import { NodeCanvasRenderer } from '@pug/renderer';
+import { RendererFactory, RendererType } from '@pug/renderer';
 import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@pug/components';
 import { useTheme } from '@pug/theme';
 import { signal } from '@pug/reactivity';
-import { createCanvas, Canvas } from 'canvas';
-
-// 创建 canvas
-const width = 400;
-const height = 1000;
-const canvas: Canvas = createCanvas(width, height);
-const ctx = canvas.getContext('2d');
-
-if (!ctx) {
-  console.error('Failed to get canvas context');
-  throw new Error('Failed to get canvas context');
-}
 
 // 创建渲染器
-const renderer = new NodeCanvasRenderer(canvas);
+const width = 400;
+const height = 1000;
+const renderer = RendererFactory.create(RendererType.NODE_CANVAS, {
+  width: width,
+  height: height
+});
 
 // 创建信号用于状态管理
 const count = signal(0);
@@ -443,14 +436,12 @@ function render() {
 render();
 
 // 保存截图
-const fs = require('fs');
 const path = require('path');
-
 const outputPath = path.join(__dirname, 'demo-screenshot.png');
-const out = fs.createWriteStream(outputPath);
-const stream = canvas.createPNGStream();
 
-stream.pipe(out);
-out.on('finish', () => {
+// 使用 NodeCanvasRenderer 的 saveToFile 方法保存截图
+(renderer as any).saveToFile(outputPath).then(() => {
   console.log(`Screenshot saved to ${outputPath}`);
+}).catch((error: any) => {
+  console.error('Failed to save screenshot:', error);
 });

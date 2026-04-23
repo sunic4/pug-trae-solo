@@ -1,5 +1,5 @@
 import { Composer } from '@pug/composer';
-import { CanvasRenderer } from '@pug/renderer';
+import { RendererFactory, RendererType } from '@pug/renderer';
 import { EventDispatcher } from '@pug/event';
 import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@pug/components';
 import { useTheme, useThemeSwitcher, defaultTheme, darkTheme } from '@pug/theme';
@@ -15,7 +15,10 @@ if (!ctx) {
 }
 
 // 创建渲染器
-const renderer = new CanvasRenderer(canvas);
+const renderer = RendererFactory.create(RendererType.CANVAS_2D, {
+  width: canvas.width,
+  height: canvas.height
+});
 
 // 事件分发器
 let dispatcher: EventDispatcher | null = null;
