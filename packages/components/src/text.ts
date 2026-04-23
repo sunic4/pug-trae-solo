@@ -26,15 +26,34 @@ export class Text extends ComposeNode {
     const fontWeight = this.props.fontWeight || theme.typography.fontWeight.normal;
     const fontFamily = theme.typography.fontFamily;
 
-    // 模拟文本测量
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return { width: 0, height: 0 };
+    // 文本测量
+    let metrics;
+    if (typeof window !== 'undefined' && window.document) {
+      // 浏览器环境
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        return { width: 0, height: 0 };
+      }
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+      metrics = ctx.measureText(this.props.text);
+    } else {
+      // Node.js 环境
+      try {
+        const { createCanvas } = require('canvas');
+        const canvas = createCanvas(1000, 100);
+        const ctx = canvas.getContext('2d');
+        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+        metrics = ctx.measureText(this.props.text);
+      } catch (e) {
+        // 如果没有 canvas 模块，使用估算值
+        const averageCharWidth = fontSize * 0.6;
+        return {
+          width: Math.min(this.props.width || this.props.text.length * averageCharWidth, constraints.maxWidth),
+          height: Math.min(this.props.height || fontSize * 1.5, constraints.maxHeight)
+        };
+      }
     }
-
-    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-    const metrics = ctx.measureText(this.props.text);
 
     const width = Math.min(this.props.width || metrics.width, constraints.maxWidth);
     const height = Math.min(this.props.height || fontSize * 1.5, constraints.maxHeight);

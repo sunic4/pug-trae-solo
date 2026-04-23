@@ -35,5 +35,6 @@ export enum RendererType {
   SVG = 'svg',
   DOM = 'dom',
   CANVAS_KIT = 'canvas-kit',
-  SERVER = 'server'
+  SERVER = 'server',
+  NODE_CANVAS = 'node-canvas'  // 添加 NodeCanvas 类型
 }
