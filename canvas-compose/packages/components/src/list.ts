@@ -101,10 +101,7 @@ export class List extends ComposeNode {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    // 绘制子元素
-    this.children.forEach(child => {
-      child.draw(ctx);
-    });
+    // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }
 

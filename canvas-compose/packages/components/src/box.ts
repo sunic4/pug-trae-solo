@@ -100,11 +100,6 @@ export class Box extends ComposeNode {
       ctx.roundRect(0, 0, this.width, this.height, borderRadius);
       ctx.stroke();
     }
-
-    // 绘制子元素
-    this.children.forEach(child => {
-      child.draw(ctx);
-    });
   }
 }
 
