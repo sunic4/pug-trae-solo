@@ -40,6 +40,7 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
     renderer.setRoot(rootNode);
     composer.endCompose();
     composer.recompose();
+    renderer.renderFrame();
   }
 
   // 初始渲染

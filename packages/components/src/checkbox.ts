@@ -42,12 +42,18 @@ export class Checkbox extends ComposeNode {
 
     if (label) {
       // 测量文本宽度
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.font = `${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`;
-        const textWidth = ctx.measureText(label).width;
-        checkboxWidth += textWidth + 8; // 8px 间距
+      if (typeof document !== 'undefined') {
+        // 浏览器环境
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.font = `${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`;
+          const textWidth = ctx.measureText(label).width;
+          checkboxWidth += textWidth + 8; // 8px 间距
+        }
+      } else {
+        // 服务器端环境，使用默认文本宽度估计
+        checkboxWidth += label.length * 8 + 8; // 8px 间距
       }
     }
 
