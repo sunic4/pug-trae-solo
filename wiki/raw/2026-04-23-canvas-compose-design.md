@@ -1,4 +1,4 @@
-# Canvas Compose 设计文档
+# Pug 设计文档
 
 > 基于 Android Compose 重组原理，使用 Web Canvas + TypeScript 构建的响应式 UI 框架
 
@@ -71,7 +71,7 @@
 reactivity ← composer ← layout ← renderer
                               ← event
                               ← theme
-                              ← components ← canvas-compose (聚合)
+                              ← components ← pug (聚合)
 ```
 
 ### 2.3 设计原则
@@ -372,47 +372,50 @@ currentTheme.value = darkTheme;
 | `LazyColumn` | 垂直懒加载列表 |
 | `LazyRow` | 水平懒加载列表 |
 
-### 8.4 Modifier 系统
+### 8.4 组件属性系统
 
-链式修饰符 API，借鉴 Compose 的 Modifier 模式：
+使用 Props 对象传递组件配置，支持响应式更新：
 
 ```typescript
-Text("Hello")
-  .modifier(
-    Modifier
-      .padding(16)
-      .background('#F0F0F0')
-      .cornerRadius(8)
-      .clickable(() => console.log('clicked'))
-  )
+new Text({
+  text: "Hello",
+  fontSize: 16,
+  color: "#000000",
+  textAlign: "center"
+});
+
+new Button({
+  text: "Click Me",
+  onClick: () => console.log('clicked'),
+  variant: "primary",
+  size: "base"
+});
 ```
 
-每个 Modifier 元素参与布局和绘制流程，但不影响组件的核心逻辑。
+组件通过 props 对象接收配置，支持主题系统集成。
 
 ---
 
 ## 9. 项目结构
 
 ```
-canvas-compose/
+pug/
 ├── packages/
 │   ├── reactivity/          # 响应式核心（独立包）
 │   │   ├── signal.ts
 │   │   ├── computed.ts
 │   │   ├── effect.ts
+│   │   ├── context.ts
 │   │   └── index.ts
 │   │
 │   ├── composer/            # 组合层
 │   │   ├── composer.ts
 │   │   ├── node.ts
 │   │   ├── slot-table.ts
-│   │   ├── applier.ts
 │   │   └── index.ts
 │   │
 │   ├── layout/              # 布局层
 │   │   ├── constraints.ts
-│   │   ├── measure.ts
-│   │   ├── place.ts
 │   │   └── index.ts
 │   │
 │   ├── renderer/            # 渲染层
@@ -420,6 +423,7 @@ canvas-compose/
 │   │   ├── draw-command.ts
 │   │   ├── dirty-rect.ts
 │   │   ├── text-layout.ts
+│   │   ├── renderer-interface.ts
 │   │   └── index.ts
 │   │
 │   ├── event/               # 事件系统
@@ -430,32 +434,29 @@ canvas-compose/
 │   │
 │   ├── theme/               # 主题系统
 │   │   ├── theme.ts
-│   │   ├── colors.ts
-│   │   ├── typography.ts
+│   │   ├── theme-context.ts
 │   │   └── index.ts
 │   │
-│   ├── components/          # 组件库
-│   │   ├── text.ts
-│   │   ├── button.ts
-│   │   ├── text-input.ts
-│   │   ├── checkbox.ts
-│   │   ├── image.ts
-│   │   ├── column.ts
-│   │   ├── row.ts
-│   │   ├── box.ts
-│   │   ├── stack.ts
-│   │   ├── lazy-list.ts
-│   │   ├── modifier.ts
-│   │   └── index.ts
-│   │
-│   └── canvas-compose/      # 主入口包
+│   └── components/          # 组件库
+│       ├── text.ts
+│       ├── button.ts
+│       ├── text-input.ts
+│       ├── checkbox.ts
+│       ├── column.ts
+│       ├── row.ts
+│       ├── box.ts
+│       ├── stack.ts
+│       ├── padding.ts
+│       ├── spacer.ts
+│       ├── list.ts
+│       ├── container.ts
 │       └── index.ts
 │
 ├── apps/
 │   └── demo/                # 示例应用
 │       ├── index.html
 │       ├── main.ts
-│       └── counter-app.ts
+│       └── vite.config.ts
 │
 ├── package.json
 ├── vite.config.ts

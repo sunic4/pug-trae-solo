@@ -1,4 +1,4 @@
-# Canvas Compose 完整开发计划
+# Pug 完整开发计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,18 +8,18 @@
 
 **Tech Stack:** TypeScript, Vite, Vitest, npm workspaces (monorepo)
 
-**Design Doc:** `docs/superpowers/specs/2026-04-23-canvas-compose-design.md`
+**Design Doc:** `wiki/raw/2026-04-23-canvas-compose-design.md`
 
-**Phase 1 详细计划:** `docs/superpowers/plans/2026-04-23-canvas-compose-phase1.md`
+**Phase 1 详细计划:** `wiki/raw/2026-04-23-canvas-compose-phase1.md`
 
 ---
 
 ## 全局文件结构
 
 ```
-canvas-compose/
+pug/
 ├── packages/
-│   ├── reactivity/              # Phase 1 (已有详细计划)
+│   ├── reactivity/              # Phase 1
 │   │   ├── src/
 │   │   │   ├── signal.ts
 │   │   │   ├── computed.ts
@@ -28,20 +28,17 @@ canvas-compose/
 │   │   │   └── index.ts
 │   │   └── tests/
 │   │
-│   ├── composer/                # Phase 1 (已有详细计划)
+│   ├── composer/                # Phase 1
 │   │   ├── src/
 │   │   │   ├── node.ts
 │   │   │   ├── slot-table.ts
 │   │   │   ├── composer.ts
-│   │   │   ├── constraints.ts   # Phase 2
 │   │   │   └── index.ts
 │   │   └── tests/
 │   │
 │   ├── layout/                  # Phase 2
 │   │   ├── src/
-│   │   │   ├── measurer.ts
-│   │   │   ├── placer.ts
-│   │   │   ├── layout-node.ts
+│   │   │   ├── constraints.ts
 │   │   │   └── index.ts
 │   │   └── tests/
 │   │
@@ -49,8 +46,9 @@ canvas-compose/
 │   │   ├── src/
 │   │   │   ├── draw-command.ts
 │   │   │   ├── canvas-renderer.ts
-│   │   │   ├── text-layout.ts   # Phase 2
-│   │   │   ├── dirty-rect.ts    # Phase 2
+│   │   │   ├── text-layout.ts
+│   │   │   ├── dirty-rect.ts
+│   │   │   ├── renderer-interface.ts
 │   │   │   └── index.ts
 │   │   └── tests/
 │   │
@@ -65,47 +63,38 @@ canvas-compose/
 │   ├── theme/                   # Phase 4
 │   │   ├── src/
 │   │   │   ├── theme.ts
-│   │   │   ├── colors.ts
-│   │   │   ├── typography.ts
+│   │   │   ├── theme-context.ts
 │   │   │   └── index.ts
 │   │   └── tests/
 │   │
-│   ├── components/              # Phase 3-4
-│   │   ├── src/
-│   │   │   ├── text.ts          # Phase 3
-│   │   │   ├── button.ts        # Phase 3
-│   │   │   ├── text-input.ts    # Phase 3
-│   │   │   ├── checkbox.ts      # Phase 3
-│   │   │   ├── column.ts        # Phase 2
-│   │   │   ├── row.ts           # Phase 2
-│   │   │   ├── box.ts           # Phase 2
-│   │   │   ├── stack.ts         # Phase 2
-│   │   │   ├── padding.ts       # Phase 2
-│   │   │   ├── spacer.ts        # Phase 2
-│   │   │   ├── modifier.ts      # Phase 3
-│   │   │   ├── image.ts         # Phase 4
-│   │   │   ├── lazy-list.ts     # Phase 4
-│   │   │   └── index.ts
-│   │   └── tests/
-│   │
-│   └── canvas-compose/          # Phase 1 (聚合包)
-│       └── src/
-│           └── index.ts
+│   └── components/              # Phase 3-4
+│       ├── src/
+│       │   ├── text.ts          # Phase 3
+│       │   ├── button.ts        # Phase 3
+│       │   ├── text-input.ts    # Phase 3
+│       │   ├── checkbox.ts      # Phase 3
+│       │   ├── column.ts        # Phase 2
+│       │   ├── row.ts           # Phase 2
+│       │   ├── box.ts           # Phase 2
+│       │   ├── stack.ts         # Phase 2
+│       │   ├── padding.ts       # Phase 2
+│       │   ├── spacer.ts        # Phase 2
+│       │   ├── list.ts          # Phase 4
+│       │   ├── container.ts     # Phase 4
+│       │   └── index.ts
+│       └── tests/
 │
 ├── apps/
-│   ├── demo/                    # Phase 1
-│   │   ├── index.html
-│   │   ├── main.ts
-│   │   └── counter-app.ts
-│   └── showcase/                # Phase 4
+│   └── demo/                    # Phase 1
 │       ├── index.html
 │       ├── main.ts
-│       └── todo-app.ts
+│       └── vite.config.ts
 │
 ├── package.json
 ├── tsconfig.base.json
-├── vitest.config.ts
-└── vite.config.ts
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 ```
 
 ---
