@@ -1,5 +1,5 @@
-import { ComposeNode } from '@canvas-compose/composer';
-import { useTheme } from '@canvas-compose/theme';
+import { ComposeNode } from '@pug/composer';
+import { useTheme } from '@pug/theme';
 import { TextComponent } from './text';
 
 export interface ButtonProps {

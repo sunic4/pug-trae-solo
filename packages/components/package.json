@@ -1,5 +1,5 @@
 {
-  "name": "@canvas-compose/components",
+  "name": "@pug/components",
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@canvas-compose/composer": "0.1.0",
-    "@canvas-compose/theme": "0.1.0"
+    "@pug/composer": "0.1.0",
+    "@pug/theme": "0.1.0"
   }
 }

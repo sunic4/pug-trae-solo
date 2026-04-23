@@ -1,4 +1,4 @@
-import { ComposeNode } from '../../composer/src/node.js';
+import { ComposeNode } from '@pug/composer';
 import { DrawCommand, executeDrawCommand } from './draw-command.js';
 import { DirtyRect, mergeDirtyRects } from './dirty-rect.js';
 

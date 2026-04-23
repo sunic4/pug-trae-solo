@@ -1,5 +1,5 @@
 {
-  "name": "canvas-compose",
+  "name": "pug",
   "private": true,
   "workspaces": [
     "packages/*",

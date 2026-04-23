@@ -1,4 +1,4 @@
-import { ComposeNode } from '@canvas-compose/composer';
+import { ComposeNode } from '@pug/composer';
 
 export interface RowProps {
   width?: number;
@@ -66,7 +66,7 @@ export class Row extends ComposeNode {
     });
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw() {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }

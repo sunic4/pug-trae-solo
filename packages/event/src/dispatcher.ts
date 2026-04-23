@@ -1,4 +1,4 @@
-import { ComposeNode } from '../../composer/src/node.js';
+import { ComposeNode } from '@pug/composer';
 import { hitTest } from './hit-test.js';
 
 export class EventDispatcher {

@@ -1,4 +1,4 @@
-import { ComposeNode } from '../../composer/src/node.js';
+import { ComposeNode } from '@pug/composer';
 
 export function hitTest(root: ComposeNode, x: number, y: number): ComposeNode | null {
   if (!root.containsPoint(x, y)) return null;

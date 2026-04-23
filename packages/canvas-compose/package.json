@@ -1,5 +1,5 @@
 {
-  "name": "@canvas-compose/canvas-compose",
+  "name": "@pug/canvas-compose",
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.ts",

@@ -1,4 +1,4 @@
-import { ComposeNode } from '@canvas-compose/composer';
+import { ComposeNode } from '@pug/composer';
 
 export interface SpacerProps {
   width?: number;

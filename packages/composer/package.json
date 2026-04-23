@@ -1,5 +1,5 @@
 {
-  "name": "@canvas-compose/composer",
+  "name": "@pug/composer",
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.ts",

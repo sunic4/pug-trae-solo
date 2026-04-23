@@ -14,7 +14,18 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pug/reactivity": ["./packages/reactivity/src"],
+      "@pug/composer": ["./packages/composer/src"],
+      "@pug/layout": ["./packages/layout/src"],
+      "@pug/renderer": ["./packages/renderer/src"],
+      "@pug/event": ["./packages/event/src"],
+      "@pug/theme": ["./packages/theme/src"],
+      "@pug/components": ["./packages/components/src"],
+      "@pug": ["./packages/canvas-compose/src"]
+    }
   },
   "include": ["packages/**/*.ts", "apps/**/*.ts"]
 }

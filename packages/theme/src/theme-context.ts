@@ -1,4 +1,4 @@
-import { signal } from '@canvas-compose/reactivity';
+import { signal } from '@pug/reactivity';
 import { Theme, defaultTheme } from './theme';
 
 export class ThemeContext {

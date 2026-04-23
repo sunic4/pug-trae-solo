@@ -1,9 +1,9 @@
-import { Composer } from '@canvas-compose/composer';
-import { CanvasRenderer } from '@canvas-compose/renderer';
-import { EventDispatcher } from '@canvas-compose/event';
-import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@canvas-compose/components';
-import { useTheme, useThemeSwitcher, defaultTheme, darkTheme } from '@canvas-compose/theme';
-import { signal, effect } from '@canvas-compose/reactivity';
+import { Composer } from '@pug/composer';
+import { CanvasRenderer } from '@pug/renderer';
+import { EventDispatcher } from '@pug/event';
+import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@pug/components';
+import { useTheme, useThemeSwitcher, defaultTheme, darkTheme } from '@pug/theme';
+import { signal, effect } from '@pug/reactivity';
 
 // 创建canvas元素
 const canvas = document.getElementById('app') as HTMLCanvasElement;

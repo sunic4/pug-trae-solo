@@ -1,5 +1,5 @@
 {
-  "name": "@canvas-compose/theme",
+  "name": "@pug/theme",
   "version": "0.1.0",
   "type": "module",
   "main": "./src/index.ts",
@@ -8,6 +8,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@canvas-compose/reactivity": "0.1.0"
+    "@pug/reactivity": "0.1.0"
   }
 }
