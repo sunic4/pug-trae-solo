@@ -1,6 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { Renderer, RendererConfig } from './renderer-interface.js';
-import { createCanvas, CanvasRenderingContext2D } from 'canvas';
+import { createCanvas } from 'canvas';
 
 /**
  * NodeCanvas 渲染器实现
@@ -9,7 +9,7 @@ import { createCanvas, CanvasRenderingContext2D } from 'canvas';
 export class NodeCanvasRenderer implements Renderer {
   config: RendererConfig;
   private canvas: any;
-  private ctx: CanvasRenderingContext2D;
+  private ctx: any;
   private rootNode: ComposeNode | null = null;
   private dirtyRects: Array<{ x: number; y: number; w: number; h: number }> = [];
 
@@ -20,14 +20,17 @@ export class NodeCanvasRenderer implements Renderer {
     };
 
     // 创建 node-canvas 实例
+    const pixelRatio = this.config.pixelRatio || 1;
     this.canvas = createCanvas(
-      config.width * this.config.pixelRatio,
-      config.height * this.config.pixelRatio
+      config.width * pixelRatio,
+      config.height * pixelRatio
     );
     this.ctx = this.canvas.getContext('2d');
     
     // 应用像素比
-    this.ctx.scale(this.config.pixelRatio, this.config.pixelRatio);
+    if (this.ctx) {
+      this.ctx.scale(pixelRatio, pixelRatio);
+    }
   }
 
   setRoot(node: ComposeNode): void {

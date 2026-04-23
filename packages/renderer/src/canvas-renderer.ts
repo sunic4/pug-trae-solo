@@ -1,8 +1,10 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawCommand, executeDrawCommand } from './draw-command.js';
 import { DirtyRect, mergeDirtyRects } from './dirty-rect.js';
+import { Renderer, RendererConfig } from './renderer-interface.js';
 
-export class CanvasRenderer {
+export class CanvasRenderer implements Renderer {
+  config: RendererConfig;
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private dirtyRects: DirtyRect[] = [];
@@ -16,6 +18,12 @@ export class CanvasRenderer {
       throw new Error('Could not get canvas context');
     }
     this.ctx = ctx;
+    this.config = {
+      width: canvas.width,
+      height: canvas.height,
+      pixelRatio: window.devicePixelRatio || 1,
+      debug: false
+    };
     this.startFrameLoop();
   }
 
@@ -38,7 +46,7 @@ export class CanvasRenderer {
     frameLoop();
   }
 
-  private renderFrame(): void {
+  renderFrame(): void {
     // 合并脏矩形
     const mergedRects = mergeDirtyRects(this.dirtyRects);
 
