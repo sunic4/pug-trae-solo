@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
+import { DrawAPI } from '@pug/renderer';
 
 export interface TextProps {
   text: string;
@@ -65,7 +66,7 @@ export class Text extends ComposeNode {
     super.place(x + (this.props.x || 0), y + (this.props.y || 0), width, height);
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
     const fontSize = this.props.fontSize || theme.typography.fontSize.base;
     const fontWeight = this.props.fontWeight || theme.typography.fontWeight.normal;
@@ -73,15 +74,15 @@ export class Text extends ComposeNode {
     const textAlign = this.props.textAlign || 'left';
     const fontFamily = theme.typography.fontFamily;
 
-    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-    ctx.fillStyle = color;
-    ctx.textAlign = textAlign;
-    ctx.textBaseline = 'middle';
+    drawApi.setFont(`${fontWeight} ${fontSize}px ${fontFamily}`);
+    drawApi.setFillStyle(color);
+    drawApi.setTextAlign(textAlign);
+    drawApi.setTextBaseline('middle');
 
     const textX = textAlign === 'left' ? 0 : textAlign === 'center' ? this.width / 2 : this.width;
     const textY = this.height / 2;
 
-    ctx.fillText(this.props.text, textX, textY);
+    drawApi.fillText(this.props.text, textX, textY);
   }
 }
 

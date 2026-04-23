@@ -28,6 +28,7 @@
 - 渲染后端与组件完全解耦
 - 相同的组件代码可以在不同的渲染后端上运行
 - 构建示例不需要修改就可以直接接入到不同的后端
+- 保持使用现有的 app 目录作为 demo 根目录
 
 ### 2.2 实现方案
 
@@ -103,7 +104,6 @@ export interface DrawAPI {
 export class Canvas2DDrawAPI implements DrawAPI {
   constructor(private ctx: CanvasRenderingContext2D) {}
   
-  // 实现所有 DrawAPI 方法...
   setFillStyle(color: string | CanvasGradient | CanvasPattern): void {
     this.ctx.fillStyle = color;
   }
@@ -120,7 +120,81 @@ export class Canvas2DDrawAPI implements DrawAPI {
     this.ctx.fillRect(x, y, width, height);
   }
   
-  // 其他方法实现...
+  strokeRect(x: number, y: number, width: number, height: number): void {
+    this.ctx.strokeRect(x, y, width, height);
+  }
+  
+  clearRect(x: number, y: number, width: number, height: number): void {
+    this.ctx.clearRect(x, y, width, height);
+  }
+  
+  setFont(font: string): void {
+    this.ctx.font = font;
+  }
+  
+  setTextAlign(align: CanvasTextAlign): void {
+    this.ctx.textAlign = align;
+  }
+  
+  setTextBaseline(baseline: CanvasTextBaseline): void {
+    this.ctx.textBaseline = baseline;
+  }
+  
+  fillText(text: string, x: number, y: number, maxWidth?: number): void {
+    this.ctx.fillText(text, x, y, maxWidth);
+  }
+  
+  measureText(text: string): TextMetrics {
+    return this.ctx.measureText(text);
+  }
+  
+  beginPath(): void {
+    this.ctx.beginPath();
+  }
+  
+  moveTo(x: number, y: number): void {
+    this.ctx.moveTo(x, y);
+  }
+  
+  lineTo(x: number, y: number): void {
+    this.ctx.lineTo(x, y);
+  }
+  
+  arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void {
+    this.ctx.arc(x, y, radius, startAngle, endAngle, counterclockwise);
+  }
+  
+  closePath(): void {
+    this.ctx.closePath();
+  }
+  
+  fill(): void {
+    this.ctx.fill();
+  }
+  
+  stroke(): void {
+    this.ctx.stroke();
+  }
+  
+  save(): void {
+    this.ctx.save();
+  }
+  
+  restore(): void {
+    this.ctx.restore();
+  }
+  
+  translate(x: number, y: number): void {
+    this.ctx.translate(x, y);
+  }
+  
+  rotate(angle: number): void {
+    this.ctx.rotate(angle);
+  }
+  
+  scale(x: number, y: number): void {
+    this.ctx.scale(x, y);
+  }
 }
 
 /**
@@ -129,12 +203,97 @@ export class Canvas2DDrawAPI implements DrawAPI {
 export class NodeCanvasDrawAPI implements DrawAPI {
   constructor(private ctx: any) {}
   
-  // 实现所有 DrawAPI 方法...
   setFillStyle(color: string | CanvasGradient | CanvasPattern): void {
     this.ctx.fillStyle = color;
   }
   
-  // 其他方法实现...
+  setStrokeStyle(color: string | CanvasGradient | CanvasPattern): void {
+    this.ctx.strokeStyle = color;
+  }
+  
+  setLineWidth(width: number): void {
+    this.ctx.lineWidth = width;
+  }
+  
+  fillRect(x: number, y: number, width: number, height: number): void {
+    this.ctx.fillRect(x, y, width, height);
+  }
+  
+  strokeRect(x: number, y: number, width: number, height: number): void {
+    this.ctx.strokeRect(x, y, width, height);
+  }
+  
+  clearRect(x: number, y: number, width: number, height: number): void {
+    this.ctx.clearRect(x, y, width, height);
+  }
+  
+  setFont(font: string): void {
+    this.ctx.font = font;
+  }
+  
+  setTextAlign(align: CanvasTextAlign): void {
+    this.ctx.textAlign = align;
+  }
+  
+  setTextBaseline(baseline: CanvasTextBaseline): void {
+    this.ctx.textBaseline = baseline;
+  }
+  
+  fillText(text: string, x: number, y: number, maxWidth?: number): void {
+    this.ctx.fillText(text, x, y, maxWidth);
+  }
+  
+  measureText(text: string): TextMetrics {
+    return this.ctx.measureText(text);
+  }
+  
+  beginPath(): void {
+    this.ctx.beginPath();
+  }
+  
+  moveTo(x: number, y: number): void {
+    this.ctx.moveTo(x, y);
+  }
+  
+  lineTo(x: number, y: number): void {
+    this.ctx.lineTo(x, y);
+  }
+  
+  arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean): void {
+    this.ctx.arc(x, y, radius, startAngle, endAngle, counterclockwise);
+  }
+  
+  closePath(): void {
+    this.ctx.closePath();
+  }
+  
+  fill(): void {
+    this.ctx.fill();
+  }
+  
+  stroke(): void {
+    this.ctx.stroke();
+  }
+  
+  save(): void {
+    this.ctx.save();
+  }
+  
+  restore(): void {
+    this.ctx.restore();
+  }
+  
+  translate(x: number, y: number): void {
+    this.ctx.translate(x, y);
+  }
+  
+  rotate(angle: number): void {
+    this.ctx.rotate(angle);
+  }
+  
+  scale(x: number, y: number): void {
+    this.ctx.scale(x, y);
+  }
 }
 ```
 
@@ -252,7 +411,11 @@ draw(drawApi: DrawAPI): void {
   // 绘制按钮背景
   drawApi.setFillStyle(backgroundColor);
   drawApi.beginPath();
-  drawApi.roundRect(0, 0, this.width, this.height, borderRadius);
+  drawApi.arc(0, 0, borderRadius, 0, Math.PI * 0.5);
+  drawApi.arc(this.width - borderRadius, 0, borderRadius, Math.PI * 0.5, Math.PI);
+  drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+  drawApi.arc(0, this.height - borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+  drawApi.closePath();
   drawApi.fill();
   
   // 绘制按钮文本
@@ -260,50 +423,277 @@ draw(drawApi: DrawAPI): void {
 }
 ```
 
-### 步骤 5：创建多后端示例应用
+**文件**：`packages/components/src/box.ts`
 
-**文件**：`apps/multi-renderer-demo/main.ts`
+```typescript
+draw(drawApi: DrawAPI): void {
+  if (this.props.backgroundColor) {
+    drawApi.setFillStyle(this.props.backgroundColor);
+    drawApi.fillRect(0, 0, this.width, this.height);
+  }
+  
+  if (this.props.borderColor && this.props.borderWidth) {
+    drawApi.setStrokeStyle(this.props.borderColor);
+    drawApi.setLineWidth(this.props.borderWidth);
+    drawApi.strokeRect(0, 0, this.width, this.height);
+  }
+}
+```
+
+### 步骤 5：修改现有 demo 应用
+
+修改现有的 demo 应用，使其支持不同的渲染后端。
+
+**文件**：`apps/demo/main.ts`
 
 ```typescript
 import { Composer } from '@pug/composer';
 import { RendererFactory, RendererType } from '@pug/renderer';
-import { TextComponent, ButtonComponent, ColumnComponent, BoxComponent } from '@pug/components';
-import { useTheme } from '@pug/theme';
+import { TextComponent, ButtonComponent, ColumnComponent, BoxComponent, RowComponent, CheckboxComponent, TextInputComponent, ListComponent, StackComponent, PaddingComponent, SpacerComponent } from '@pug/components';
+import { useTheme, darkTheme, useThemeSwitcher } from '@pug/theme';
+import { signal } from '@pug/reactivity';
 
 // 共享的组件树
 function App() {
   const theme = useTheme();
+  const inputValue = signal('');
+  const isChecked = signal(false);
   
   return BoxComponent({
     backgroundColor: theme.colors.background,
-    width: 400,
-    height: 300,
+    width: 800,
+    height: 1000,
     padding: 20,
     children: [
       TextComponent({
-        text: 'Multi-Renderer Demo',
-        fontSize: 24,
+        text: 'Pug Demo App',
+        fontSize: 28,
         fontWeight: 600,
         color: theme.colors.text,
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 30,
       }),
-      ColumnComponent({
-        spacing: 15,
+      
+      // 主题切换按钮
+      RowComponent({
+        justifyContent: 'flex-end',
+        marginBottom: 20,
         children: [
           ButtonComponent({
-            text: 'Primary Button',
+            text: 'Toggle Theme',
+            variant: 'outline',
+            onClick: useThemeSwitcher(),
+          }),
+        ],
+      }),
+      
+      // 按钮演示
+      TextComponent({
+        text: 'Buttons',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      RowComponent({
+        spacing: 10,
+        marginBottom: 20,
+        children: [
+          ButtonComponent({
+            text: 'Primary',
             variant: 'primary',
             onClick: () => console.log('Primary button clicked'),
           }),
           ButtonComponent({
-            text: 'Secondary Button',
+            text: 'Secondary',
             variant: 'secondary',
             onClick: () => console.log('Secondary button clicked'),
           }),
+          ButtonComponent({
+            text: 'Outline',
+            variant: 'outline',
+            onClick: () => console.log('Outline button clicked'),
+          }),
+          ButtonComponent({
+            text: 'Disabled',
+            variant: 'primary',
+            disabled: true,
+          }),
+        ],
+      }),
+      
+      // 输入控件演示
+      TextComponent({
+        text: 'Input Controls',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      RowComponent({
+        spacing: 20,
+        alignItems: 'center',
+        marginBottom: 20,
+        children: [
+          TextInputComponent({
+            value: inputValue,
+            onChange: (value) => inputValue.value = value,
+            placeholder: 'Enter text here...',
+            width: 200,
+          }),
+          CheckboxComponent({
+            checked: isChecked,
+            onChange: (checked) => isChecked.value = checked,
+            label: 'Check me',
+          }),
+        ],
+      }),
+      
+      // 布局演示
+      TextComponent({
+        text: 'Layout Components',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 20,
+        children: [
           TextComponent({
-            text: 'This app works on multiple renderers!',
+            text: 'Box Component',
             fontSize: 16,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          TextComponent({
+            text: 'This is a box with padding and background color',
+            fontSize: 14,
+            color: theme.colors.textSecondary,
+          }),
+        ],
+      }),
+      
+      // 列表演示
+      TextComponent({
+        text: 'List Component',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      ListComponent({
+        items: ['Item 1', 'Item 2', 'Item 3', 'Item 4', 'Item 5'],
+        itemHeight: 40,
+        width: 300,
+        height: 200,
+        backgroundColor: theme.colors.surface,
+        onItemClick: (index) => console.log(`Item ${index} clicked`),
+        marginBottom: 20,
+      }),
+      
+      // 栈布局演示
+      TextComponent({
+        text: 'Stack Component',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      StackComponent({
+        width: 300,
+        height: 200,
+        backgroundColor: theme.colors.surface,
+        marginBottom: 20,
+        children: [
+          BoxComponent({
+            backgroundColor: 'rgba(255, 0, 0, 0.5)',
+            width: 100,
+            height: 100,
+            x: 20,
+            y: 20,
+          }),
+          BoxComponent({
+            backgroundColor: 'rgba(0, 255, 0, 0.5)',
+            width: 100,
+            height: 100,
+            x: 60,
+            y: 60,
+          }),
+          BoxComponent({
+            backgroundColor: 'rgba(0, 0, 255, 0.5)',
+            width: 100,
+            height: 100,
+            x: 100,
+            y: 100,
+          }),
+        ],
+      }),
+      
+      // 间距组件演示
+      TextComponent({
+        text: 'Spacing Components',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      RowComponent({
+        spacing: 10,
+        marginBottom: 20,
+        children: [
+          ButtonComponent({
+            text: 'Left',
+            variant: 'primary',
+          }),
+          SpacerComponent({
+            width: 50,
+          }),
+          ButtonComponent({
+            text: 'Right',
+            variant: 'secondary',
+          }),
+        ],
+      }),
+      
+      PaddingComponent({
+        padding: 20,
+        backgroundColor: theme.colors.surface,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'This text is inside a padding component',
+            fontSize: 14,
+            color: theme.colors.text,
+          }),
+        ],
+      }),
+      
+      // 响应式演示
+      TextComponent({
+        text: 'Reactive State',
+        fontSize: 20,
+        fontWeight: 500,
+        color: theme.colors.text,
+        marginBottom: 15,
+      }),
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        padding: 15,
+        borderRadius: 8,
+        children: [
+          TextComponent({
+            text: `Input value: ${inputValue.value}`,
+            fontSize: 14,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          TextComponent({
+            text: `Checkbox state: ${isChecked.value ? 'Checked' : 'Unchecked'}`,
+            fontSize: 14,
             color: theme.colors.text,
           }),
         ],
@@ -314,7 +704,7 @@ function App() {
 
 // 渲染到浏览器 Canvas
 function renderToBrowserCanvas() {
-  const canvas = document.getElementById('browser-canvas') as HTMLCanvasElement;
+  const canvas = document.getElementById('app-canvas') as HTMLCanvasElement;
   if (!canvas) return;
   
   const composer = new Composer();
@@ -329,30 +719,16 @@ function renderToBrowserCanvas() {
   renderer.setRoot(rootNode);
 }
 
-// 渲染到 NodeCanvas（服务器端）
-async function renderToNodeCanvas() {
-  const composer = new Composer();
-  const rootNode = composer.startCompose(App);
-  composer.endCompose();
-  composer.recompose();
-  
-  const renderer = RendererFactory.create(RendererType.NODE_CANVAS, {
-    width: 400,
-    height: 300,
-  });
-  renderer.setRoot(rootNode);
-  renderer.renderFrame();
-  
-  // 保存截图
-  await (renderer as any).saveToFile('./nodecanvas-demo.png');
-  console.log('NodeCanvas rendering saved to nodecanvas-demo.png');
-}
-
 // 导出渲染函数
-export { renderToBrowserCanvas, renderToNodeCanvas };
+export { renderToBrowserCanvas };
+
+// 如果在浏览器环境中，自动渲染
+if (typeof window !== 'undefined') {
+  window.addEventListener('DOMContentLoaded', renderToBrowserCanvas);
+}
 ```
 
-**文件**：`apps/multi-renderer-demo/index.html`
+**文件**：`apps/demo/index.html`
 
 ```html
 <!DOCTYPE html>
@@ -360,55 +736,71 @@ export { renderToBrowserCanvas, renderToNodeCanvas };
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multi-Renderer Demo</title>
+  <title>Pug Demo App</title>
   <style>
     body {
+      margin: 0;
+      padding: 20px;
       font-family: Arial, sans-serif;
-      margin: 20px;
+      background-color: #f5f5f5;
     }
-    .canvas-container {
-      margin: 20px 0;
-      padding: 10px;
+    #app-canvas {
       border: 1px solid #ddd;
-    }
-    h2 {
-      margin-top: 40px;
+      border-radius: 8px;
+      background-color: white;
     }
   </style>
 </head>
 <body>
-  <h1>Multi-Renderer Demo</h1>
-  <p>This demo shows the same app running on different renderers.</p>
-  
-  <h2>Browser Canvas Renderer</h2>
-  <div class="canvas-container">
-    <canvas id="browser-canvas" width="400" height="300"></canvas>
-  </div>
-  
-  <h2>NodeCanvas Renderer</h2>
-  <p>NodeCanvas rendering is done on the server. Check the console for the output file path.</p>
-  
+  <h1>Pug Demo App</h1>
+  <p>This app demonstrates the Pug UI framework with multiple renderers.</p>
+  <canvas id="app-canvas" width="800" height="1000"></canvas>
   <script type="module" src="./main.ts"></script>
-  <script type="module">
-    import { renderToBrowserCanvas } from './main.ts';
-    renderToBrowserCanvas();
-  </script>
 </body>
 </html>
 ```
 
 ### 步骤 6：创建服务器端渲染脚本
 
-**文件**：`apps/multi-renderer-demo/server.ts`
+**文件**：`apps/demo/server-render.ts`
 
 ```typescript
-import { renderToNodeCanvas } from './main.ts';
+import { Composer } from '@pug/composer';
+import { RendererFactory, RendererType } from '@pug/renderer';
+import { App } from './main.ts';
 
-console.log('Rendering app to NodeCanvas...');
-renderToNodeCanvas().then(() => {
-  console.log('Rendering completed successfully!');
+// 渲染到 NodeCanvas（服务器端）
+async function renderToNodeCanvas() {
+  console.log('Rendering app to NodeCanvas...');
+  
+  const composer = new Composer();
+  const rootNode = composer.startCompose(App);
+  composer.endCompose();
+  composer.recompose();
+  
+  const renderer = RendererFactory.create(RendererType.NODE_CANVAS, {
+    width: 800,
+    height: 1000,
+  });
+  renderer.setRoot(rootNode);
+  renderer.renderFrame();
+  
+  // 保存截图
+  await (renderer as any).saveToFile('./demo-screenshot.png');
+  console.log('NodeCanvas rendering saved to demo-screenshot.png');
+  
+  // 销毁渲染器
+  renderer.dispose();
+  
+  return './demo-screenshot.png';
+}
+
+// 运行渲染
+renderToNodeCanvas().then((filePath) => {
+  console.log(`Rendering completed successfully! Screenshot saved to ${filePath}`);
 }).catch((error) => {
   console.error('Rendering failed:', error);
+  process.exit(1);
 });
 ```
 
@@ -460,7 +852,7 @@ renderToNodeCanvas().then(() => {
 ### 5.3 验证步骤
 
 1. 运行浏览器渲染示例：`npm run dev -- --port 3000`
-2. 运行 Node.js 渲染示例：`node server.ts`
+2. 运行 Node.js 渲染示例：`node server-render.ts`
 3. 比较不同渲染后端生成的结果
 4. 验证组件在不同渲染后端上的行为一致
 
@@ -468,6 +860,6 @@ renderToNodeCanvas().then(() => {
 
 本计划提供了一个完整的方案，用于实现渲染后端与组件的解耦，使得相同的组件代码可以在不同的渲染后端上运行。通过创建抽象绘制接口，我们可以封装不同渲染后端的差异，让组件专注于业务逻辑而不是渲染细节。
 
-该方案利用了项目现有的渲染器架构，通过扩展接口和实现新的抽象层，实现了与现有代码的无缝集成。同时，提供了详细的示例应用，展示如何在不同的渲染后端上运行相同的组件。
+该方案利用了项目现有的渲染器架构，通过扩展接口和实现新的抽象层，实现了与现有代码的无缝集成。同时，保持使用现有的 app 目录作为 demo 根目录，符合用户的要求。
 
 通过这种方式，我们可以轻松地添加新的渲染后端，而不需要修改现有的组件代码，从而提高了代码的可维护性和可扩展性。

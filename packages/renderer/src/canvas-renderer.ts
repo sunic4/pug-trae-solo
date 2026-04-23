@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawCommand, executeDrawCommand } from './draw-command.js';
 import { DirtyRect, mergeDirtyRects } from './dirty-rect.js';
+import { Canvas2DDrawAPI } from './draw-api.js';
 import { Renderer, RendererConfig } from './renderer-interface.js';
 
 export class CanvasRenderer implements Renderer {
@@ -115,7 +116,8 @@ export class CanvasRenderer implements Renderer {
       
       // 优先使用 draw 方法，如果没有则使用 drawCommands 方法
       if (typeof node.draw === 'function') {
-        node.draw(this.ctx);
+        const drawApi = new Canvas2DDrawAPI(this.ctx);
+        node.draw(drawApi);
       } else if (typeof node.drawCommands === 'function') {
         const commands = node.drawCommands();
         this.drawCommands(commands);

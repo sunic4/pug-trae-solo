@@ -1,4 +1,5 @@
 import { ComposeNode } from '@pug/composer';
+import { DrawAPI } from '@pug/renderer';
 
 export interface ColumnProps {
   width?: number;
@@ -66,7 +67,7 @@ export class Column extends ComposeNode {
     });
   }
 
-  draw(_ctx: CanvasRenderingContext2D) {
+  draw(_drawApi: DrawAPI) {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }

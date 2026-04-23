@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
+import { DrawAPI } from '@pug/renderer';
 
 export interface CheckboxProps {
   checked: boolean;
@@ -60,40 +61,46 @@ export class Checkbox extends ComposeNode {
     super.place(x, y, width, height);
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
     const { checked, label } = this.props;
 
     const checkboxSize = 20;
     const checkboxX = 0;
     const checkboxY = (this.height - checkboxSize) / 2;
+    const borderRadius = 4;
 
     // 绘制复选框背景
-    ctx.fillStyle = checked ? theme.colors.primary : theme.colors.background;
-    ctx.strokeStyle = checked ? theme.colors.primary : theme.colors.border;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(checkboxX, checkboxY, checkboxSize, checkboxSize, 4);
-    ctx.fill();
-    ctx.stroke();
+    drawApi.setFillStyle(checked ? theme.colors.primary : theme.colors.background);
+    drawApi.setStrokeStyle(checked ? theme.colors.primary : theme.colors.border);
+    drawApi.setLineWidth(1);
+    drawApi.beginPath();
+    // 使用 arc 绘制圆角矩形
+    drawApi.arc(checkboxX + borderRadius, checkboxY + borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+    drawApi.arc(checkboxX + checkboxSize - borderRadius, checkboxY + borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+    drawApi.arc(checkboxX + checkboxSize - borderRadius, checkboxY + checkboxSize - borderRadius, borderRadius, 0, Math.PI * 0.5);
+    drawApi.arc(checkboxX + borderRadius, checkboxY + checkboxSize - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+    drawApi.closePath();
+    drawApi.fill();
+    drawApi.stroke();
 
     // 绘制勾选标记
     if (checked) {
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(checkboxX + 5, checkboxY + 10);
-      ctx.lineTo(checkboxX + 8, checkboxY + 13);
-      ctx.lineTo(checkboxX + 15, checkboxY + 6);
-      ctx.stroke();
+      drawApi.setStrokeStyle('#ffffff');
+      drawApi.setLineWidth(2);
+      drawApi.beginPath();
+      drawApi.moveTo(checkboxX + 5, checkboxY + 10);
+      drawApi.lineTo(checkboxX + 8, checkboxY + 13);
+      drawApi.lineTo(checkboxX + 15, checkboxY + 6);
+      drawApi.stroke();
     }
 
     // 绘制标签
     if (label) {
-      ctx.fillStyle = theme.colors.text;
-      ctx.font = `${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`;
-      ctx.textBaseline = 'middle';
-      ctx.fillText(label, checkboxX + checkboxSize + 8, this.height / 2);
+      drawApi.setFillStyle(theme.colors.text);
+      drawApi.setFont(`${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`);
+      drawApi.setTextBaseline('middle');
+      drawApi.fillText(label, checkboxX + checkboxSize + 8, this.height / 2);
     }
   }
 }

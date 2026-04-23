@@ -1,4 +1,5 @@
 import { ComposeNode } from '@pug/composer';
+import { DrawAPI } from '@pug/renderer';
 
 export interface SpacerProps {
   width?: number;
@@ -26,7 +27,7 @@ export class Spacer extends ComposeNode {
     super.place(x + offsetX, y + offsetY, width, height);
   }
 
-  draw(_ctx: CanvasRenderingContext2D) {
+  draw(_drawApi: DrawAPI) {
     // Spacer 组件不需要绘制任何内容
   }
 }

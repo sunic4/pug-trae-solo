@@ -10,6 +10,8 @@ export interface Constraints {
   maxHeight: number;
 }
 
+import { DrawAPI } from '@pug/renderer';
+
 export class ComposeNode {
   readonly key: string;
   children: ComposeNode[] = [];
@@ -94,7 +96,7 @@ export class ComposeNode {
     return [];
   }
 
-  draw(_ctx: CanvasRenderingContext2D): void {
+  draw(_drawApi: DrawAPI): void {
     // 由子类实现
   }
 

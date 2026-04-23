@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
+import { DrawAPI } from '@pug/renderer';
 
 export interface BoxProps {
   backgroundColor?: string;
@@ -82,23 +83,35 @@ export class Box extends ComposeNode {
     });
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
     const { backgroundColor = theme.colors.surface, borderColor, borderWidth = 0, borderRadius = theme.borderRadius.base } = this.props;
 
     // 绘制背景
-    ctx.fillStyle = backgroundColor;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, this.width, this.height, borderRadius);
-    ctx.fill();
+    if (backgroundColor) {
+      drawApi.setFillStyle(backgroundColor);
+      drawApi.beginPath();
+      // 使用 arc 绘制圆角矩形
+      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
+      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+      drawApi.closePath();
+      drawApi.fill();
+    }
 
     // 绘制边框
     if (borderColor && borderWidth > 0) {
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = borderWidth;
-      ctx.beginPath();
-      ctx.roundRect(0, 0, this.width, this.height, borderRadius);
-      ctx.stroke();
+      drawApi.setStrokeStyle(borderColor);
+      drawApi.setLineWidth(borderWidth);
+      drawApi.beginPath();
+      // 使用 arc 绘制圆角矩形边框
+      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
+      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+      drawApi.closePath();
+      drawApi.stroke();
     }
   }
 }

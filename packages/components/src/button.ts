@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { TextComponent } from './text';
+import { DrawAPI } from '@pug/renderer';
 
 export interface ButtonProps {
   text: string;
@@ -139,27 +140,41 @@ export class Button extends ComposeNode {
     this.textNode.place(0, 0, width, height);
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
+    const borderRadius = theme.borderRadius.base;
 
     // 绘制按钮背景
-    ctx.fillStyle = this.getBackgroundColor();
-    ctx.beginPath();
-    ctx.roundRect(0, 0, this.width, this.height, theme.borderRadius.base);
-    ctx.fill();
+    const backgroundColor = this.getBackgroundColor();
+    if (backgroundColor !== 'transparent') {
+      drawApi.setFillStyle(backgroundColor);
+      drawApi.beginPath();
+      // 使用 arc 绘制圆角矩形
+      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
+      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+      drawApi.closePath();
+      drawApi.fill();
+    }
 
     // 绘制按钮边框
     const borderColor = this.getBorderColor();
     if (borderColor !== 'transparent') {
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(0, 0, this.width, this.height, theme.borderRadius.base);
-      ctx.stroke();
+      drawApi.setStrokeStyle(borderColor);
+      drawApi.setLineWidth(1);
+      drawApi.beginPath();
+      // 使用 arc 绘制圆角矩形边框
+      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
+      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+      drawApi.closePath();
+      drawApi.stroke();
     }
 
     // 绘制文本
-    this.textNode.draw(ctx);
+    this.textNode.draw(drawApi);
   }
 
   onPointerDown(_x: number, _y: number) {

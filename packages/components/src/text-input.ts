@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
+import { DrawAPI } from '@pug/renderer';
 
 export interface TextInputProps {
   value: string;
@@ -45,35 +46,41 @@ export class TextInput extends ComposeNode {
     super.place(x, y, width, height);
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
     const { value, placeholder } = this.props;
+    const borderRadius = theme.borderRadius.base;
 
     // 绘制输入框背景
-    ctx.fillStyle = this.isFocused ? theme.colors.surface : theme.colors.background;
-    ctx.strokeStyle = this.isFocused ? theme.colors.primary : theme.colors.border;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, this.width, this.height, theme.borderRadius.base);
-    ctx.fill();
-    ctx.stroke();
+    drawApi.setFillStyle(this.isFocused ? theme.colors.surface : theme.colors.background);
+    drawApi.setStrokeStyle(this.isFocused ? theme.colors.primary : theme.colors.border);
+    drawApi.setLineWidth(1);
+    drawApi.beginPath();
+    // 使用 arc 绘制圆角矩形
+    drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
+    drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
+    drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
+    drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
+    drawApi.closePath();
+    drawApi.fill();
+    drawApi.stroke();
 
     // 绘制文本
-    ctx.fillStyle = theme.colors.text;
-    ctx.font = `${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`;
-    ctx.textBaseline = 'middle';
+    drawApi.setFillStyle(theme.colors.text);
+    drawApi.setFont(`${theme.typography.fontSize.base}px ${theme.typography.fontFamily}`);
+    drawApi.setTextBaseline('middle');
 
     const text = value || placeholder || '';
     const textX = 12;
     const textY = this.height / 2;
 
-    ctx.fillText(text, textX, textY);
+    drawApi.fillText(text, textX, textY);
 
     // 绘制光标
     if (this.isFocused && value) {
-      const textWidth = ctx.measureText(value).width;
-      ctx.fillStyle = theme.colors.text;
-      ctx.fillRect(textX + textWidth + 2, textY - 8, 2, 16);
+      const textWidth = drawApi.measureText(value).width;
+      drawApi.setFillStyle(theme.colors.text);
+      drawApi.fillRect(textX + textWidth + 2, textY - 8, 2, 16);
     }
   }
 

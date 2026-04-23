@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { Renderer, RendererConfig } from './renderer-interface.js';
 import { createCanvas } from 'canvas';
+import { NodeCanvasDrawAPI } from './draw-api.js';
 
 /**
  * NodeCanvas 渲染器实现
@@ -79,7 +80,8 @@ export class NodeCanvasRenderer implements Renderer {
 
     // 调用节点的 draw 方法
     if (typeof node.draw === 'function') {
-      node.draw(this.ctx);
+      const drawApi = new NodeCanvasDrawAPI(this.ctx);
+      node.draw(drawApi);
     }
 
     // 恢复状态
