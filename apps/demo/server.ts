@@ -1,5 +1,6 @@
 import { RendererType } from '@pug/renderer';
 import { renderApp } from './src/utils/renderUtils';
+import path from 'path';
 
 // 渲染应用
 const { renderer } = renderApp(RendererType.NODE_CANVAS, {
@@ -8,8 +9,7 @@ const { renderer } = renderApp(RendererType.NODE_CANVAS, {
 });
 
 // 保存截图
-const path = require('path');
-const outputPath = path.join(__dirname, 'demo-screenshot.png');
+const outputPath = path.join(process.cwd(), 'apps', 'demo', 'demo-screenshot.png');
 
 // 使用 NodeCanvasRenderer 的 saveToFile 方法保存截图
 (renderer as any).saveToFile(outputPath).then(() => {
