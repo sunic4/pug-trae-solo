@@ -1,7 +1,7 @@
 import { ComposeNode } from '@pug/composer';
-import { Renderer, RendererConfig } from './renderer-interface.js';
+import { Renderer, RendererConfig } from './renderer-interface';
 import { createCanvas } from 'canvas';
-import { NodeCanvasDrawAPI } from './draw-api.js';
+import { NodeCanvasDrawAPI } from './draw-api';
 
 /**
  * NodeCanvas 渲染器实现

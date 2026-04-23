@@ -1,3 +1,3 @@
-export * from './hit-test.js';
-export * from './dispatcher.js';
-export * from './gesture.js';
+export * from './hit-test';
+export * from './dispatcher';
+export * from './gesture';

@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
+import { drawRoundedRect } from './utils';
 
 export interface CheckboxProps {
   checked: boolean;
@@ -80,13 +81,7 @@ export class Checkbox extends ComposeNode {
     drawApi.setFillStyle(checked ? theme.colors.primary : theme.colors.background);
     drawApi.setStrokeStyle(checked ? theme.colors.primary : theme.colors.border);
     drawApi.setLineWidth(1);
-    drawApi.beginPath();
-    // 使用 arc 绘制圆角矩形
-    drawApi.arc(checkboxX + borderRadius, checkboxY + borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
-    drawApi.arc(checkboxX + checkboxSize - borderRadius, checkboxY + borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
-    drawApi.arc(checkboxX + checkboxSize - borderRadius, checkboxY + checkboxSize - borderRadius, borderRadius, 0, Math.PI * 0.5);
-    drawApi.arc(checkboxX + borderRadius, checkboxY + checkboxSize - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
-    drawApi.closePath();
+    drawRoundedRect(drawApi, checkboxX, checkboxY, checkboxSize, checkboxSize, borderRadius);
     drawApi.fill();
     drawApi.stroke();
 

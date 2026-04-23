@@ -1,6 +1,6 @@
-import { Renderer, RendererConfig, RendererType } from './renderer-interface.js';
-import { CanvasRenderer } from './canvas-renderer.js';
-import { NodeCanvasRenderer } from './nodecanvas-renderer.js';
+import { Renderer, RendererConfig, RendererType } from './renderer-interface';
+import { CanvasRenderer } from './canvas-renderer';
+import { NodeCanvasRenderer } from './nodecanvas-renderer';
 
 /**
  * 渲染器工厂

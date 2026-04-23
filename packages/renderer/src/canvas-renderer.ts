@@ -1,8 +1,8 @@
 import { ComposeNode } from '@pug/composer';
-import { DrawCommand, executeDrawCommand } from './draw-command.js';
-import { DirtyRect, mergeDirtyRects } from './dirty-rect.js';
-import { Canvas2DDrawAPI } from './draw-api.js';
-import { Renderer, RendererConfig } from './renderer-interface.js';
+import { DrawCommand, executeDrawCommand } from './draw-command';
+import { DirtyRect, mergeDirtyRects } from './dirty-rect';
+import { Canvas2DDrawAPI } from './draw-api';
+import { Renderer, RendererConfig } from './renderer-interface';
 
 export class CanvasRenderer implements Renderer {
   config: RendererConfig;

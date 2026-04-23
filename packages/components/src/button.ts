@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { TextComponent } from './text';
 import { DrawAPI } from '@pug/renderer';
+import { drawRoundedRect } from './utils';
 
 export interface ButtonProps {
   text: string;
@@ -148,13 +149,7 @@ export class Button extends ComposeNode {
     const backgroundColor = this.getBackgroundColor();
     if (backgroundColor !== 'transparent') {
       drawApi.setFillStyle(backgroundColor);
-      drawApi.beginPath();
-      // 使用 arc 绘制圆角矩形
-      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
-      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
-      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
-      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
-      drawApi.closePath();
+      drawRoundedRect(drawApi, 0, 0, this.width, this.height, borderRadius);
       drawApi.fill();
     }
 
@@ -163,13 +158,7 @@ export class Button extends ComposeNode {
     if (borderColor !== 'transparent') {
       drawApi.setStrokeStyle(borderColor);
       drawApi.setLineWidth(1);
-      drawApi.beginPath();
-      // 使用 arc 绘制圆角矩形边框
-      drawApi.arc(borderRadius, borderRadius, borderRadius, Math.PI, Math.PI * 1.5);
-      drawApi.arc(this.width - borderRadius, borderRadius, borderRadius, Math.PI * 1.5, Math.PI * 2);
-      drawApi.arc(this.width - borderRadius, this.height - borderRadius, borderRadius, 0, Math.PI * 0.5);
-      drawApi.arc(borderRadius, this.height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
-      drawApi.closePath();
+      drawRoundedRect(drawApi, 0, 0, this.width, this.height, borderRadius);
       drawApi.stroke();
     }
 

@@ -1,1 +1,1 @@
-export * from './constraints.js';
+export * from './constraints';
