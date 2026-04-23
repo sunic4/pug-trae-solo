@@ -1,31 +1,37 @@
-# Git Workflow
+# Agent Workflow
 
-## Commit and Push
+## Task Completion
 
-Every time you complete a task, run these commands:
+After finishing a task:
 
 1. `git status` - Check changes
 2. `git add .` - Stage changes
-3. `git commit -m "<type>: <description>"` - Commit with message
+3. `git commit -m "<type>: <description>"` - Commit
 4. `git push` - Push to remote
 
-## Commit Message Types
+## Commit Types
 
 - `fix`: Bug fixes
 - `feat`: New features
 - `refactor`: Code restructuring
-- `docs`: Documentation changes
+- `docs`: Documentation
 - `style`: Style changes
-- `test`: Test changes
-- `build`: Build system changes
-- `ci`: CI/CD changes
+- `test`: Tests
+- `build`: Build system
+- `ci`: CI/CD
 
 ## Example
 
 ```bash
-# After completing a task
 git status
 git add .
-git commit -m "refactor: restructure demo app"
+git commit -m "feat: implement new feature"
 git push
 ```
+
+## Best Practices
+
+- Keep commits focused
+- Use clear commit messages
+- Push after each task
+- Pull before starting new work
