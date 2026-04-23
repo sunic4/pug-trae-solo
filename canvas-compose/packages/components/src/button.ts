@@ -1,0 +1,167 @@
+import { ComposeNode } from '@canvas-compose/composer';
+import { useTheme } from '@canvas-compose/theme';
+import { TextComponent } from './text';
+
+export interface ButtonProps {
+  text: string;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary' | 'outline' | 'text';
+  size?: 'sm' | 'base' | 'lg';
+  disabled?: boolean;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  marginBottom?: number;
+}
+
+export class Button extends ComposeNode {
+  private textNode: ComposeNode;
+
+  constructor(public props: ButtonProps) {
+    super();
+    this.textNode = TextComponent({
+      text: props.text,
+      color: this.getTextColor(),
+      fontWeight: 500,
+      textAlign: 'center',
+    });
+    this.addChild(this.textNode);
+  }
+
+  private getTextColor(): string {
+    const theme = useTheme();
+    const { variant, disabled } = this.props;
+
+    if (disabled) {
+      return theme.colors.disabled;
+    }
+
+    switch (variant) {
+      case 'primary':
+        return '#ffffff';
+      case 'secondary':
+        return '#ffffff';
+      case 'outline':
+        return theme.colors.primary;
+      case 'text':
+        return theme.colors.primary;
+      default:
+        return '#ffffff';
+    }
+  }
+
+  private getBackgroundColor(): string {
+    const theme = useTheme();
+    const { variant, disabled } = this.props;
+
+    if (disabled) {
+      return theme.colors.surface;
+    }
+
+    switch (variant) {
+      case 'primary':
+        return theme.colors.primary;
+      case 'secondary':
+        return theme.colors.secondary;
+      case 'outline':
+        return 'transparent';
+      case 'text':
+        return 'transparent';
+      default:
+        return theme.colors.primary;
+    }
+  }
+
+  private getBorderColor(): string {
+    const theme = useTheme();
+    const { variant, disabled } = this.props;
+
+    if (disabled) {
+      return theme.colors.border;
+    }
+
+    switch (variant) {
+      case 'primary':
+      case 'secondary':
+      case 'text':
+        return 'transparent';
+      case 'outline':
+        return theme.colors.primary;
+      default:
+        return 'transparent';
+    }
+  }
+
+  measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
+    const theme = useTheme();
+    const { size, width, height } = this.props;
+
+    let buttonWidth = width;
+    let buttonHeight = height;
+
+    if (!buttonHeight) {
+      switch (size) {
+        case 'sm':
+          buttonHeight = 32;
+          break;
+        case 'lg':
+          buttonHeight = 48;
+          break;
+        default:
+          buttonHeight = 40;
+      }
+    }
+
+    if (!buttonWidth) {
+      // 测量文本宽度并添加padding
+      const textWidth = this.textNode.measure(constraints).width;
+      buttonWidth = textWidth + theme.spacing.base * 2;
+    }
+
+    return { 
+      width: Math.min(buttonWidth, constraints.maxWidth), 
+      height: Math.min(buttonHeight, constraints.maxHeight) 
+    };
+  }
+
+  place(x: number, y: number, width: number, height: number) {
+    super.place(x + (this.props.x || 0), y + (this.props.y || 0), width, height);
+
+    // 放置文本节点
+    this.textNode.place(0, 0, width, height);
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    const theme = useTheme();
+
+    // 绘制按钮背景
+    ctx.fillStyle = this.getBackgroundColor();
+    ctx.beginPath();
+    ctx.roundRect(0, 0, this.width, this.height, theme.borderRadius.base);
+    ctx.fill();
+
+    // 绘制按钮边框
+    const borderColor = this.getBorderColor();
+    if (borderColor !== 'transparent') {
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, this.width, this.height, theme.borderRadius.base);
+      ctx.stroke();
+    }
+
+    // 绘制文本
+    this.textNode.draw(ctx);
+  }
+
+  onPointerDown(_x: number, _y: number) {
+    if (!this.props.disabled && this.props.onClick) {
+      this.props.onClick();
+    }
+  }
+}
+
+export function ButtonComponent(props: ButtonProps) {
+  return new Button(props);
+}

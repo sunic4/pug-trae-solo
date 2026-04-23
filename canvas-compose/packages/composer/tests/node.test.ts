@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ComposeNode, Constraints, Size } from '../src/node.js';
+import { ComposeNode, Constraints } from '../src/node.js';
 
 describe('ComposeNode', () => {
   it('should initialize with key', () => {

@@ -1,6 +1,6 @@
 import { ComposeNode } from './node.js';
 import { SlotTable } from './slot-table.js';
-import { setCurrentContext, getCurrentContext } from '../../reactivity/src/context.js';
+import { setCurrentContext } from '../../reactivity/src/context.js';
 
 export type ComposableFunction = () => ComposeNode;
 

@@ -18,10 +18,11 @@ export class ComposeNode {
   width: number = 0;
   height: number = 0;
   handlers: Record<string, (...args: any[]) => void> = {};
+  props: any = {};
   private _dirty = false;
   private _layoutDirty = false;
 
-  constructor(key: string) {
+  constructor(key: string = Math.random().toString(36).substr(2, 9)) {
     this.key = key;
   }
 
@@ -65,8 +66,16 @@ export class ComposeNode {
   }
 
   // 布局相关方法，由子类实现
-  measure(constraints: Constraints): Size {
+  measure(_constraints: Constraints): Size {
     return { width: 0, height: 0 };
+  }
+
+  place(x: number, y: number, width: number, height: number): void {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.placeChildren();
   }
 
   placeChildren(): void {
@@ -76,5 +85,9 @@ export class ComposeNode {
   // 绘制相关方法，由子类实现
   drawCommands(): any[] {
     return [];
+  }
+
+  draw(_ctx: CanvasRenderingContext2D): void {
+    // 由子类实现
   }
 }

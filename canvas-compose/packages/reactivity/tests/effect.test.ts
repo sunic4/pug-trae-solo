@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { signal, effect } from '../src/index.js';
+import { effect } from '../src/index.js';
 
 describe('effect', () => {
   it('should run immediately', () => {

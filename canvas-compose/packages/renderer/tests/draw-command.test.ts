@@ -47,7 +47,7 @@ class MockContext {
     this.calls.push(`transform(${a}, ${b}, ${c}, ${d}, ${e}, ${f})`);
   }
 
-  drawImage(img: any, x: number, y: number, w: number, h: number): void {
+  drawImage(_img: any, x: number, y: number, w: number, h: number): void {
     this.calls.push(`drawImage(${x}, ${y}, ${w}, ${h})`);
   }
 

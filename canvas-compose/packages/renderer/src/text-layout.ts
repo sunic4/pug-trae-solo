@@ -67,11 +67,11 @@ export function layoutText(text: string, font: string, maxWidth: number): TextLa
   const lineHeight = measureText('Xy', font).height;
   const totalHeight = lines.length * lineHeight;
 
-  let maxWidth = 0;
+  let lineMaxWidth = 0;
   for (const line of lines) {
     const w = ctx.measureText(line).width;
-    if (w > maxWidth) maxWidth = w;
+    if (w > lineMaxWidth) lineMaxWidth = w;
   }
 
-  return { lines, totalHeight, lineHeight, maxWidth };
+  return { lines, totalHeight, lineHeight, maxWidth: lineMaxWidth };
 }

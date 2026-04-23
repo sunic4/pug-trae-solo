@@ -72,7 +72,7 @@
   - `programmatic` TR-5.3: 布局边界情况处理
 - **Notes**: 实现与 Compose 类似的布局约束系统
 
-## [ ] Task 6: 事件系统 (event)
+## [/] Task 6: 事件系统 (event)
 - **Priority**: P1
 - **Depends On**: Task 3, Task 4
 - **Description**:

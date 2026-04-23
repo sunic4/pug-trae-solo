@@ -8,5 +8,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@canvas-compose/reactivity": "0.1.0"
   }
 }

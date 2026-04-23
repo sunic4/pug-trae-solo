@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  Constraints,
-  Size,
   looseConstraints,
   tightConstraints,
   wrapContentConstraints,
