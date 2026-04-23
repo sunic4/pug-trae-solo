@@ -22,10 +22,10 @@ export class Container extends ComposeNode {
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
-    const { width, height, direction = 'row', padding = 0, margin = 0 } = this.props;
+    const { width, height, direction = 'row', padding = 0 } = this.props;
 
-    let containerWidth = width || constraints.maxWidth - margin * 2;
-    let containerHeight = height || constraints.maxHeight - margin * 2;
+    let containerWidth = width || constraints.maxWidth;
+    let containerHeight = height || constraints.maxHeight;
 
     // 测量子元素
     if (this.children.length > 0) {
@@ -58,8 +58,8 @@ export class Container extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    const { x: offsetX = 0, y: offsetY = 0, padding = 0, margin = 0, direction = 'row', align = 'start', justify = 'start' } = this.props;
-    super.place(x + offsetX + margin, y + offsetY + margin, width, height);
+    const { x: offsetX = 0, y: offsetY = 0, padding = 0, direction = 'row', align = 'start', justify = 'start' } = this.props;
+    super.place(x + offsetX, y + offsetY, width, height);
 
     // 放置子元素
     if (this.children.length > 0) {

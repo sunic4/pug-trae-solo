@@ -49,6 +49,16 @@ export class CanvasRenderer {
 
     // 绘制所有节点
     if (this.rootNode) {
+      // 先对根节点进行布局计算
+      const rootSize = this.rootNode.measure({
+        minWidth: 0,
+        maxWidth: this.canvas.width,
+        minHeight: 0,
+        maxHeight: this.canvas.height
+      });
+      this.rootNode.place(0, 0, rootSize.width, rootSize.height);
+      
+      // 然后绘制
       this.drawNode(this.rootNode);
     }
 

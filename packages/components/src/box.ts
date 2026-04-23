@@ -61,8 +61,8 @@ export class Box extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    const { x: offsetX = 0, y: offsetY = 0, padding = 0, margin = 0 } = this.props;
-    super.place(x + offsetX + margin, y + offsetY + margin, width, height);
+    const { x: offsetX = 0, y: offsetY = 0, padding = 0 } = this.props;
+    super.place(x + offsetX, y + offsetY, width, height);
 
     // 放置子元素
     let currentY = padding;
