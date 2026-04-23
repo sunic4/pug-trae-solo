@@ -65,3 +65,6 @@ pnpm-lock.yaml
 
 # Vitest
 .vitest
+
+# Server screenshots
+apps/demo/demo-screenshot.png
