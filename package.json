@@ -1,6 +1,7 @@
 {
   "name": "pug",
   "private": true,
+  "type": "module",
   "workspaces": [
     "packages/*",
     "apps/*"
