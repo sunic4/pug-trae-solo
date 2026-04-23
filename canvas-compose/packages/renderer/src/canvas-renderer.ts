@@ -1,0 +1,84 @@
+import { ComposeNode } from '../../composer/src/node.js';
+import { DrawCommand, executeDrawCommand } from './draw-command.js';
+import { DirtyRect, mergeDirtyRects } from './dirty-rect.js';
+
+export class CanvasRenderer {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private dirtyRects: DirtyRect[] = [];
+  private rootNode: ComposeNode | null = null;
+  private animationFrameId: number | null = null;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+    this.ctx = ctx;
+    this.startFrameLoop();
+  }
+
+  setRoot(node: ComposeNode): void {
+    this.rootNode = node;
+    this.markDirty({ x: 0, y: 0, w: this.canvas.width, h: this.canvas.height });
+  }
+
+  markDirty(rect: DirtyRect): void {
+    this.dirtyRects.push(rect);
+  }
+
+  private startFrameLoop(): void {
+    const frameLoop = () => {
+      if (this.dirtyRects.length > 0) {
+        this.renderFrame();
+      }
+      this.animationFrameId = requestAnimationFrame(frameLoop);
+    };
+    frameLoop();
+  }
+
+  private renderFrame(): void {
+    // 合并脏矩形
+    const mergedRects = mergeDirtyRects(this.dirtyRects);
+
+    // 清除脏区域
+    for (const rect of mergedRects) {
+      this.ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
+    }
+
+    // 绘制所有节点
+    if (this.rootNode) {
+      this.drawNode(this.rootNode);
+    }
+
+    // 清空脏矩形
+    this.dirtyRects = [];
+  }
+
+  private drawNode(node: ComposeNode): void {
+    const commands = node.drawCommands();
+    if (commands.length > 0) {
+      this.drawCommands(commands);
+    }
+    for (const child of node.children) {
+      this.drawNode(child);
+    }
+  }
+
+  drawCommands(commands: DrawCommand[]): void {
+    for (const cmd of commands) {
+      executeDrawCommand(this.ctx, cmd);
+    }
+  }
+
+  getContext(): CanvasRenderingContext2D {
+    return this.ctx;
+  }
+
+  dispose(): void {
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "canvas-compose",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "vite --config apps/demo/vite.config.ts",
+    "test": "vitest run",
+    "build": "tsc && vite build --config apps/demo/vite.config.ts",
+    "lint": "eslint . --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0",
+    "vitest": "^0.30.0"
+  }
+}

@@ -1,6 +1,6 @@
 # Canvas Compose - 实现计划
 
-## [ ] Task 1: 项目骨架与 Monorepo 搭建
+## [x] Task 1: 项目骨架与 Monorepo 搭建
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -13,7 +13,7 @@
   - `programmatic` TR-1.2: 测试框架配置正确，可运行测试
 - **Notes**: 使用 npm workspaces 管理多包结构
 
-## [ ] Task 2: 响应式核心系统 (reactivity)
+## [x] Task 2: 响应式核心系统 (reactivity)
 - **Priority**: P0
 - **Depends On**: Task 1
 - **Description**:
@@ -28,7 +28,7 @@
   - `programmatic` TR-2.3: Effect 在依赖变化时执行
 - **Notes**: 确保响应式系统独立于 UI 层，可单独使用
 
-## [ ] Task 3: 组合层 (composer)
+## [x] Task 3: 组合层 (composer)
 - **Priority**: P0
 - **Depends On**: Task 2
 - **Description**:
@@ -43,7 +43,7 @@
   - `programmatic` TR-3.3: 重组机制正常工作
 - **Notes**: 实现与 Compose 类似的重组机制
 
-## [ ] Task 4: 渲染层 (renderer)
+## [x] Task 4: 渲染层 (renderer)
 - **Priority**: P0
 - **Depends On**: Task 3
 - **Description**:
@@ -58,7 +58,7 @@
   - `human-judgment` TR-4.3: Canvas 渲染效果正确
 - **Notes**: 支持基本的绘制操作，如矩形、文本、图像等
 
-## [ ] Task 5: 布局系统 (layout)
+## [x] Task 5: 布局系统 (layout)
 - **Priority**: P0
 - **Depends On**: Task 3, Task 4
 - **Description**:
@@ -133,15 +133,19 @@
   - `human-judgment` TR-9.2: 主题视觉效果一致
 - **Notes**: 支持亮色/暗色模式切换
 
-## [ ] Task 10: 示例应用
+## [ ] Task 10: 完整样式组件主题示例应用
 - **Priority**: P2
 - **Depends On**: Task 7, Task 8, Task 9
 - **Description**:
-  - 创建计数器示例应用
-  - 创建 Todo 应用示例
+  - 创建一个统一的示例应用，展示完整的样式组件和主题系统
+  - 包含文本、按钮、输入框、复选框等基础组件
+  - 包含列、行、盒子、堆栈等布局组件
+  - 实现主题切换功能
   - 验证框架功能完整性
 - **Acceptance Criteria Addressed**: AC-5
 - **Test Requirements**:
   - `human-judgment` TR-10.1: 示例应用运行正常
   - `human-judgment` TR-10.2: 交互响应流畅
-- **Notes**: 展示框架的核心功能和使用方式
+  - `human-judgment` TR-10.3: 主题切换效果一致
+  - `human-judgment` TR-10.4: 组件样式完整美观
+- **Notes**: 统一展示框架的核心功能、组件库和主题系统

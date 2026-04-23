@@ -1,0 +1,54 @@
+export interface Signal<T> {
+  get value(): T;
+  set value(v: T);
+  subscribe(callback: () => void): () => void;
+}
+
+// 全局依赖跟踪栈
+const dependencyStack: Set<() => void>[] = [];
+
+export function signal<T>(initialValue: T): Signal<T> {
+  const subscribers = new Set<() => void>();
+  let value = initialValue;
+
+  const signal: Signal<T> = {
+    get value() {
+      // 检查是否在依赖跟踪上下文中
+      if (dependencyStack.length > 0) {
+        const currentTrackers = dependencyStack[dependencyStack.length - 1];
+        // 为每个依赖的 signal 添加一个回调，当 signal 变化时标记 computed 为脏
+        const tracker = () => {
+          currentTrackers.forEach(callback => callback());
+        };
+        subscribers.add(tracker);
+      }
+      return value;
+    },
+    set value(v: T) {
+      if (value !== v) {
+        value = v;
+        subscribers.forEach(callback => callback());
+      }
+    },
+    subscribe(callback: () => void) {
+      subscribers.add(callback);
+      return () => subscribers.delete(callback);
+    }
+  };
+
+  return signal;
+}
+
+// 用于跟踪依赖的工具函数
+export function trackDependencies(fn: () => void, onDependencyChange: () => void): void {
+  // 创建一个新的依赖跟踪上下文
+  const trackers = new Set<() => void>();
+  trackers.add(onDependencyChange);
+  dependencyStack.push(trackers);
+
+  try {
+    fn();
+  } finally {
+    dependencyStack.pop();
+  }
+}
