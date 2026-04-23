@@ -105,8 +105,13 @@ export class CanvasRenderer {
       // 移动到节点的位置
       this.ctx.translate(node.x, node.y);
       
-      // 调用节点的 draw 方法
-      node.draw(this.ctx);
+      // 优先使用 draw 方法，如果没有则使用 drawCommands 方法
+      if (typeof node.draw === 'function') {
+        node.draw(this.ctx);
+      } else if (typeof node.drawCommands === 'function') {
+        const commands = node.drawCommands();
+        this.drawCommands(commands);
+      }
       
       // 恢复状态
       this.ctx.restore();

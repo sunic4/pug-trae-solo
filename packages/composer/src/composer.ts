@@ -31,7 +31,8 @@ export class Composer {
   }
 
   private cleanupUnusedNodes(): void {
-    // 这里简化实现，实际应该遍历槽位表，清理不再使用的节点
+    // 清理槽位表中不再使用的节点
+    this.slotTable.cleanup();
   }
 
   markDirty(node: ComposeNode): void {
@@ -41,8 +42,20 @@ export class Composer {
   recompose(): void {
     // 处理脏节点
     this.dirtyNodes.forEach(node => {
+      // 清除脏状态
       node.clearDirty();
-      // 这里可以添加重组逻辑
+      // 触发节点的重新测量和放置
+      if (node.parent) {
+        const parent = node.parent;
+        const constraints = {
+          minWidth: 0,
+          maxWidth: parent.width,
+          minHeight: 0,
+          maxHeight: parent.height
+        };
+        const nodeSize = node.measure(constraints);
+        node.place(node.x, node.y, nodeSize.width, nodeSize.height);
+      }
     });
     this.dirtyNodes.clear();
   }

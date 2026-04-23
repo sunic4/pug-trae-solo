@@ -36,4 +36,9 @@ export class SlotTable {
   getSlots(): Map<number, ComposeNode> {
     return this.slots;
   }
+
+  cleanup(): void {
+    // 清理所有槽位，实际实现应该标记使用的节点并清理未使用的节点
+    this.slots.clear();
+  }
 }

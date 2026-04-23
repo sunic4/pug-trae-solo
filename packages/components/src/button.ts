@@ -27,6 +27,13 @@ export class Button extends ComposeNode {
       textAlign: 'center',
     });
     this.addChild(this.textNode);
+    
+    // 添加点击事件处理器
+    this.handlers['click'] = (_x: number, _y: number) => {
+      if (!this.props.disabled && this.props.onClick) {
+        this.props.onClick();
+      }
+    };
   }
 
   private getTextColor(): string {
