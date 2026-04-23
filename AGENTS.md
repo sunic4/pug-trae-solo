@@ -1,39 +1,31 @@
-# Agents Workflow
+# Git Workflow
 
-## Git Commit and Push Requirement
+## Commit and Push
 
-Every time you complete a task, you must:
+Every time you complete a task, run these commands:
 
-1. **Check git status**: `git status`
-2. **Add changes**: `git add .`
-3. **Commit changes**: `git commit -m "<commit message>"`
-4. **Push changes**: `git push`
+1. `git status` - Check changes
+2. `git add .` - Stage changes
+3. `git commit -m "<type>: <description>"` - Commit with message
+4. `git push` - Push to remote
 
-## Commit Message Guidelines
+## Commit Message Types
 
-Use clear and concise commit messages that describe what was changed:
+- `fix`: Bug fixes
+- `feat`: New features
+- `refactor`: Code restructuring
+- `docs`: Documentation changes
+- `style`: Style changes
+- `test`: Test changes
+- `build`: Build system changes
+- `ci`: CI/CD changes
 
-- For bug fixes: `fix: <description>`
-- For new features: `feat: <description>`
-- For refactoring: `refactor: <description>`
-- For documentation: `docs: <description>`
-- For style changes: `style: <description>`
-- For tests: `test: <description>`
-- For build changes: `build: <description>`
-- For ci changes: `ci: <description>`
+## Example
 
-## Workflow Example
-
-1. Complete a task (e.g., refactor the demo app)
-2. Check git status: `git status`
-3. Add changes: `git add .`
-4. Commit changes: `git commit -m "refactor: restructure demo app into modular components"`
-5. Push changes: `git push`
-
-## Best Practices
-
-- Commit early and often
-- Keep commits focused on a single task
-- Use descriptive commit messages
-- Push changes after each completed task
-- Pull latest changes before starting a new task
+```bash
+# After completing a task
+git status
+git add .
+git commit -m "refactor: restructure demo app"
+git push
+```
