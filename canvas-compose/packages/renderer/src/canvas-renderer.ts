@@ -57,13 +57,22 @@ export class CanvasRenderer {
   }
 
   private drawNode(node: ComposeNode): void {
-    const commands = node.drawCommands();
-    if (commands.length > 0) {
-      this.drawCommands(commands);
-    }
+    // 保存当前状态
+    this.ctx.save();
+    
+    // 移动到节点的位置
+    this.ctx.translate(node.x, node.y);
+    
+    // 调用节点的 draw 方法
+    node.draw(this.ctx);
+    
+    // 绘制子节点
     for (const child of node.children) {
       this.drawNode(child);
     }
+    
+    // 恢复状态
+    this.ctx.restore();
   }
 
   drawCommands(commands: DrawCommand[]): void {
