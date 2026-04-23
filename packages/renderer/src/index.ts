@@ -2,8 +2,6 @@ export * from './draw-api';
 export * from './draw-command';
 export * from './canvas-renderer';
 export * from './dirty-rect';
-export * from './nodecanvas-renderer';
 export * from './renderer-factory';
 export * from './renderer-interface';
-export * from './test-utils';
 export * from './text-layout';

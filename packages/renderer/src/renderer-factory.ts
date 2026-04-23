@@ -1,6 +1,5 @@
 import { Renderer, RendererConfig, RendererType } from './renderer-interface';
 import { CanvasRenderer } from './canvas-renderer';
-import { NodeCanvasRenderer } from './nodecanvas-renderer';
 
 /**
  * 渲染器工厂
@@ -19,9 +18,6 @@ export class RendererFactory {
         canvas.width = config.width;
         canvas.height = config.height;
         return new CanvasRenderer(canvas);
-      
-      case RendererType.NODE_CANVAS:
-        return new NodeCanvasRenderer(config);
       
       default:
         throw new Error(`Renderer type ${type} not implemented`);

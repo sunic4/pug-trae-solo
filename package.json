@@ -10,8 +10,7 @@
     "dev": "vite --config apps/demo/vite.config.ts",
     "test": "vitest run",
     "build": "tsc && vite build --config apps/demo/vite.config.ts",
-    "lint": "eslint . --ext .ts,.tsx",
-    "server": "tsx apps/demo/server.ts"
+    "lint": "eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -24,6 +23,5 @@
     "vitest": "^0.30.0"
   },
   "dependencies": {
-    "canvas": "^3.2.3"
   }
 }

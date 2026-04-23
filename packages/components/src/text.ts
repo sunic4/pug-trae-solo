@@ -39,21 +39,12 @@ export class Text extends ComposeNode {
       ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       metrics = ctx.measureText(this.props.text);
     } else {
-      // Node.js 环境
-      try {
-        const { createCanvas } = require('canvas');
-        const canvas = createCanvas(1000, 100);
-        const ctx = canvas.getContext('2d');
-        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-        metrics = ctx.measureText(this.props.text);
-      } catch (e) {
-        // 如果没有 canvas 模块，使用估算值
-        const averageCharWidth = fontSize * 0.6;
-        return {
-          width: Math.min(this.props.width || this.props.text.length * averageCharWidth, constraints.maxWidth),
-          height: Math.min(this.props.height || fontSize * 1.5, constraints.maxHeight)
-        };
-      }
+      // 非浏览器环境，使用估算值
+      const averageCharWidth = fontSize * 0.6;
+      return {
+        width: Math.min(this.props.width || this.props.text.length * averageCharWidth, constraints.maxWidth),
+        height: Math.min(this.props.height || fontSize * 1.5, constraints.maxHeight)
+      };
     }
 
     const width = Math.min(this.props.width || metrics.width, constraints.maxWidth);
