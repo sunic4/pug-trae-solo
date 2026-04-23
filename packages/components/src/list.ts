@@ -100,7 +100,7 @@ export class List extends ComposeNode {
     });
   }
 
-  draw() {
+  draw(_ctx: CanvasRenderingContext2D) {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }

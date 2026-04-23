@@ -26,7 +26,7 @@ export class Spacer extends ComposeNode {
     super.place(x + offsetX, y + offsetY, width, height);
   }
 
-  draw() {
+  draw(_ctx: CanvasRenderingContext2D) {
     // Spacer 组件不需要绘制任何内容
   }
 }
