@@ -1,6 +1,6 @@
 import { Composer } from '@canvas-compose/composer';
 import { CanvasRenderer } from '@canvas-compose/renderer';
-import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent } from '@canvas-compose/components';
+import { TextComponent, ButtonComponent, BoxComponent, ContainerComponent, ListComponent, StackComponent, PaddingComponent, TextInputComponent, CheckboxComponent, ColumnComponent, RowComponent } from '@canvas-compose/components';
 import { useTheme, useThemeSwitcher, defaultTheme, darkTheme } from '@canvas-compose/theme';
 import { signal, effect } from '@canvas-compose/reactivity';
 
@@ -19,6 +19,8 @@ const renderer = new CanvasRenderer(canvas);
 // 创建信号用于状态管理
 const count = signal(0);
 const isDarkTheme = signal(false);
+const inputValue = signal('');
+const isChecked = signal(false);
 
 // 创建主题切换函数
 const switchTheme = useThemeSwitcher();
@@ -32,10 +34,19 @@ effect(() => {
 function App() {
   const theme = useTheme();
 
+  // 列表项数据
+  const listItems = [
+    { key: '1', content: TextComponent({ text: 'Item 1' }) },
+    { key: '2', content: TextComponent({ text: 'Item 2' }) },
+    { key: '3', content: TextComponent({ text: 'Item 3' }) },
+    { key: '4', content: TextComponent({ text: 'Item 4' }) },
+    { key: '5', content: TextComponent({ text: 'Item 5' }) },
+  ];
+
   return BoxComponent({
     backgroundColor: theme.colors.background,
     width: 400,
-    height: 600,
+    height: 1000,
     padding: 20,
     children: [
       // 标题
@@ -154,6 +165,7 @@ function App() {
         backgroundColor: theme.colors.surface,
         borderRadius: 8,
         padding: 20,
+        marginBottom: 20,
         children: [
           TextComponent({
             text: 'Text Variants',
@@ -184,6 +196,236 @@ function App() {
             text: 'Small text',
             fontSize: 14,
             color: theme.colors.text,
+          }),
+        ],
+      }),
+
+      // 列表示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'List Component',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          ListComponent({
+            items: listItems,
+            direction: 'vertical',
+            spacing: 10,
+            padding: 10,
+            height: 150,
+          }),
+        ],
+      }),
+
+      // 堆栈示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'Stack Component',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          StackComponent({
+            alignment: 'center',
+            width: 200,
+            height: 100,
+            children: [
+              BoxComponent({
+                backgroundColor: theme.colors.primary,
+                width: 100,
+                height: 100,
+                borderRadius: 8,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.secondary,
+                width: 80,
+                height: 80,
+                borderRadius: 8,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.error,
+                width: 60,
+                height: 60,
+                borderRadius: 8,
+              }),
+            ],
+          }),
+        ],
+      }),
+
+      // 内边距示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'Padding Component',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          PaddingComponent({
+            padding: 20,
+            child: BoxComponent({
+              backgroundColor: theme.colors.primary,
+              width: 100,
+              height: 100,
+              borderRadius: 8,
+            }),
+          }),
+        ],
+      }),
+
+      // 布局组件示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'Layout Components',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          TextComponent({
+            text: 'Column Component',
+            fontSize: 16,
+            fontWeight: 600,
+            color: theme.colors.text,
+            marginBottom: 5,
+          }),
+          ColumnComponent({
+            padding: 10,
+            spacing: 10,
+            width: 200,
+            children: [
+              BoxComponent({
+                backgroundColor: theme.colors.primary,
+                width: 180,
+                height: 40,
+                borderRadius: 4,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.secondary,
+                width: 180,
+                height: 40,
+                borderRadius: 4,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.error,
+                width: 180,
+                height: 40,
+                borderRadius: 4,
+              }),
+            ],
+          }),
+          BoxComponent({
+            height: 15,
+          }),
+          TextComponent({
+            text: 'Row Component',
+            fontSize: 16,
+            fontWeight: 600,
+            color: theme.colors.text,
+            marginBottom: 5,
+          }),
+          RowComponent({
+            padding: 10,
+            spacing: 10,
+            height: 40,
+            children: [
+              BoxComponent({
+                backgroundColor: theme.colors.primary,
+                width: 40,
+                height: 40,
+                borderRadius: 4,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.secondary,
+                width: 40,
+                height: 40,
+                borderRadius: 4,
+              }),
+              BoxComponent({
+                backgroundColor: theme.colors.error,
+                width: 40,
+                height: 40,
+                borderRadius: 4,
+              }),
+            ],
+          }),
+        ],
+      }),
+
+      // 输入框示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        marginBottom: 20,
+        children: [
+          TextComponent({
+            text: 'TextInput Component',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          TextInputComponent({
+            value: inputValue.value,
+            onValueChange: (value) => inputValue.value = value,
+            placeholder: 'Enter text here',
+            width: 200,
+          }),
+          BoxComponent({
+            height: 10,
+          }),
+          TextComponent({
+            text: `Input value: ${inputValue.value}`,
+            fontSize: 14,
+            color: theme.colors.textSecondary,
+          }),
+        ],
+      }),
+
+      // 复选框示例
+      BoxComponent({
+        backgroundColor: theme.colors.surface,
+        borderRadius: 8,
+        padding: 20,
+        children: [
+          TextComponent({
+            text: 'Checkbox Component',
+            fontSize: 18,
+            color: theme.colors.text,
+            marginBottom: 10,
+          }),
+          CheckboxComponent({
+            checked: isChecked.value,
+            onCheckedChange: (checked) => isChecked.value = checked,
+            label: 'Check me',
+          }),
+          BoxComponent({
+            height: 10,
+          }),
+          TextComponent({
+            text: `Checked: ${isChecked.value}`,
+            fontSize: 14,
+            color: theme.colors.textSecondary,
           }),
         ],
       }),
