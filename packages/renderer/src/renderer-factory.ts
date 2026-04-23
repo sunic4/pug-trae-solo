@@ -14,10 +14,16 @@ export class RendererFactory {
         if (typeof window === 'undefined') {
           throw new Error('Canvas 2D renderer requires browser environment');
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = config.width;
-        canvas.height = config.height;
-        return new CanvasRenderer(canvas);
+        // 使用传入的 canvas，如果没有则创建新的
+        let canvas: HTMLCanvasElement;
+        if (config.canvas) {
+          canvas = config.canvas;
+        } else {
+          canvas = document.createElement('canvas');
+          canvas.width = config.width;
+          canvas.height = config.height;
+        }
+        return new CanvasRenderer(canvas, config);
       
       default:
         throw new Error(`Renderer type ${type} not implemented`);

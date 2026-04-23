@@ -16,6 +16,7 @@ export class Checkbox extends ComposeNode {
     super();
     this.handlers['click'] = this.onClick.bind(this);
     this.handlers['pointerdown'] = this.onPointerDown.bind(this);
+    this.markLayoutDirty();
   }
 
   private onClick() {

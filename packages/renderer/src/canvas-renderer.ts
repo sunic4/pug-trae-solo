@@ -12,7 +12,7 @@ export class CanvasRenderer implements Renderer {
   private rootNode: ComposeNode | null = null;
   private animationFrameId: number | null = null;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, config?: Partial<RendererConfig>) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -23,7 +23,8 @@ export class CanvasRenderer implements Renderer {
       width: canvas.width,
       height: canvas.height,
       pixelRatio: window.devicePixelRatio || 1,
-      debug: false
+      debug: false,
+      ...config
     };
     this.startFrameLoop();
   }
@@ -48,13 +49,8 @@ export class CanvasRenderer implements Renderer {
   }
 
   renderFrame(): void {
-    // 合并脏矩形
-    const mergedRects = mergeDirtyRects(this.dirtyRects);
-
-    // 清除脏区域
-    for (const rect of mergedRects) {
-      this.ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
-    }
+    // 清除整个画布
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // 绘制所有节点
     if (this.rootNode) {
@@ -73,12 +69,40 @@ export class CanvasRenderer implements Renderer {
         this.updateDirtyNodesLayout(this.rootNode);
       }
       
-      // 然后绘制
-      this.drawDirtyNodes(this.rootNode);
+      // 绘制所有节点，不管是否是脏的（确保初始渲染完整）
+      this.drawAllNodes(this.rootNode);
     }
 
     // 清空脏矩形
     this.dirtyRects = [];
+  }
+
+  private drawAllNodes(node: ComposeNode): void {
+    // 保存当前状态
+    this.ctx.save();
+    
+    // 移动到节点的位置
+    this.ctx.translate(node.x, node.y);
+    
+    // 优先使用 draw 方法，如果没有则使用 drawCommands 方法
+    if (typeof node.draw === 'function') {
+      const drawApi = new Canvas2DDrawAPI(this.ctx);
+      node.draw(drawApi);
+    } else if (typeof node.drawCommands === 'function') {
+      const commands = node.drawCommands();
+      this.drawCommands(commands);
+    }
+    
+    // 恢复状态
+    this.ctx.restore();
+    
+    // 清除节点的脏标记
+    node.clearDirty();
+    
+    // 递归绘制子节点
+    for (const child of node.children) {
+      this.drawAllNodes(child);
+    }
   }
 
   private updateDirtyNodesLayout(node: ComposeNode): void {
@@ -125,6 +149,9 @@ export class CanvasRenderer implements Renderer {
       
       // 恢复状态
       this.ctx.restore();
+      
+      // 清除节点的脏标记
+      node.clearDirty();
     }
     
     // 递归绘制子节点

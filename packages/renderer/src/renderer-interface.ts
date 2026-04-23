@@ -6,6 +6,7 @@ export interface RendererConfig {
   height: number;
   pixelRatio?: number;
   debug?: boolean;
+  canvas?: HTMLCanvasElement;
 }
 
 // 渲染器公共接口

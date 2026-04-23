@@ -19,6 +19,7 @@ export interface TextProps {
 export class Text extends ComposeNode {
   constructor(public props: TextProps) {
     super();
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {

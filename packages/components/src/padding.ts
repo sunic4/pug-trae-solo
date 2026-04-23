@@ -20,6 +20,7 @@ export class Padding extends ComposeNode {
     if (props.child) {
       this.addChild(props.child);
     }
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {

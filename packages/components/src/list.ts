@@ -21,6 +21,7 @@ export class List extends ComposeNode {
   constructor(public props: ListProps) {
     super();
     this.updateItems();
+    this.markLayoutDirty();
   }
 
   private updateItems() {

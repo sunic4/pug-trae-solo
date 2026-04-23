@@ -11,6 +11,7 @@ export interface SpacerProps {
 export class Spacer extends ComposeNode {
   constructor(public props: SpacerProps) {
     super();
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {

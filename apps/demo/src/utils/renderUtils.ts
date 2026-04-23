@@ -28,7 +28,8 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
   // 创建渲染器
   const renderer = RendererFactory.create(rendererType, {
     width: config.width,
-    height: config.height
+    height: config.height,
+    canvas: config.canvas
   });
 
   // 创建 composer

@@ -36,6 +36,8 @@ export class Button extends ComposeNode {
         this.props.onClick();
       }
     };
+    
+    this.markLayoutDirty();
   }
 
   private getTextColor(): string {

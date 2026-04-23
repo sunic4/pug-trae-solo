@@ -24,6 +24,7 @@ export class Box extends ComposeNode {
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
