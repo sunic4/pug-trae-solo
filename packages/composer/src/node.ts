@@ -21,6 +21,7 @@ export class ComposeNode {
   props: any = {};
   private _dirty = false;
   private _layoutDirty = false;
+  parent: ComposeNode | null = null;
 
   constructor(key: string = Math.random().toString(36).substr(2, 9)) {
     this.key = key;
@@ -41,6 +42,10 @@ export class ComposeNode {
   markLayoutDirty(): void {
     this._layoutDirty = true;
     this.markDirty();
+    // 向上标记父节点为布局脏
+    if (this.parent) {
+      this.parent.markLayoutDirty();
+    }
   }
 
   clearDirty(): void {
@@ -49,6 +54,7 @@ export class ComposeNode {
   }
 
   addChild(child: ComposeNode): void {
+    child.parent = this;
     this.children.push(child);
     this.markLayoutDirty();
   }
@@ -56,6 +62,7 @@ export class ComposeNode {
   removeChild(child: ComposeNode): void {
     const index = this.children.indexOf(child);
     if (index !== -1) {
+      child.parent = null;
       this.children.splice(index, 1);
       this.markLayoutDirty();
     }
@@ -89,5 +96,25 @@ export class ComposeNode {
 
   draw(_ctx: CanvasRenderingContext2D): void {
     // 由子类实现
+  }
+
+  // 递归获取所有脏节点
+  getDirtyNodes(): ComposeNode[] {
+    const dirtyNodes: ComposeNode[] = [];
+    if (this.dirty) {
+      dirtyNodes.push(this);
+    }
+    for (const child of this.children) {
+      dirtyNodes.push(...child.getDirtyNodes());
+    }
+    return dirtyNodes;
+  }
+
+  // 递归清理所有节点的脏状态
+  clearAllDirty(): void {
+    this.clearDirty();
+    for (const child of this.children) {
+      child.clearAllDirty();
+    }
   }
 }

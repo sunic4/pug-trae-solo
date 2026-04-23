@@ -49,41 +49,76 @@ export class CanvasRenderer {
 
     // 绘制所有节点
     if (this.rootNode) {
-      // 先对根节点进行布局计算
-      const rootSize = this.rootNode.measure({
-        minWidth: 0,
-        maxWidth: this.canvas.width,
-        minHeight: 0,
-        maxHeight: this.canvas.height
-      });
-      this.rootNode.place(0, 0, rootSize.width, rootSize.height);
+      // 检查是否需要重新计算整个布局
+      if (this.rootNode.layoutDirty) {
+        // 对根节点进行布局计算
+        const rootSize = this.rootNode.measure({
+          minWidth: 0,
+          maxWidth: this.canvas.width,
+          minHeight: 0,
+          maxHeight: this.canvas.height
+        });
+        this.rootNode.place(0, 0, rootSize.width, rootSize.height);
+      } else {
+        // 只对脏节点进行布局计算
+        this.updateDirtyNodesLayout(this.rootNode);
+      }
       
       // 然后绘制
-      this.drawNode(this.rootNode);
+      this.drawDirtyNodes(this.rootNode);
     }
 
     // 清空脏矩形
     this.dirtyRects = [];
   }
 
-  private drawNode(node: ComposeNode): void {
-    // 保存当前状态
-    this.ctx.save();
-    
-    // 移动到节点的位置
-    this.ctx.translate(node.x, node.y);
-    
-    // 调用节点的 draw 方法
-    node.draw(this.ctx);
-    
-    // 绘制子节点
-    for (const child of node.children) {
-      this.drawNode(child);
+  private updateDirtyNodesLayout(node: ComposeNode): void {
+    if (node.layoutDirty) {
+      // 重新计算当前节点的布局
+      const parent = node.parent;
+      if (parent) {
+        // 获取父节点的约束
+        const constraints = {
+          minWidth: 0,
+          maxWidth: parent.width,
+          minHeight: 0,
+          maxHeight: parent.height
+        };
+        const nodeSize = node.measure(constraints);
+        // 重新放置节点
+        // 注意：这里简化处理，实际应该根据父节点的布局逻辑重新计算位置
+        node.place(node.x, node.y, nodeSize.width, nodeSize.height);
+      }
     }
     
-    // 恢复状态
-    this.ctx.restore();
+    // 递归处理子节点
+    for (const child of node.children) {
+      this.updateDirtyNodesLayout(child);
+    }
   }
+
+  private drawDirtyNodes(node: ComposeNode): void {
+    if (node.dirty) {
+      // 保存当前状态
+      this.ctx.save();
+      
+      // 移动到节点的位置
+      this.ctx.translate(node.x, node.y);
+      
+      // 调用节点的 draw 方法
+      node.draw(this.ctx);
+      
+      // 恢复状态
+      this.ctx.restore();
+    }
+    
+    // 递归绘制子节点
+    for (const child of node.children) {
+      this.drawDirtyNodes(child);
+    }
+  }
+
+
 
   drawCommands(commands: DrawCommand[]): void {
     for (const cmd of commands) {
