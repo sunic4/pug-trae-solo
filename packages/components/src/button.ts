@@ -149,8 +149,8 @@ export class Button extends ComposeNode {
     const thisY = y + (this.props.y || 0);
     super.place(thisX, thisY, width, height);
 
-    // 放置文本节点 - 使用相对坐标（相对于按钮）
-    this.textNode.place(0, 0, width, height);
+    // 放置文本节点
+    this.textNode.place(thisX, thisY, width, height);
   }
 
   draw(drawApi: DrawAPI) {

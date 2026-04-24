@@ -1,5 +1,4 @@
-import { ComposeNode } from '@pug/composer';
-import { DrawAPI } from '@pug/renderer';
+import { ComposeNode } from '@canvas-compose/composer';
 
 export interface StackProps {
   alignment?: 'start' | 'center' | 'end';
@@ -16,7 +15,6 @@ export class Stack extends ComposeNode {
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
-    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
@@ -59,7 +57,7 @@ export class Stack extends ComposeNode {
     const { x: offsetX = 0, y: offsetY = 0, alignment = 'start' } = this.props;
     super.place(x + offsetX, y + offsetY, width, height);
 
-    // 放置子元素 - 使用相对坐标
+    // 放置子元素
     this.children.forEach(child => {
       const childSize = child.measure({
         minWidth: 0,
@@ -84,7 +82,7 @@ export class Stack extends ComposeNode {
     });
   }
 
-  draw(_drawApi: DrawAPI) {
+  draw(ctx: CanvasRenderingContext2D) {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }
