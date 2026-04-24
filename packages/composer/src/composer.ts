@@ -20,6 +20,9 @@ export class Composer {
       const node = fn();
       this.rootNode = node;
       return node;
+    } catch (error) {
+      console.error('Error during composition:', error);
+      throw error;
     } finally {
       setCurrentContext(null);
     }
@@ -46,15 +49,8 @@ export class Composer {
       node.clearDirty();
       // 触发节点的重新测量和放置
       if (node.parent) {
-        const parent = node.parent;
-        const constraints = {
-          minWidth: 0,
-          maxWidth: parent.width,
-          minHeight: 0,
-          maxHeight: parent.height
-        };
-        const nodeSize = node.measure(constraints);
-        node.place(node.x, node.y, nodeSize.width, nodeSize.height);
+        // 标记节点为布局脏，让渲染器处理布局更新
+        node.markLayoutDirty();
       }
     });
     this.dirtyNodes.clear();
