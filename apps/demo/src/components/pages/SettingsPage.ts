@@ -71,10 +71,7 @@ export function SettingsPage() {
         ButtonComponent({
           text: '保存设置',
           onClick: () => {
-            console.log('保存设置:', {
-              notifications: notificationsEnabled.value,
-              darkMode: darkModeEnabled.value,
-            });
+            // 保存设置逻辑
           },
           padding: 15,
           backgroundColor: theme.colors.primary,
@@ -84,7 +81,6 @@ export function SettingsPage() {
         ButtonComponent({
           text: '返回首页',
           onClick: () => {
-            console.log('点击返回按钮');
             navigateBack();
           },
           padding: 15,
