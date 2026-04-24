@@ -49,8 +49,12 @@ export class CanvasRenderer implements Renderer {
   }
 
   renderFrame(): void {
-    // 清除整个画布
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // 只清除脏区域，而不是整个画布
+    if (this.dirtyRects.length > 0) {
+      for (const rect of this.dirtyRects) {
+        this.ctx.clearRect(rect.x, rect.y, rect.w, rect.h);
+      }
+    }
 
     // 绘制所有节点
     if (this.rootNode) {
@@ -130,10 +134,6 @@ export class CanvasRenderer implements Renderer {
     }
   }
 
-
-
-
-
   drawCommands(commands: DrawCommand[]): void {
     for (const cmd of commands) {
       executeDrawCommand(this.ctx, cmd);
@@ -147,6 +147,11 @@ export class CanvasRenderer implements Renderer {
   dispose(): void {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
+    // 清除 rootNode 引用，避免内存泄漏
+    this.rootNode = null;
+    // 清空脏矩形
+    this.dirtyRects = [];
   }
 }
