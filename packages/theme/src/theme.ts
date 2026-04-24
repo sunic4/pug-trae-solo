@@ -8,6 +8,11 @@ export interface ColorPalette {
   textSecondary: string;
   border: string;
   disabled: string;
+  onPrimary: string;
+  onSecondary: string;
+  onBackground: string;
+  onSurface: string;
+  onError: string;
 }
 
 export interface Typography {
@@ -76,6 +81,11 @@ export const defaultTheme: Theme = {
     textSecondary: '#6b7280',
     border: '#e5e7eb',
     disabled: '#9ca3af',
+    onPrimary: '#ffffff',
+    onSecondary: '#ffffff',
+    onBackground: '#111827',
+    onSurface: '#111827',
+    onError: '#ffffff',
   },
   typography: {
     fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -134,5 +144,10 @@ export const darkTheme: Theme = {
     textSecondary: '#d1d5db',
     border: '#374151',
     disabled: '#6b7280',
+    onPrimary: '#ffffff',
+    onSecondary: '#ffffff',
+    onBackground: '#f9fafb',
+    onSurface: '#f9fafb',
+    onError: '#ffffff',
   },
 };

@@ -1,4 +1,4 @@
-import { signal, effect } from '@pug/reactivity';
+import { signal } from '@pug/reactivity';
 
 // 定义页面类型
 export type Page = 'home' | 'details' | 'settings';

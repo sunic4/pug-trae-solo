@@ -6,6 +6,8 @@ export interface RowProps {
   height?: number;
   padding?: number;
   spacing?: number;
+  alignItems?: 'start' | 'center' | 'end';
+  justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
   children?: ComposeNode[];
 }
 

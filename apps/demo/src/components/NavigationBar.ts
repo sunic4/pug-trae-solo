@@ -1,4 +1,4 @@
-import { BoxComponent, TextComponent, ButtonComponent, RowComponent } from '@pug/components';
+import { BoxComponent, ButtonComponent, RowComponent } from '@pug/components';
 import { useTheme } from '../hooks/useTheme';
 import { navigateTo } from '../state/navigationState';
 

@@ -11,10 +11,17 @@ export interface BoxProps {
   padding?: number;
   margin?: number;
   marginBottom?: number;
+  marginTop?: number;
   x?: number;
   y?: number;
   width?: number | string;
   height?: number | string;
+  flex?: number;
+  flexDirection?: 'row' | 'column';
+  alignItems?: 'start' | 'center' | 'end';
+  justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
+  borderBottom?: string;
+  overflow?: 'hidden' | 'visible' | 'scroll';
   children?: ComposeNode | ComposeNode[];
 }
 

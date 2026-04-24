@@ -15,6 +15,10 @@ export interface ButtonProps {
   width?: number;
   height?: number;
   marginBottom?: number;
+  marginTop?: number;
+  padding?: number;
+  backgroundColor?: string;
+  color?: string;
 }
 
 export class Button extends ComposeNode {

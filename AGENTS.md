@@ -1,74 +1,181 @@
-# Agent Workflow
+# Canvas Compose Agent 工作规范
 
-## Overview
+## 1. 概述
 
-This document outlines the workflow for agents to complete tasks efficiently and effectively.
+本文档定义了 Canvas Compose 项目中 Agent 的工作流程和规范，旨在确保开发过程的一致性、代码质量和工作效率。
 
-## Task Execution
+## 2. 项目结构
 
-1. **Understand the task**: Read and understand the user's request
-2. **Plan the approach**: Create a plan for completing the task
-3. **Implement the solution**: Write code or make changes to meet the requirements
-4. **Verify the solution**: Test the changes to ensure they work correctly
-5. **Clean up**: Remove any temporary files or unnecessary changes
+### 2.1 核心目录
 
-## Verification Steps
+- `apps/` - 应用示例
+  - `demo/` - 演示应用
+- `packages/` - 核心包
+  - `components/` - UI 组件库
+  - `composer/` - 组件组合系统
+  - `event/` - 事件系统
+  - `layout/` - 布局系统
+  - `reactivity/` - 响应式系统
+  - `renderer/` - 渲染系统
+  - `theme/` - 主题系统
+- `docs/` - 文档
+- `wiki/` - 知识库
 
-### For Rendering Tasks
+### 2.2 组件分类
 
-1. **Run the server**: Execute `pnpm run server` to generate a screenshot
-2. **Check the screenshot**: Verify the screenshot contains the expected content
-3. **Test browser rendering**: Run `pnpm run dev` and check the browser output
+- **布局组件**：Box, Column, Row, Stack, Padding, Container
+- **功能组件**：Button, Checkbox, Text, TextInput, List, Spacer
 
-### For Other Tasks
+## 3. 工作流程
 
-1. **Run tests**: Execute `pnpm test` to run unit tests
-2. **Build the project**: Run `pnpm run build` to ensure no build errors
-3. **Lint the code**: Run `pnpm run lint` to check code quality
+### 3.1 任务执行流程
 
-## Task Completion
+1. **任务分析**：理解用户需求，分析现有代码结构
+2. **计划制定**：创建详细的实现计划，包括文件修改、代码逻辑等
+3. **代码实现**：按照计划执行代码修改或新功能开发
+4. **类型检查**：运行 TypeScript 类型检查，确保类型定义正确
+5. **功能验证**：测试功能是否正常工作
+6. **代码提交**：按照规范提交代码
 
-After finishing a task:
+### 3.2 组件开发规范
 
-1. `git status` - Check changes
-2. `git add .` - Stage changes
-3. `git commit -m "<type>: <description>"` - Commit with clear message
-4. `git push` - Push to remote
+1. **组件结构**：
+   - 每个组件包含 Props 接口、组件类和工厂函数
+   - 组件类继承自 ComposeNode
+   - 工厂函数返回组件实例
 
-## Commit Types
+2. **布局逻辑**：
+   - `measure` 方法：计算组件尺寸
+   - `place` 方法：放置子组件
+   - `draw` 方法：绘制组件
 
-- `fix`: Bug fixes
-- `feat`: New features
-- `refactor`: Code restructuring
-- `docs`: Documentation changes
-- `style`: Style changes
-- `test`: Test changes
-- `build`: Build system changes
-- `ci`: CI/CD changes
+3. **属性定义**：
+   - 使用 TypeScript 接口定义组件属性
+   - 提供合理的默认值
+   - 支持必要的布局属性（如 width, height, padding, margin 等）
 
-## Example Workflow
+4. **事件处理**：
+   - 在构造函数中添加事件处理器
+   - 使用 `handlers` 对象存储事件处理函数
 
-```bash
-# 1. Understand and plan the task
-# 2. Implement the solution
-# 3. Verify the solution
-pnpm run server  # For rendering tasks
-pnpm run build   # For all tasks
+## 4. 代码质量保证
 
-# 4. Complete the task
-git status
-git add .
-git commit -m "feat: implement new feature"
-git push
-```
+### 4.1 TypeScript 类型检查
 
-## Best Practices
+- 运行 `tsc --noEmit` 检查类型错误
+- 确保所有组件属性都有正确的类型定义
+- 避免使用 `any` 类型
 
-- **Keep commits focused**: Each commit should address a single issue or feature
-- **Use clear commit messages**: Describe what was changed and why
-- **Push after each task**: Ensure changes are saved to the remote repository
-- **Pull before starting new work**: Get the latest changes from the remote repository
-- **Test thoroughly**: Verify changes work as expected before committing
-- **Follow code style**: Adhere to the project's coding conventions
-- **Document changes**: Update documentation as needed
+### 4.2 代码风格
 
+- 遵循项目的代码风格规范
+- 使用适当的缩进和命名约定
+- 保持代码简洁明了
+
+### 4.3 测试
+
+- 运行单元测试：`npm test`
+- 构建项目：`npm run build`
+- 检查代码质量：`npm run lint`
+
+## 5. 组件布局指南
+
+### 5.1 Box 组件
+
+- **用途**：基础容器组件，用于布局和样式
+- **布局逻辑**：
+  - 支持固定尺寸和百分比尺寸
+  - 垂直排列子组件
+  - 支持内边距和外边距
+
+### 5.2 Column 组件
+
+- **用途**：垂直布局组件
+- **布局逻辑**：
+  - 垂直排列子组件
+  - 支持子组件间距
+  - 自动计算总高度
+
+### 5.3 Row 组件
+
+- **用途**：水平布局组件
+- **布局逻辑**：
+  - 水平排列子组件
+  - 支持子组件间距
+  - 自动计算总宽度
+
+### 5.4 Stack 组件
+
+- **用途**：堆叠布局组件
+- **布局逻辑**：
+  - 子组件重叠排列
+  - 支持对齐方式（start, center, end）
+
+## 6. 常见问题处理
+
+### 6.1 类型错误
+
+- 检查组件属性类型定义
+- 确保类型转换正确
+- 使用联合类型处理多种可能的类型
+
+### 6.2 布局问题
+
+- 检查组件的 measure 和 place 方法
+- 确保约束传递正确
+- 验证子组件布局逻辑
+
+### 6.3 渲染问题
+
+- 检查 draw 方法的实现
+- 确保绘制顺序正确
+- 验证绘制 API 的使用
+
+## 7. 提交规范
+
+### 7.1 Commit 类型
+
+- `fix`: 修复 bug
+- `feat`: 新功能
+- `refactor`: 代码重构
+- `docs`: 文档修改
+- `style`: 样式修改
+- `test`: 测试修改
+- `build`: 构建系统修改
+- `ci`: CI/CD 修改
+
+### 7.2 提交流程
+
+1. `git status` - 检查更改
+2. `git add .` - 暂存更改
+3. `git commit -m "<type>: <description>"` - 提交更改
+4. `git push` - 推送到远程仓库
+
+## 8. 最佳实践
+
+- **保持提交专注**：每个提交应该解决一个问题或实现一个功能
+- **使用清晰的提交信息**：描述更改的内容和原因
+- **及时推送**：确保更改保存到远程仓库
+- **开始新工作前拉取**：获取远程仓库的最新更改
+- **彻底测试**：在提交前验证更改是否正常工作
+- **遵循代码风格**：遵守项目的编码约定
+- **更新文档**：根据需要更新文档
+
+## 9. 工具使用
+
+### 9.1 开发服务器
+
+- 启动开发服务器：`npm run dev`
+- 访问地址：http://localhost:3000/
+
+### 9.2 构建项目
+
+- 构建项目：`npm run build`
+
+### 9.3 类型检查
+
+- 运行类型检查：`tsc --noEmit`
+
+## 10. 总结
+
+Canvas Compose 是一个基于 Canvas 2D 的 UI 框架，通过遵循本文档的规范和最佳实践，可以确保开发过程的效率和代码质量。Agent 应该熟悉项目结构、组件布局逻辑和工作流程，以提供高质量的开发服务。

@@ -14,6 +14,9 @@ export interface TextProps {
   width?: number;
   height?: number;
   marginBottom?: number;
+  marginRight?: number;
+  marginTop?: number;
+  marginLeft?: number;
 }
 
 export class Text extends ComposeNode {
