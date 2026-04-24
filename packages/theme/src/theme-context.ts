@@ -26,6 +26,7 @@ export const globalThemeContext = new ThemeContext();
 
 // 主题钩子函数，用于在组件中访问主题
 export function useTheme(): Theme {
+  // 直接返回主题值，信号系统会自动追踪依赖
   return globalThemeContext.theme;
 }
 

@@ -3,6 +3,8 @@ import { Renderer, RendererFactory, RendererType } from '@pug/renderer';
 import { effect } from '@pug/reactivity';
 import { hitTest } from '@pug/event';
 import { App } from '../App';
+import { navigationState } from '../state/navigationState';
+import { useTheme } from '../hooks/useTheme';
 
 // 渲染配置接口
 export interface RenderConfig {
@@ -128,7 +130,10 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
 
   // 监听状态变化，自动重新渲染
   effect(() => {
-    // 访问导航状态，建立依赖关系
+    // 显式访问导航状态和主题状态，确保依赖关系正确建立
+    navigationState.value;
+    useTheme();
+    
     const newRootNode = globalComposer!.startCompose(App);
     globalRootNode = newRootNode;
     renderer.setRoot(newRootNode);
