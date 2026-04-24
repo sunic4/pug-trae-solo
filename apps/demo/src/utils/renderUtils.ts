@@ -37,22 +37,15 @@ class DynamicRootEventDispatcher {
     const rootNode = this.getRootNode();
     
     if (!rootNode) {
-      console.log('[HITTEST] rootNode is null');
       return null;
     }
 
-    console.log('[HITTEST] Root node:', rootNode.constructor.name, 'at (', rootNode.x, ',', rootNode.y, ')', 'size (', rootNode.width, ',', rootNode.height, ')');
-    console.log('[HITTEST] Testing point at (', x, ',', y, ')');
-    
     const result = hitTest(rootNode, x, y);
-    console.log('[HITTEST] Final result:', result ? result.constructor.name : 'null');
     return result;
   }
 
   dispatch(type: string, x: number, y: number): void {
-    console.log(`[EVENT] Dispatching ${type} at (${x}, ${y})`);
     const target = this.hitTest(x, y);
-    console.log(`[EVENT] Hit test result: ${target ? target.constructor.name : 'null'}`);
 
     // hover 追踪
     if (type === 'mousemove') {
@@ -68,23 +61,15 @@ class DynamicRootEventDispatcher {
     }
 
     if (target && target.handlers?.[type]) {
-      console.log(`[EVENT] Calling ${type} handler on ${target.constructor.name}`);
       target.handlers[type](x, y);
-    } else if (target) {
-      console.log(`[EVENT] Target ${target.constructor.name} has no handler for ${type}`);
-    } else {
-      console.log(`[EVENT] No target found for ${type} at (${x}, ${y})`);
     }
   }
 
   attachToCanvas(canvas: HTMLCanvasElement): () => void {
-    console.log('[EVENT] Attaching event listeners to canvas');
-    
     const getPos = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      console.log('[EVENT] Canvas click at client (', e.clientX, ',', e.clientY, '), canvas (', x, ',', y, ')');
       return { x, y };
     };
 
@@ -105,8 +90,6 @@ class DynamicRootEventDispatcher {
     canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('wheel', onWheel);
 
-    console.log('[EVENT] Event listeners attached');
-    
     return () => {
       canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('mousemove', onMouseMove);
@@ -136,9 +119,7 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
 
   // 初始渲染 - 先设置 globalRootNode
   const rootNode = globalComposer!.startCompose(App);
-  console.log('[RENDER] Initial rootNode created:', rootNode.constructor.name);
   globalRootNode = rootNode; 
-  console.log('[RENDER] globalRootNode set:', globalRootNode ? globalRootNode.constructor.name : 'null');
   
   renderer.setRoot(rootNode);
   globalComposer!.endCompose();
@@ -147,12 +128,9 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
 
   // 监听状态变化，自动重新渲染
   effect(() => {
-    console.log('[RENDER] Re-rendering due to state change');
     // 访问导航状态，建立依赖关系
     const newRootNode = globalComposer!.startCompose(App);
-    console.log('[RENDER] New rootNode created:', newRootNode.constructor.name);
     globalRootNode = newRootNode;
-    console.log('[RENDER] globalRootNode updated:', globalRootNode ? globalRootNode.constructor.name : 'null');
     renderer.setRoot(newRootNode);
     globalComposer!.endCompose();
     globalComposer!.recompose();
