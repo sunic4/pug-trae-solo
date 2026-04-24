@@ -168,11 +168,7 @@ export class Button extends ComposeNode {
     this.textNode.draw(drawApi);
   }
 
-  onPointerDown(_x: number, _y: number) {
-    if (!this.props.disabled && this.props.onClick) {
-      this.props.onClick();
-    }
-  }
+
 }
 
 export function ButtonComponent(props: ButtonProps) {

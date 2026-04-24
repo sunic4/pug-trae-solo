@@ -2,10 +2,7 @@
   "name": "pug",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+
   "scripts": {
     "dev": "vite --config apps/demo/vite.config.ts",
     "test": "vitest run",

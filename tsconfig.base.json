@@ -23,8 +23,7 @@
       "@pug/renderer": ["./packages/renderer/src"],
       "@pug/event": ["./packages/event/src"],
       "@pug/theme": ["./packages/theme/src"],
-      "@pug/components": ["./packages/components/src"],
-      "@pug": ["./packages/canvas-compose/src"]
+      "@pug/components": ["./packages/components/src"]
     }
   },
   "include": ["packages/**/*.ts", "apps/**/*.ts"]

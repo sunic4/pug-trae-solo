@@ -15,7 +15,6 @@ export class Checkbox extends ComposeNode {
   constructor(public props: CheckboxProps) {
     super();
     this.handlers['click'] = this.onClick.bind(this);
-    this.handlers['pointerdown'] = this.onPointerDown.bind(this);
     this.markLayoutDirty();
   }
 
@@ -27,13 +26,7 @@ export class Checkbox extends ComposeNode {
     }
   }
 
-  private onPointerDown() {
-    // 处理指针按下事件
-    const { checked, onCheckedChange } = this.props;
-    if (onCheckedChange) {
-      onCheckedChange(!checked);
-    }
-  }
+
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const theme = useTheme();

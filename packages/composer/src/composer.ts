@@ -1,5 +1,5 @@
-import { ComposeNode } from './node.js';
-import { SlotTable } from './slot-table.js';
+import { ComposeNode } from './node';
+import { SlotTable } from './slot-table';
 import { setCurrentContext } from '@pug/reactivity';
 
 export type ComposableFunction = () => ComposeNode;

@@ -8,7 +8,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@pug/composer": "0.1.0",
-    "@pug/theme": "0.1.0"
+    "@pug/composer": "workspace:*",
+    "@pug/theme": "workspace:*",
+    "@pug/renderer": "workspace:*"
   }
 }

@@ -19,7 +19,6 @@ export class TextInput extends ComposeNode {
   constructor(public props: TextInputProps) {
     super();
     this.handlers['click'] = this.onClick.bind(this);
-    this.handlers['pointerdown'] = this.onPointerDown.bind(this);
     this.markLayoutDirty();
   }
 
@@ -29,11 +28,7 @@ export class TextInput extends ComposeNode {
     this.markDirty();
   }
 
-  private onPointerDown() {
-    // 处理指针按下事件
-    this.isFocused = true;
-    this.markDirty();
-  }
+
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const { width = 200, height = 40 } = this.props;

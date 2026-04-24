@@ -8,6 +8,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@pug/reactivity": "0.1.0"
+    "@pug/reactivity": "workspace:*"
   }
 }
