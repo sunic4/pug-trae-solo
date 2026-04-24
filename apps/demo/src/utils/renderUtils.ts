@@ -36,31 +36,48 @@ class DynamicRootEventDispatcher {
     const rootNode = this.getRootNode();
     
     if (!rootNode) {
+      console.log('[HITTEST] rootNode is null');
       return null;
     }
 
+    console.log('[HITTEST] Root node:', rootNode.constructor.name, 'at (', rootNode.x, ',', rootNode.y, ')', 'size (', rootNode.width, ',', rootNode.height, ')');
+
     // 递归寻找命中的节点 - 先检查子节点（后绘制的在上层）
-    function test(node: any): any {
+    function test(node: any, depth: number = 0): any {
+      const indent = '  '.repeat(depth);
+      console.log(`${indent}[HITTEST] Checking ${node.constructor.name} at (${node.x}, ${node.y}) size (${node.width}, ${node.height})`);
+      console.log(`${indent}[HITTEST] Point (${x}, ${y}) in bounds: ${x >= node.x && x <= node.x + node.width && y >= node.y && y <= node.y + node.height}`);
+
+      // 先检查子节点
       for (let i = node.children.length - 1; i >= 0; i--) {
-        const childResult = test(node.children[i]);
-        if (childResult) return childResult;
+        const child = node.children[i];
+        const childResult = test(child, depth + 1);
+        if (childResult) {
+          console.log(`${indent}[HITTEST] Found target in child: ${childResult.constructor.name}`);
+          return childResult;
+        }
       }
       
       // 检查是否命中当前节点
       if (x >= node.x && x <= node.x + node.width &&
           y >= node.y && y <= node.y + node.height) {
+        console.log(`${indent}[HITTEST] Hit ${node.constructor.name}`);
         return node;
       }
       
+      console.log(`${indent}[HITTEST] Missed ${node.constructor.name}`);
       return null;
     }
     
     const result = test(rootNode);
+    console.log('[HITTEST] Final result:', result ? result.constructor.name : 'null');
     return result;
   }
 
   dispatch(type: string, x: number, y: number): void {
+    console.log(`[EVENT] Dispatching ${type} at (${x}, ${y})`);
     const target = this.hitTest(x, y);
+    console.log(`[EVENT] Hit test result: ${target ? target.constructor.name : 'null'}`);
 
     // hover 追踪
     if (type === 'mousemove') {
@@ -76,14 +93,24 @@ class DynamicRootEventDispatcher {
     }
 
     if (target && target.handlers?.[type]) {
+      console.log(`[EVENT] Calling ${type} handler on ${target.constructor.name}`);
       target.handlers[type](x, y);
+    } else if (target) {
+      console.log(`[EVENT] Target ${target.constructor.name} has no handler for ${type}`);
+    } else {
+      console.log(`[EVENT] No target found for ${type} at (${x}, ${y})`);
     }
   }
 
   attachToCanvas(canvas: HTMLCanvasElement): () => void {
+    console.log('[EVENT] Attaching event listeners to canvas');
+    
     const getPos = (e: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      console.log('[EVENT] Canvas click at client (', e.clientX, ',', e.clientY, '), canvas (', x, ',', y, ')');
+      return { x, y };
     };
 
     const onClick = (e: MouseEvent) => {
@@ -103,6 +130,8 @@ class DynamicRootEventDispatcher {
     canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('wheel', onWheel);
 
+    console.log('[EVENT] Event listeners attached');
+    
     return () => {
       canvas.removeEventListener('click', onClick);
       canvas.removeEventListener('mousemove', onMouseMove);
@@ -130,19 +159,11 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
     canvas: config.canvas
   });
 
-  // 渲染函数
-  function render() {
-    const rootNode = globalComposer!.startCompose(App);
-    renderer.setRoot(rootNode);
-    globalComposer!.endCompose();
-    globalComposer!.recompose();
-    renderer.renderFrame();
-    globalRootNode = rootNode; // 保存 rootNode 引用
-  }
-
   // 初始渲染 - 先设置 globalRootNode
   const rootNode = globalComposer!.startCompose(App);
+  console.log('[RENDER] Initial rootNode created:', rootNode.constructor.name);
   globalRootNode = rootNode; 
+  console.log('[RENDER] globalRootNode set:', globalRootNode ? globalRootNode.constructor.name : 'null');
   
   renderer.setRoot(rootNode);
   globalComposer!.endCompose();
@@ -151,12 +172,15 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
 
   // 监听状态变化，自动重新渲染
   effect(() => {
+    console.log('[RENDER] Re-rendering due to state change');
     const newRootNode = globalComposer!.startCompose(App);
+    console.log('[RENDER] New rootNode created:', newRootNode.constructor.name);
+    globalRootNode = newRootNode;
+    console.log('[RENDER] globalRootNode updated:', globalRootNode ? globalRootNode.constructor.name : 'null');
     renderer.setRoot(newRootNode);
     globalComposer!.endCompose();
     globalComposer!.recompose();
     renderer.renderFrame();
-    globalRootNode = newRootNode;
   });
 
   // 如果是浏览器环境且提供了 canvas 元素，添加事件监听

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Click</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    #app {
+      border: 1px solid #ccc;
+      width: 800px;
+      height: 600px;
+      cursor: pointer;
+    }
+    #log {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      width: 800px;
+      height: 200px;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Click</h1>
+  <canvas id="app"></canvas>
+  <div id="log"></div>
+  <script type="module">
+    import { RendererType } from './packages/renderer/dist/index.js';
+    import { renderApp } from './apps/demo/src/utils/renderUtils.js';
+
+    const canvas = document.getElementById('app');
+    const log = document.getElementById('log');
+
+    // 重定向 console.log 到页面
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog(...args);
+      const p = document.createElement('p');
+      p.textContent = args.join(' ');
+      log.appendChild(p);
+      log.scrollTop = log.scrollHeight;
+    };
+
+    // 渲染应用
+    const renderResult = renderApp(RendererType.CANVAS_2D, {
+      width: 800,
+      height: 600,
+      canvas: canvas
+    });
+
+    console.log('Test page loaded');
+    console.log('Canvas element:', canvas);
+  </script>
+</body>
+</html>

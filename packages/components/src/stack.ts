@@ -57,9 +57,11 @@ export class Stack extends ComposeNode {
 
   place(x: number, y: number, width: number, height: number) {
     const { x: offsetX = 0, y: offsetY = 0, alignment = 'start' } = this.props;
-    super.place(x + offsetX, y + offsetY, width, height);
+    const thisX = x + offsetX;
+    const thisY = y + offsetY;
+    super.place(thisX, thisY, width, height);
 
-    // 放置子元素
+    // 放置子元素 - 使用绝对坐标
     this.children.forEach(child => {
       const childSize = child.measure({
         minWidth: 0,
@@ -68,16 +70,16 @@ export class Stack extends ComposeNode {
         maxHeight: height,
       });
 
-      let childX = 0;
-      let childY = 0;
+      let childX = thisX;
+      let childY = thisY;
 
       // 处理对齐
       if (alignment === 'center') {
-        childX = (width - childSize.width) / 2;
-        childY = (height - childSize.height) / 2;
+        childX += (width - childSize.width) / 2;
+        childY += (height - childSize.height) / 2;
       } else if (alignment === 'end') {
-        childX = width - childSize.width;
-        childY = height - childSize.height;
+        childX += width - childSize.width;
+        childY += height - childSize.height;
       }
 
       child.place(childX, childY, childSize.width, childSize.height);
