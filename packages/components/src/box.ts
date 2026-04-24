@@ -22,7 +22,11 @@ export class Box extends ComposeNode {
   constructor(public props: BoxProps) {
     super();
     if (props.children) {
-      props.children.forEach(child => this.addChild(child));
+      if (Array.isArray(props.children)) {
+        props.children.forEach(child => this.addChild(child));
+      } else {
+        this.addChild(props.children);
+      }
     }
     this.markLayoutDirty();
   }
