@@ -9,16 +9,19 @@ export interface CheckboxProps {
   label?: string;
   width?: number;
   height?: number;
+  x?: number;
+  y?: number;
 }
 
-export class Checkbox extends ComposeNode {
-  constructor(public props: CheckboxProps) {
-    super();
+export class Checkbox extends ComposeNode<CheckboxProps> {
+  constructor(props: CheckboxProps, key?: string) {
+    super(key);
+    this.props = props;
     this.handlers['click'] = this.onClick.bind(this);
     this.markLayoutDirty();
   }
 
-  private onClick() {
+  private onClick(_x: number, _y: number) {
     // 处理点击事件，切换选中状态
     const { checked, onCheckedChange } = this.props;
     if (onCheckedChange) {
@@ -59,7 +62,9 @@ export class Checkbox extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    super.place(x, y, width, height);
+    const thisX = x + (this.props.x || 0);
+    const thisY = y + (this.props.y || 0);
+    super.place(thisX, thisY, width, height);
   }
 
   draw(drawApi: DrawAPI) {

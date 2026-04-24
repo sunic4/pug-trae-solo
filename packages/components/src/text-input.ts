@@ -13,16 +13,17 @@ export interface TextInputProps {
   y?: number;
 }
 
-export class TextInput extends ComposeNode {
+export class TextInput extends ComposeNode<TextInputProps> {
   private isFocused = false;
 
-  constructor(public props: TextInputProps) {
-    super();
+  constructor(props: TextInputProps, key?: string) {
+    super(key);
+    this.props = props;
     this.handlers['click'] = this.onClick.bind(this);
     this.markLayoutDirty();
   }
 
-  private onClick() {
+  private onClick(_x: number, _y: number) {
     // 处理点击事件，获取焦点
     this.isFocused = true;
     this.markDirty();
@@ -40,7 +41,9 @@ export class TextInput extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    super.place(x, y, width, height);
+    const thisX = x + (this.props.x || 0);
+    const thisY = y + (this.props.y || 0);
+    super.place(thisX, thisY, width, height);
   }
 
   draw(drawApi: DrawAPI) {
