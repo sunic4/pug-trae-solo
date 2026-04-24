@@ -19,9 +19,10 @@ export interface TextProps {
   marginLeft?: number;
 }
 
-export class Text extends ComposeNode {
-  constructor(public props: TextProps) {
-    super();
+export class Text extends ComposeNode<TextProps> {
+  constructor(props: TextProps, key?: string) {
+    super(key);
+    this.props = props;
     this.markLayoutDirty();
   }
 

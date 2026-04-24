@@ -21,11 +21,12 @@ export interface ButtonProps {
   color?: string;
 }
 
-export class Button extends ComposeNode {
+export class Button extends ComposeNode<ButtonProps> {
   private textNode: ComposeNode;
 
-  constructor(public props: ButtonProps) {
-    super();
+  constructor(props: ButtonProps, key?: string) {
+    super(key);
+    this.props = props;
     this.textNode = TextComponent({
       text: props.text,
       color: this.getTextColor(),
@@ -36,12 +37,8 @@ export class Button extends ComposeNode {
     
     // 添加点击事件处理器
     this.handlers['click'] = (_x: number, _y: number) => {
-      console.log('[BUTTON] Click handler called!');
       if (!this.props.disabled && this.props.onClick) {
-        console.log('[BUTTON] Calling onClick prop');
         this.props.onClick();
-      } else {
-        console.log('[BUTTON] onClick prop not found or button disabled');
       }
     };
     
@@ -149,8 +146,8 @@ export class Button extends ComposeNode {
     const thisY = y + (this.props.y || 0);
     super.place(thisX, thisY, width, height);
 
-    // 放置文本节点
-    this.textNode.place(thisX, thisY, width, height);
+    // 放置文本节点 - 使用相对坐标
+    this.textNode.place(0, 0, width, height);
   }
 
   draw(drawApi: DrawAPI) {
