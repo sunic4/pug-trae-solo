@@ -26,7 +26,6 @@ export function HomePage() {
         ButtonComponent({
           text: '文本组件示例',
           onClick: () => {
-            console.log('导航到文本组件示例页');
             navigateTo('details', { page: 'text' });
           },
           padding: 15,
@@ -37,7 +36,6 @@ export function HomePage() {
         ButtonComponent({
           text: '按钮组件示例',
           onClick: () => {
-            console.log('导航到按钮组件示例页');
             navigateTo('details', { page: 'button' });
           },
           padding: 15,
@@ -48,7 +46,6 @@ export function HomePage() {
         ButtonComponent({
           text: '复选框组件示例',
           onClick: () => {
-            console.log('导航到复选框组件示例页');
             navigateTo('details', { page: 'checkbox' });
           },
           padding: 15,
@@ -59,7 +56,6 @@ export function HomePage() {
         ButtonComponent({
           text: '文本输入组件示例',
           onClick: () => {
-            console.log('导航到文本输入组件示例页');
             navigateTo('details', { page: 'textinput' });
           },
           padding: 15,
@@ -70,7 +66,6 @@ export function HomePage() {
         ButtonComponent({
           text: '布局组件示例',
           onClick: () => {
-            console.log('导航到布局组件示例页');
             navigateTo('details', { page: 'layout' });
           },
           padding: 15,
@@ -81,7 +76,6 @@ export function HomePage() {
         ButtonComponent({
           text: '设置页面',
           onClick: () => {
-            console.log('导航到设置页面');
             navigateTo('settings');
           },
           padding: 15,
