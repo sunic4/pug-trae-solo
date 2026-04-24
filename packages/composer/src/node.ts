@@ -10,23 +10,34 @@ export interface Constraints {
   maxHeight: number;
 }
 
+export interface EventHandler {
+  (event: any, ...args: any[]): void;
+}
+
+export interface ComposeNodeProps {
+  [key: string]: any;
+}
+
 import { DrawAPI } from '@pug/renderer';
 
-export class ComposeNode {
+export class ComposeNode<P extends ComposeNodeProps = ComposeNodeProps> {
   readonly key: string;
   children: ComposeNode[] = [];
   x: number = 0;
   y: number = 0;
   width: number = 0;
   height: number = 0;
-  handlers: Record<string, (...args: any[]) => void> = {};
-  props: any = {};
+  handlers: Record<string, EventHandler> = {};
+  props: P = {} as P;
   private _dirty = false;
   private _layoutDirty = false;
   parent: ComposeNode | null = null;
 
-  constructor(key: string = Math.random().toString(36).substr(2, 9)) {
+  constructor(key: string = Math.random().toString(36).substr(2, 9), props?: P) {
     this.key = key;
+    if (props) {
+      this.props = props;
+    }
   }
 
   get dirty(): boolean {
@@ -42,6 +53,7 @@ export class ComposeNode {
   }
 
   markLayoutDirty(): void {
+    if (this._layoutDirty) return; // 避免重复标记
     this._layoutDirty = true;
     this.markDirty();
     // 向上标记父节点为布局脏
@@ -56,12 +68,14 @@ export class ComposeNode {
   }
 
   addChild(child: ComposeNode): void {
+    if (!child) return; // 类型保护
     child.parent = this;
     this.children.push(child);
     this.markLayoutDirty();
   }
 
   removeChild(child: ComposeNode): void {
+    if (!child) return; // 类型保护
     const index = this.children.indexOf(child);
     if (index !== -1) {
       child.parent = null;
@@ -107,7 +121,9 @@ export class ComposeNode {
       dirtyNodes.push(this);
     }
     for (const child of this.children) {
-      dirtyNodes.push(...child.getDirtyNodes());
+      if (child) {
+        dirtyNodes.push(...child.getDirtyNodes());
+      }
     }
     return dirtyNodes;
   }
@@ -116,7 +132,9 @@ export class ComposeNode {
   clearAllDirty(): void {
     this.clearDirty();
     for (const child of this.children) {
-      child.clearAllDirty();
+      if (child) {
+        child.clearAllDirty();
+      }
     }
   }
 }
