@@ -9,10 +9,10 @@ import { SettingsPage } from './components/pages/SettingsPage';
 // 根组件
 export function App() {
   const theme = useTheme();
-  const { currentPage } = navigationState.value;
-
-  // 渲染当前页面
+  
+  // 渲染当前页面 - 直接在函数中访问 navigationState.value，确保依赖追踪正常工作
   function renderCurrentPage() {
+    const { currentPage } = navigationState.value;
     switch (currentPage) {
       case 'home':
         return HomePage();

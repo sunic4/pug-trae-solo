@@ -9,6 +9,8 @@ const dependencyStack: Set<() => void>[] = [];
 
 export function signal<T>(initialValue: T): Signal<T> {
   const subscribers = new Set<() => void>();
+  // 使用一个单独的 Set 来跟踪已添加的回调，避免重复订阅
+  const addedCallbacks = new WeakSet<() => void>();
   let value = initialValue;
 
   const signal: Signal<T> = {
@@ -19,7 +21,10 @@ export function signal<T>(initialValue: T): Signal<T> {
         // 为每个依赖的 signal 添加一个回调，当 signal 变化时标记 computed 为脏
         // 直接将 currentTrackers 中的所有回调添加到 subscribers 中
         currentTrackers.forEach(callback => {
-          subscribers.add(callback);
+          if (!addedCallbacks.has(callback)) {
+            subscribers.add(callback);
+            addedCallbacks.add(callback);
+          }
         });
       }
       return value;
