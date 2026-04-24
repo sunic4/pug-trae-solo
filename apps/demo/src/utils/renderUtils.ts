@@ -130,11 +130,11 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
   // 渲染函数
   function render() {
     const rootNode = globalComposer!.startCompose(App);
-    globalRootNode = rootNode; // 保存 rootNode 引用
     renderer.setRoot(rootNode);
     globalComposer!.endCompose();
     globalComposer!.recompose();
     renderer.renderFrame();
+    globalRootNode = rootNode; // 保存 rootNode 引用
   }
 
   // 初始渲染
