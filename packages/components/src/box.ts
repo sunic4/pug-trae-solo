@@ -1,5 +1,7 @@
-import { ComposeNode } from '@canvas-compose/composer';
-import { useTheme } from '@canvas-compose/theme';
+import { ComposeNode } from '@pug/composer';
+import { useTheme } from '@pug/theme';
+import { DrawAPI } from '@pug/renderer';
+import { drawRoundedRect } from './utils';
 
 export interface BoxProps {
   backgroundColor?: string;
@@ -9,26 +11,52 @@ export interface BoxProps {
   padding?: number;
   margin?: number;
   marginBottom?: number;
+  marginTop?: number;
   x?: number;
   y?: number;
-  width?: number;
-  height?: number;
-  children?: ComposeNode[];
+  width?: number | string;
+  height?: number | string;
+  flex?: number;
+  flexDirection?: 'row' | 'column';
+  alignItems?: 'start' | 'center' | 'end';
+  justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
+  borderBottom?: string;
+  overflow?: 'hidden' | 'visible' | 'scroll';
+  children?: ComposeNode | ComposeNode[];
 }
 
 export class Box extends ComposeNode {
   constructor(public props: BoxProps) {
     super();
     if (props.children) {
-      props.children.forEach(child => this.addChild(child));
+      if (Array.isArray(props.children)) {
+        props.children.forEach(child => this.addChild(child));
+      } else {
+        this.addChild(props.children);
+      }
     }
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const { width, height, padding = 0, margin = 0 } = this.props;
 
-    let boxWidth = width || constraints.maxWidth - margin * 2;
-    let boxHeight = height || constraints.maxHeight - margin * 2;
+    let boxWidth: number;
+    let boxHeight: number;
+
+    // 处理百分比宽度
+    if (width === '100%') {
+      boxWidth = constraints.maxWidth - margin * 2;
+    } else {
+      boxWidth = (width as number) || constraints.maxWidth - margin * 2;
+    }
+
+    // 处理百分比高度
+    if (height === '100%') {
+      boxHeight = constraints.maxHeight - margin * 2;
+    } else {
+      boxHeight = (height as number) || constraints.maxHeight - margin * 2;
+    }
 
     // 测量子元素
     if (this.children.length > 0) {
@@ -61,19 +89,20 @@ export class Box extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    const { x: offsetX = 0, y: offsetY = 0, padding = 0, margin = 0 } = this.props;
-    super.place(x + offsetX + margin, y + offsetY + margin, width, height);
+    const { x: offsetX = 0, y: offsetY = 0, padding = 0 } = this.props;
+    super.place(x + offsetX, y + offsetY, width, height);
 
     // 放置子元素
     let currentY = padding;
+    const thisWidth = width;
     this.children.forEach(child => {
       const childHeight = child.measure({
         minWidth: 0,
-        maxWidth: width - padding * 2,
+        maxWidth: thisWidth - padding * 2,
         minHeight: 0,
         maxHeight: height - padding * 2 - currentY
       }).height;
-      child.place(padding, currentY, width - padding * 2, childHeight);
+      child.place(padding, currentY, thisWidth - padding * 2, childHeight);
       currentY += childHeight;
       // 处理marginBottom
       if (child.props && 'marginBottom' in child.props && child.props.marginBottom) {
@@ -82,23 +111,23 @@ export class Box extends ComposeNode {
     });
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(drawApi: DrawAPI) {
     const theme = useTheme();
     const { backgroundColor = theme.colors.surface, borderColor, borderWidth = 0, borderRadius = theme.borderRadius.base } = this.props;
 
     // 绘制背景
-    ctx.fillStyle = backgroundColor;
-    ctx.beginPath();
-    ctx.roundRect(0, 0, this.width, this.height, borderRadius);
-    ctx.fill();
+    if (backgroundColor) {
+      drawApi.setFillStyle(backgroundColor);
+      drawRoundedRect(drawApi, 0, 0, this.width, this.height, borderRadius);
+      drawApi.fill();
+    }
 
     // 绘制边框
     if (borderColor && borderWidth > 0) {
-      ctx.strokeStyle = borderColor;
-      ctx.lineWidth = borderWidth;
-      ctx.beginPath();
-      ctx.roundRect(0, 0, this.width, this.height, borderRadius);
-      ctx.stroke();
+      drawApi.setStrokeStyle(borderColor);
+      drawApi.setLineWidth(borderWidth);
+      drawRoundedRect(drawApi, 0, 0, this.width, this.height, borderRadius);
+      drawApi.stroke();
     }
   }
 }

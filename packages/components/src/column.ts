@@ -1,10 +1,13 @@
-import { ComposeNode } from '@canvas-compose/composer';
+import { ComposeNode } from '@pug/composer';
+import { DrawAPI } from '@pug/renderer';
 
 export interface ColumnProps {
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: number | string;
   padding?: number;
   spacing?: number;
+  alignItems?: 'start' | 'center' | 'end' | 'flex-start' | 'flex-end';
+  justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
   children?: ComposeNode[];
 }
 
@@ -14,13 +17,21 @@ export class Column extends ComposeNode {
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const { width, spacing = 0, padding = 0 } = this.props;
 
-    let totalWidth = width || constraints.maxWidth;
+    let totalWidth: number;
     let totalHeight = 0;
+
+    // 处理百分比宽度
+    if (width === '100%') {
+      totalWidth = constraints.maxWidth;
+    } else {
+      totalWidth = (width as number) || constraints.maxWidth;
+    }
 
     // 测量所有子元素
     this.children.forEach(child => {
@@ -66,7 +77,7 @@ export class Column extends ComposeNode {
     });
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(_drawApi: DrawAPI) {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }

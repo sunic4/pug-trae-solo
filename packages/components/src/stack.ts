@@ -1,4 +1,5 @@
-import { ComposeNode } from '@canvas-compose/composer';
+import { ComposeNode } from '@pug/composer';
+import { DrawAPI } from '@pug/renderer';
 
 export interface StackProps {
   alignment?: 'start' | 'center' | 'end';
@@ -82,7 +83,7 @@ export class Stack extends ComposeNode {
     });
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(_drawApi: DrawAPI) {
     // 布局组件不需要绘制自身，只需要绘制子元素，由渲染器负责
   }
 }
