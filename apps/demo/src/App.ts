@@ -9,7 +9,7 @@ import { SettingsPage } from './components/pages/SettingsPage';
 // 根组件
 export function App() {
   const theme = useTheme();
-  const { currentPage, isAnimating, animationProgress } = navigationState.value;
+  const { currentPage } = navigationState.value;
 
   // 渲染当前页面
   function renderCurrentPage() {
@@ -25,12 +25,6 @@ export function App() {
     }
   }
 
-  // 计算动画变换
-  const animationStyle = isAnimating ? {
-    opacity: 1 - animationProgress,
-    transform: `translateX(${(1 - animationProgress) * 50}px)`,
-  } : {};
-
   return BoxComponent({
     backgroundColor: theme.colors.background,
     width: '100%',
@@ -42,14 +36,9 @@ export function App() {
         NavigationBar(),
         // 页面内容
         BoxComponent({
-          flex: 1,
-          overflow: 'hidden',
-          children: BoxComponent({
-            ...animationStyle,
-            width: '100%',
-            height: '100%',
-            children: renderCurrentPage(),
-          }),
+          width: '100%',
+          height: '100%',
+          children: renderCurrentPage(),
         }),
       ],
     }),

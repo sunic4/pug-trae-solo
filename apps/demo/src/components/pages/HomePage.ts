@@ -1,4 +1,4 @@
-import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent, RowComponent, StackComponent, CheckboxComponent, TextInputComponent } from '@pug/components';
+import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent, RowComponent, CheckboxComponent, TextInputComponent } from '@pug/components';
 import { useTheme } from '../../hooks/useTheme';
 import { navigateTo } from '../../state/navigationState';
 import { signal } from '@pug/reactivity';
@@ -53,12 +53,6 @@ export function HomePage() {
                 fontSize: 16,
                 fontWeight: 600,
                 color: theme.colors.text,
-                marginBottom: 5,
-              }),
-              TextComponent({
-                text: '斜体文本',
-                fontSize: 16,
-                color: theme.colors.text,
               }),
             ],
           }),
@@ -85,27 +79,18 @@ export function HomePage() {
                   ButtonComponent({
                     text: '主要按钮',
                     variant: 'primary',
-                    onClick: () => console.log('主要按钮点击'),
+                    onClick: () => {
+                      console.log('主要按钮点击');
+                      alert('主要按钮被点击了！');
+                    },
                   }),
                   ButtonComponent({
                     text: '次要按钮',
                     variant: 'secondary',
-                    onClick: () => console.log('次要按钮点击'),
-                  }),
-                ],
-              }),
-              RowComponent({
-                spacing: 10,
-                children: [
-                  ButtonComponent({
-                    text: '轮廓按钮',
-                    variant: 'outline',
-                    onClick: () => console.log('轮廓按钮点击'),
-                  }),
-                  ButtonComponent({
-                    text: '文本按钮',
-                    variant: 'text',
-                    onClick: () => console.log('文本按钮点击'),
+                    onClick: () => {
+                      console.log('次要按钮点击');
+                      alert('次要按钮被点击了！');
+                    },
                   }),
                 ],
               }),
@@ -134,7 +119,10 @@ export function HomePage() {
                 children: [
                   CheckboxComponent({
                     checked: checkboxChecked.value,
-                    onCheckedChange: (checked) => checkboxChecked.value = checked,
+                    onCheckedChange: (checked) => {
+                      checkboxChecked.value = checked;
+                      console.log('复选框状态：', checked);
+                    },
                   }),
                   TextComponent({
                     text: `复选框: ${checkboxChecked.value ? '选中' : '未选中'}`,
@@ -164,7 +152,10 @@ export function HomePage() {
               }),
               TextInputComponent({
                 value: textInputValue.value,
-                onValueChange: (value: string) => textInputValue.value = value,
+                onValueChange: (value: string) => {
+                  textInputValue.value = value;
+                  console.log('输入值变化：', value);
+                },
                 placeholder: '请输入文本...',
                 width: 300,
               }),
@@ -217,81 +208,7 @@ export function HomePage() {
                     backgroundColor: theme.colors.secondary,
                     borderRadius: 4,
                   }),
-                  BoxComponent({
-                    width: 50,
-                    height: 50,
-                    backgroundColor: theme.colors.primary,
-                    borderRadius: 4,
-                  }),
                 ],
-              }),
-              
-              // Column 布局示例
-              TextComponent({
-                text: 'Column 布局',
-                fontSize: 16,
-                fontWeight: 500,
-                color: theme.colors.text,
-                marginBottom: 5,
-              }),
-              ColumnComponent({
-                spacing: 10,
-                children: [
-                  BoxComponent({
-                    width: 150,
-                    height: 30,
-                    backgroundColor: theme.colors.primary,
-                    borderRadius: 4,
-                  }),
-                  BoxComponent({
-                    width: 150,
-                    height: 30,
-                    backgroundColor: theme.colors.secondary,
-                    borderRadius: 4,
-                  }),
-                  BoxComponent({
-                    width: 150,
-                    height: 30,
-                    backgroundColor: theme.colors.primary,
-                    borderRadius: 4,
-                  }),
-                ],
-              }),
-              
-              // Stack 布局示例
-              TextComponent({
-                text: 'Stack 布局',
-                fontSize: 16,
-                fontWeight: 500,
-                color: theme.colors.text,
-                marginBottom: 5,
-              }),
-              BoxComponent({
-                width: 150,
-                height: 150,
-                marginBottom: 15,
-                children: StackComponent({
-                  children: [
-                    BoxComponent({
-                      width: 150,
-                      height: 150,
-                      backgroundColor: theme.colors.primary,
-                      borderRadius: 4,
-                    }),
-                    BoxComponent({
-                      width: 100,
-                      height: 100,
-                      backgroundColor: theme.colors.secondary,
-                      borderRadius: 4,
-                    }),
-                    BoxComponent({
-                      width: 50,
-                      height: 50,
-                      backgroundColor: theme.colors.primary,
-                      borderRadius: 4,
-                    }),
-                  ],
-                }),
               }),
             ],
           }),
@@ -300,7 +217,10 @@ export function HomePage() {
         // 导航按钮
         ButtonComponent({
           text: '前往详情页',
-          onClick: () => navigateTo('details', { message: 'Hello from Home Page!' }),
+          onClick: () => {
+            console.log('导航到详情页');
+            navigateTo('details', { message: 'Hello from Home Page!' });
+          },
           padding: 15,
           backgroundColor: theme.colors.primary,
           color: theme.colors.onPrimary,
