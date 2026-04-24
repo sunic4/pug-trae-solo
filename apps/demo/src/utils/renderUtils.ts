@@ -1,6 +1,7 @@
 import { Composer } from '@pug/composer';
 import { Renderer, RendererFactory, RendererType } from '@pug/renderer';
 import { effect } from '@pug/reactivity';
+import { hitTest } from '@pug/event';
 import { App } from '../App';
 
 // 渲染配置接口
@@ -41,38 +42,9 @@ class DynamicRootEventDispatcher {
     }
 
     console.log('[HITTEST] Root node:', rootNode.constructor.name, 'at (', rootNode.x, ',', rootNode.y, ')', 'size (', rootNode.width, ',', rootNode.height, ')');
-
-    // 递归寻找命中的节点 - 先检查子节点（后绘制的在上层）
-    function test(node: any, depth: number = 0, parentX: number = 0, parentY: number = 0): any {
-      const indent = '  '.repeat(depth);
-      // 计算节点的绝对坐标
-      const absoluteX = parentX + node.x;
-      const absoluteY = parentY + node.y;
-      console.log(`${indent}[HITTEST] Checking ${node.constructor.name} at (${absoluteX}, ${absoluteY}) size (${node.width}, ${node.height})`);
-      console.log(`${indent}[HITTEST] Point (${x}, ${y}) in bounds: ${x >= absoluteX && x <= absoluteX + node.width && y >= absoluteY && y <= absoluteY + node.height}`);
-
-      // 先检查子节点
-      for (let i = node.children.length - 1; i >= 0; i--) {
-        const child = node.children[i];
-        const childResult = test(child, depth + 1, absoluteX, absoluteY);
-        if (childResult) {
-          console.log(`${indent}[HITTEST] Found target in child: ${childResult.constructor.name}`);
-          return childResult;
-        }
-      }
-      
-      // 检查是否命中当前节点
-      if (x >= absoluteX && x <= absoluteX + node.width &&
-          y >= absoluteY && y <= absoluteY + node.height) {
-        console.log(`${indent}[HITTEST] Hit ${node.constructor.name}`);
-        return node;
-      }
-      
-      console.log(`${indent}[HITTEST] Missed ${node.constructor.name}`);
-      return null;
-    }
+    console.log('[HITTEST] Testing point at (', x, ',', y, ')');
     
-    const result = test(rootNode);
+    const result = hitTest(rootNode, x, y);
     console.log('[HITTEST] Final result:', result ? result.constructor.name : 'null');
     return result;
   }
