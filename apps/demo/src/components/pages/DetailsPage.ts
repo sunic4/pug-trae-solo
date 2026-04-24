@@ -93,7 +93,6 @@ export function DetailsPage() {
                 text: '主要按钮',
                 variant: 'primary',
                 onClick: () => {
-                  console.log('主要按钮点击');
                   alert('主要按钮被点击了！');
                 },
               }),
@@ -101,7 +100,6 @@ export function DetailsPage() {
                 text: '次要按钮',
                 variant: 'secondary',
                 onClick: () => {
-                  console.log('次要按钮点击');
                   alert('次要按钮被点击了！');
                 },
               }),
@@ -114,7 +112,6 @@ export function DetailsPage() {
                 text: '轮廓按钮',
                 variant: 'outline',
                 onClick: () => {
-                  console.log('轮廓按钮点击');
                   alert('轮廓按钮被点击了！');
                 },
               }),
@@ -122,7 +119,6 @@ export function DetailsPage() {
                 text: '文本按钮',
                 variant: 'text',
                 onClick: () => {
-                  console.log('文本按钮点击');
                   alert('文本按钮被点击了！');
                 },
               }),
@@ -157,7 +153,6 @@ export function DetailsPage() {
                 checked: checkboxChecked.value,
                 onCheckedChange: (checked) => {
                   checkboxChecked.value = checked;
-                  console.log('复选框状态：', checked);
                 },
               }),
               TextComponent({
@@ -192,7 +187,6 @@ export function DetailsPage() {
             value: textInputValue.value,
             onValueChange: (value: string) => {
               textInputValue.value = value;
-              console.log('输入值变化：', value);
             },
             placeholder: '请输入文本...',
             width: 300,
@@ -342,7 +336,6 @@ export function DetailsPage() {
         ButtonComponent({
           text: '返回首页',
           onClick: () => {
-            console.log('点击返回按钮');
             navigateBack();
           },
           padding: 15,
