@@ -18,7 +18,6 @@ export function NavigationBar() {
         ButtonComponent({
           text: '返回',
           onClick: () => {
-            console.log('点击返回按钮');
             navigateBack();
           },
           padding: 10,
