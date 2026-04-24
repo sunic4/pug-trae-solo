@@ -70,7 +70,15 @@ export function navigateBack() {
 }
 
 // 动画函数
+let animationFrameId: number | null = null;
+
 function animateNavigation(callback: () => void) {
+  // 取消之前的动画，防止动画叠加
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+  
   let startTime = performance.now();
   const duration = 300; // 动画持续时间（毫秒）
   
@@ -85,11 +93,20 @@ function animateNavigation(callback: () => void) {
     };
     
     if (progress < 1) {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     } else {
+      animationFrameId = null;
       callback();
     }
   }
   
-  requestAnimationFrame(animate);
+  animationFrameId = requestAnimationFrame(animate);
+}
+
+// 清理动画
+export function cleanupNavigation() {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
 }
