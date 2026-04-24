@@ -1,6 +1,7 @@
 import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent, CheckboxComponent } from '@pug/components';
 import { useTheme } from '../../hooks/useTheme';
 import { signal } from '@pug/reactivity';
+import { navigateBack } from '../../state/navigationState';
 
 export function SettingsPage() {
   const theme = useTheme();
@@ -78,6 +79,17 @@ export function SettingsPage() {
           padding: 15,
           backgroundColor: theme.colors.primary,
           color: theme.colors.onPrimary,
+          marginBottom: 15,
+        }),
+        ButtonComponent({
+          text: '返回首页',
+          onClick: () => {
+            console.log('点击返回按钮');
+            navigateBack();
+          },
+          padding: 15,
+          backgroundColor: theme.colors.secondary,
+          color: theme.colors.onSecondary,
         }),
       ],
     }),

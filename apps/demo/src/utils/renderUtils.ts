@@ -173,6 +173,7 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
   // 监听状态变化，自动重新渲染
   effect(() => {
     console.log('[RENDER] Re-rendering due to state change');
+    // 访问导航状态，建立依赖关系
     const newRootNode = globalComposer!.startCompose(App);
     console.log('[RENDER] New rootNode created:', newRootNode.constructor.name);
     globalRootNode = newRootNode;

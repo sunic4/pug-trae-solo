@@ -341,7 +341,10 @@ export function DetailsPage() {
         // 返回按钮
         ButtonComponent({
           text: '返回首页',
-          onClick: navigateBack,
+          onClick: () => {
+            console.log('点击返回按钮');
+            navigateBack();
+          },
           padding: 15,
           backgroundColor: theme.colors.primary,
           color: theme.colors.onPrimary,

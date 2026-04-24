@@ -57,9 +57,10 @@ export function navigateBack() {
     
     // 执行动画
     animateNavigation(() => {
+      // 导航回上一页时，保持上一个页面的历史记录
       navigationState.value = {
         currentPage: currentState.previousPage!,
-        previousPage: null,
+        previousPage: null, // 简化处理，只返回一级
         params: {},
         isAnimating: false,
         animationProgress: 0,
