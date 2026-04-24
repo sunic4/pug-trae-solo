@@ -1,7 +1,6 @@
 import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent } from '@pug/components';
 import { useTheme } from '../../hooks/useTheme';
 import { navigateTo } from '../../state/navigationState';
-import { Counter } from '../Counter';
 
 export function HomePage() {
   const theme = useTheme();
@@ -27,7 +26,6 @@ export function HomePage() {
           color: theme.colors.text,
           marginBottom: 30,
         }),
-        Counter(),
         ButtonComponent({
           text: '前往详情页',
           onClick: () => navigateTo('details', { message: 'Hello from Home Page!' }),
