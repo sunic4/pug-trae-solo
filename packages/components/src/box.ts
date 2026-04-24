@@ -90,18 +90,21 @@ export class Box extends ComposeNode {
 
   place(x: number, y: number, width: number, height: number) {
     const { x: offsetX = 0, y: offsetY = 0, padding = 0 } = this.props;
-    super.place(x + offsetX, y + offsetY, width, height);
+    const thisX = x + offsetX;
+    const thisY = y + offsetY;
+    super.place(thisX, thisY, width, height);
 
-    // 放置子元素
-    let currentY = padding;
+    // 放置子元素 - 使用绝对坐标！
+    let currentY = thisY + padding;
+    const thisWidth = width;
     this.children.forEach(child => {
       const childHeight = child.measure({
         minWidth: 0,
-        maxWidth: width - padding * 2,
+        maxWidth: thisWidth - padding * 2,
         minHeight: 0,
-        maxHeight: height - padding * 2 - currentY
+        maxHeight: height - padding * 2 - (currentY - thisY)
       }).height;
-      child.place(padding, currentY, width - padding * 2, childHeight);
+      child.place(thisX + padding, currentY, thisWidth - padding * 2, childHeight);
       currentY += childHeight;
       // 处理marginBottom
       if (child.props && 'marginBottom' in child.props && child.props.marginBottom) {

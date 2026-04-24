@@ -61,18 +61,18 @@ export class Column extends ComposeNode {
     super.place(x, y, width, height);
 
     const { padding = 0, spacing = 0 } = this.props;
-    let currentY = padding;
+    let currentY = y + padding;
 
-    // 放置子元素
+    // 放置子元素 - 使用绝对坐标
     this.children.forEach(child => {
       const childHeight = child.measure({
         minWidth: 0,
         maxWidth: width - padding * 2,
         minHeight: 0,
-        maxHeight: height - padding * 2 - currentY
+        maxHeight: height - padding * 2 - (currentY - y)
       }).height;
 
-      child.place(padding, currentY, width - padding * 2, childHeight);
+      child.place(x + padding, currentY, width - padding * 2, childHeight);
       currentY += childHeight + spacing;
     });
   }

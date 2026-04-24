@@ -54,18 +54,18 @@ export class Row extends ComposeNode {
     super.place(x, y, width, height);
 
     const { padding = 0, spacing = 0 } = this.props;
-    let currentX = padding;
+    let currentX = x + padding;
 
-    // 放置子元素
+    // 放置子元素 - 使用绝对坐标
     this.children.forEach(child => {
       const childWidth = child.measure({
         minWidth: 0,
-        maxWidth: width - padding * 2 - currentX,
+        maxWidth: width - padding * 2 - (currentX - x),
         minHeight: 0,
         maxHeight: height - padding * 2
       }).width;
 
-      child.place(currentX, padding, childWidth, height - padding * 2);
+      child.place(currentX, y + padding, childWidth, height - padding * 2);
       currentX += childWidth + spacing;
     });
   }

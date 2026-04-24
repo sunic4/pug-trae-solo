@@ -30,30 +30,33 @@ class DynamicRootEventDispatcher {
     this.getRootNode = getRootNode;
   }
 
+
+
   private hitTest(x: number, y: number): any {
     const rootNode = this.getRootNode();
-    if (!rootNode) return null;
-
-    function test(node: any, px: number, py: number): any {
-      if (!node) return null;
-      // 简单的命中测试
-      if (
-        px >= node.x &&
-        px <= node.x + node.width &&
-        py >= node.y &&
-        py <= node.y + node.height
-      ) {
-        // 先检查子元素
-        for (let i = node.children.length - 1; i >= 0; i--) {
-          const childResult = test(node.children[i], px - node.x, py - node.y);
-          if (childResult) return childResult;
-        }
-        return node;
-      }
+    
+    if (!rootNode) {
       return null;
     }
 
-    return test(rootNode, x, y);
+    // 递归寻找命中的节点 - 先检查子节点（后绘制的在上层）
+    function test(node: any): any {
+      for (let i = node.children.length - 1; i >= 0; i--) {
+        const childResult = test(node.children[i]);
+        if (childResult) return childResult;
+      }
+      
+      // 检查是否命中当前节点
+      if (x >= node.x && x <= node.x + node.width &&
+          y >= node.y && y <= node.y + node.height) {
+        return node;
+      }
+      
+      return null;
+    }
+    
+    const result = test(rootNode);
+    return result;
   }
 
   dispatch(type: string, x: number, y: number): void {
@@ -137,11 +140,24 @@ export function renderApp(rendererType: RendererType, config: RenderConfig): Ren
     globalRootNode = rootNode; // 保存 rootNode 引用
   }
 
-  // 初始渲染
-  render();
+  // 初始渲染 - 先设置 globalRootNode
+  const rootNode = globalComposer!.startCompose(App);
+  globalRootNode = rootNode; 
+  
+  renderer.setRoot(rootNode);
+  globalComposer!.endCompose();
+  globalComposer!.recompose();
+  renderer.renderFrame();
 
   // 监听状态变化，自动重新渲染
-  effect(render);
+  effect(() => {
+    const newRootNode = globalComposer!.startCompose(App);
+    renderer.setRoot(newRootNode);
+    globalComposer!.endCompose();
+    globalComposer!.recompose();
+    renderer.renderFrame();
+    globalRootNode = newRootNode;
+  });
 
   // 如果是浏览器环境且提供了 canvas 元素，添加事件监听
   let detachEvents: (() => void) | undefined;
