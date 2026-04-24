@@ -1,6 +1,6 @@
 import { BoxComponent, ButtonComponent, RowComponent } from '@pug/components';
 import { useTheme } from '../hooks/useTheme';
-import { navigateTo } from '../state/navigationState';
+import { navigateTo, navigateBack } from '../state/navigationState';
 
 export function NavigationBar() {
   const theme = useTheme();
@@ -15,6 +15,16 @@ export function NavigationBar() {
       justifyContent: 'space-around',
       alignItems: 'center',
       children: [
+        ButtonComponent({
+          text: '返回',
+          onClick: () => {
+            console.log('点击返回按钮');
+            navigateBack();
+          },
+          padding: 10,
+          backgroundColor: theme.colors.secondary,
+          color: theme.colors.onSecondary,
+        }),
         ButtonComponent({
           text: '首页',
           onClick: () => navigateTo('home'),
