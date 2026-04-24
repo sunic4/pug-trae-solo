@@ -12,10 +12,16 @@ export function computed<T>(fn: () => T): ComputedSignal<T> {
 
   // 跟踪依赖的函数
   function recompute() {
-    trackDependencies(() => {
-      value = fn();
-    }, markDirty);
-    dirty = false;
+    try {
+      trackDependencies(() => {
+        value = fn();
+      }, markDirty);
+      dirty = false;
+    } catch (error) {
+      console.error('Error in computed function:', error);
+      // 即使计算失败，也标记为非脏，避免无限重试
+      dirty = false;
+    }
   }
 
   // 当依赖变化时，标记为脏
