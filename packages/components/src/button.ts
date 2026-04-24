@@ -36,8 +36,12 @@ export class Button extends ComposeNode {
     
     // 添加点击事件处理器
     this.handlers['click'] = (_x: number, _y: number) => {
+      console.log('[BUTTON] Click handler called!');
       if (!this.props.disabled && this.props.onClick) {
+        console.log('[BUTTON] Calling onClick prop');
         this.props.onClick();
+      } else {
+        console.log('[BUTTON] onClick prop not found or button disabled');
       }
     };
     
@@ -141,10 +145,12 @@ export class Button extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    super.place(x + (this.props.x || 0), y + (this.props.y || 0), width, height);
+    const thisX = x + (this.props.x || 0);
+    const thisY = y + (this.props.y || 0);
+    super.place(thisX, thisY, width, height);
 
-    // 放置文本节点
-    this.textNode.place(0, 0, width, height);
+    // 放置文本节点 - 使用绝对坐标
+    this.textNode.place(thisX, thisY, width, height);
   }
 
   draw(drawApi: DrawAPI) {

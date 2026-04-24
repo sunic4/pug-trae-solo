@@ -58,7 +58,9 @@ export class Text extends ComposeNode {
   }
 
   place(x: number, y: number, width: number, height: number) {
-    super.place(x + (this.props.x || 0), y + (this.props.y || 0), width, height);
+    const thisX = x + (this.props.x || 0);
+    const thisY = y + (this.props.y || 0);
+    super.place(thisX, thisY, width, height);
   }
 
   draw(drawApi: DrawAPI) {
