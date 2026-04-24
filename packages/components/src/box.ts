@@ -13,9 +13,9 @@ export interface BoxProps {
   marginBottom?: number;
   x?: number;
   y?: number;
-  width?: number;
-  height?: number;
-  children?: ComposeNode[];
+  width?: number | string;
+  height?: number | string;
+  children?: ComposeNode | ComposeNode[];
 }
 
 export class Box extends ComposeNode {
@@ -34,8 +34,22 @@ export class Box extends ComposeNode {
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const { width, height, padding = 0, margin = 0 } = this.props;
 
-    let boxWidth = width || constraints.maxWidth - margin * 2;
-    let boxHeight = height || constraints.maxHeight - margin * 2;
+    let boxWidth: number;
+    let boxHeight: number;
+
+    // 处理百分比宽度
+    if (width === '100%') {
+      boxWidth = constraints.maxWidth - margin * 2;
+    } else {
+      boxWidth = (width as number) || constraints.maxWidth - margin * 2;
+    }
+
+    // 处理百分比高度
+    if (height === '100%') {
+      boxHeight = constraints.maxHeight - margin * 2;
+    } else {
+      boxHeight = (height as number) || constraints.maxHeight - margin * 2;
+    }
 
     // 测量子元素
     if (this.children.length > 0) {

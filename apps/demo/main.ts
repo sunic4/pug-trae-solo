@@ -9,9 +9,21 @@ if (!canvas) {
   throw new Error('Failed to get canvas element');
 }
 
-// 渲染应用
-renderApp(RendererType.CANVAS_2D, {
-  width: canvas.width,
-  height: canvas.height,
-  canvas: canvas
-});
+// 设置canvas大小为窗口大小
+function setCanvasSize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  // 重新渲染应用
+  renderApp(RendererType.CANVAS_2D, {
+    width: canvas.width,
+    height: canvas.height,
+    canvas: canvas
+  });
+}
+
+// 初始设置
+setCanvasSize();
+
+// 监听窗口大小变化
+window.addEventListener('resize', setCanvasSize);

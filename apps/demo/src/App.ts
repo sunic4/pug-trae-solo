@@ -33,8 +33,8 @@ export function App() {
 
   return BoxComponent({
     backgroundColor: theme.colors.background,
-    width: 400,
-    height: 1000,
+    width: '100%',
+    height: '100%',
     children: ColumnComponent({
       height: '100%',
       children: [
