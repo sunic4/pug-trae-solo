@@ -17,10 +17,10 @@ export function signal<T>(initialValue: T): Signal<T> {
       if (dependencyStack.length > 0) {
         const currentTrackers = dependencyStack[dependencyStack.length - 1];
         // 为每个依赖的 signal 添加一个回调，当 signal 变化时标记 computed 为脏
-        const tracker = () => {
-          currentTrackers.forEach(callback => callback());
-        };
-        subscribers.add(tracker);
+        // 直接将 currentTrackers 中的所有回调添加到 subscribers 中
+        currentTrackers.forEach(callback => {
+          subscribers.add(callback);
+        });
       }
       return value;
     },
