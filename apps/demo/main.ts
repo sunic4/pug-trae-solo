@@ -9,17 +9,26 @@ if (!canvas) {
   throw new Error('Failed to get canvas element');
 }
 
+// 保持 renderer 引用，避免每次重新创建
+let renderResult: any = null;
+
 // 设置canvas大小为窗口大小
 function setCanvasSize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   
-  // 重新渲染应用
-  renderApp(RendererType.CANVAS_2D, {
-    width: canvas.width,
-    height: canvas.height,
-    canvas: canvas
-  });
+  // 如果没有渲染过，首次渲染
+  if (!renderResult) {
+    renderResult = renderApp(RendererType.CANVAS_2D, {
+      width: canvas.width,
+      height: canvas.height,
+      canvas: canvas
+    });
+  } else {
+    // 只是调整 renderer 的大小，而不是重新创建
+    renderResult.renderer.resize(canvas.width, canvas.height);
+    renderResult.renderer.renderFrame();
+  }
 }
 
 // 初始设置
