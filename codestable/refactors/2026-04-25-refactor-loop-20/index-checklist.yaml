@@ -1,0 +1,15 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-20
+status: draft
+
+steps:
+  - id: step-1
+    name: 优化代码结构
+    description: 优化代码结构，添加更多的注释，优化代码风格和可读性
+    actions:
+      - file: packages/theme/src/index.ts
+        changes: 优化代码结构，添加更多的注释
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
