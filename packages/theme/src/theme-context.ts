@@ -22,31 +22,20 @@ export class ThemeContext {
   }
 }
 
-// 全局主题上下文实例（保持向后兼容）
-export const globalThemeContext = new ThemeContext();
-
-// 全局 AppContext 引用（用于全局钩子函数）
-let globalAppContext: AppContext | null = null;
-
-// 设置全局 AppContext
-export function setGlobalAppContext(context: AppContext): void {
-  globalAppContext = context;
-}
-
-// 获取主题上下文（优先从 AppContext 获取）
-export function getThemeContext(): ThemeContext {
-  return globalAppContext?.theme || globalThemeContext;
-}
-
 // 主题钩子函数，用于在组件中访问主题
-export function useTheme(): Theme {
-  // 优先从 AppContext 获取，否则使用全局主题上下文
-  return getThemeContext().theme;
+export function useTheme(appContext?: AppContext): Theme {
+  if (appContext) {
+    return appContext.theme.theme;
+  }
+  // 向后兼容：使用默认主题
+  return defaultTheme;
 }
 
 // 主题切换钩子函数，用于在组件中切换主题
-export function useThemeSwitcher() {
+export function useThemeSwitcher(appContext?: AppContext) {
   return (theme: Theme) => {
-    getThemeContext().setTheme(theme);
+    if (appContext) {
+      appContext.theme.setTheme(theme);
+    }
   };
 }

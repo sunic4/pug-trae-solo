@@ -11,7 +11,7 @@ export default defineConfig({
       '@pug/event': path.resolve(__dirname, './packages/event/src'),
       '@pug/theme': path.resolve(__dirname, './packages/theme/src'),
       '@pug/components': path.resolve(__dirname, './packages/components/src'),
-      '@pug': path.resolve(__dirname, './packages/canvas-compose/src'),
+      '@pug/core': path.resolve(__dirname, './packages/core/src'),
     },
   },
 })

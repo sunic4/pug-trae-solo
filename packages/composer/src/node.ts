@@ -74,7 +74,7 @@ export class ComposeNode<P extends ComposeNodeProps = ComposeNodeProps> {
     if (!child) return; // 类型保护
     child.parent = this;
     // 传递 appContext 给子节点
-    if (!child.appContext && this.appContext) {
+    if (this.appContext) {
       child.appContext = this.appContext;
     }
     this.children.push(child);

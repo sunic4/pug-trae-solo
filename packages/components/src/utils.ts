@@ -1,4 +1,6 @@
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
+import { useTheme } from '@pug/theme';
 
 /**
  * 绘制圆角矩形
@@ -27,4 +29,13 @@ export function drawRoundedRect(
   // 左下角
   drawApi.arc(x + borderRadius, y + height - borderRadius, borderRadius, Math.PI * 0.5, Math.PI);
   drawApi.closePath();
+}
+
+/**
+ * 从 AppContext 中获取主题
+ * @param appContext AppContext 实例
+ * @returns 主题对象
+ */
+export function getThemeFromContext(appContext: AppContext | null) {
+  return useTheme(appContext || undefined);
 }

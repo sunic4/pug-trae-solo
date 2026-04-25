@@ -1,6 +1,6 @@
 import { ComposeNode } from '@pug/composer';
-import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
+import { getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
 
 export interface TextProps {
@@ -22,17 +22,13 @@ export interface TextProps {
 }
 
 export class Text extends ComposeNode<TextProps> {
-  constructor(props: TextProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: TextProps, key?: string) {
+    super(key, props, props.appContext);
     this.markLayoutDirty();
   }
 
   private getTheme() {
-    // 优先从 appContext 获取主题，否则使用全局主题
-    if (this.appContext) {
-      return this.appContext.theme.theme;
-    }
-    return useTheme();
+    return getThemeFromContext(this.appContext);
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
@@ -94,5 +90,5 @@ export class Text extends ComposeNode<TextProps> {
 }
 
 export function TextComponent(props: TextProps) {
-  return new Text(props, undefined, props.appContext);
+  return new Text(props);
 }

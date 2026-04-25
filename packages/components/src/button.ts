@@ -1,8 +1,7 @@
 import { ComposeNode } from '@pug/composer';
-import { useTheme } from '@pug/theme';
 import { TextComponent } from './text';
 import { DrawAPI } from '@pug/renderer';
-import { drawRoundedRect } from './utils';
+import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
 
 export interface ButtonProps {
@@ -26,14 +25,14 @@ export interface ButtonProps {
 export class Button extends ComposeNode<ButtonProps> {
   private textNode: ComposeNode;
 
-  constructor(props: ButtonProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: ButtonProps, key?: string) {
+    super(key, props, props.appContext);
     this.textNode = TextComponent({
       text: props.text,
       color: this.getTextColor(),
       fontWeight: 500,
       textAlign: 'center',
-      appContext: appContext || props.appContext
+      appContext: props.appContext
     });
     this.addChild(this.textNode);
     
@@ -48,11 +47,7 @@ export class Button extends ComposeNode<ButtonProps> {
   }
 
   private getTheme() {
-    // 优先从 appContext 获取主题，否则使用全局主题
-    if (this.appContext) {
-      return this.appContext.theme.theme;
-    }
-    return useTheme();
+    return getThemeFromContext(this.appContext);
   }
 
   private getTextColor(): string {
@@ -189,5 +184,5 @@ export class Button extends ComposeNode<ButtonProps> {
 }
 
 export function ButtonComponent(props: ButtonProps) {
-  return new Button(props, undefined, props.appContext);
+  return new Button(props);
 }

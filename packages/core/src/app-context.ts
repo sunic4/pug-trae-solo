@@ -18,7 +18,7 @@ export interface AppContext {
   composer: Composer;
   
   // 渲染器
-  renderer: Renderer | undefined;
+  renderer: Renderer | null;
   
   // 获取配置
   getConfig(): AppContextConfig;
@@ -32,7 +32,7 @@ export class AppContextImpl implements AppContext {
   private config: AppContextConfig;
   private _theme: ThemeContext;
   private _composer: Composer;
-  private _renderer: Renderer | undefined;
+  private _renderer: Renderer | null;
   private disposed = false;
 
   constructor(config: AppContextConfig) {
@@ -45,7 +45,7 @@ export class AppContextImpl implements AppContext {
     this._composer = config.composer || new Composer();
     
     // 使用提供的 renderer
-    this._renderer = config.renderer;
+    this._renderer = config.renderer || null;
   }
 
   get theme(): ThemeContext {
@@ -58,7 +58,7 @@ export class AppContextImpl implements AppContext {
     return this._composer;
   }
 
-  get renderer(): Renderer | undefined {
+  get renderer(): Renderer | null {
     this.assertNotDisposed();
     return this._renderer;
   }

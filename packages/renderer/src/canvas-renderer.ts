@@ -103,20 +103,23 @@ export class CanvasRenderer implements Renderer {
     // 移动到节点的位置
     this.ctx.translate(node.x, node.y);
     
-    // 优先使用 draw 方法，如果没有则使用 drawCommands 方法
-    if (typeof node.draw === 'function') {
-      const drawApi = new Canvas2DDrawAPI(this.ctx);
-      node.draw(drawApi);
-    } else if (typeof node.drawCommands === 'function') {
-      const commands = node.drawCommands();
-      this.drawCommands(commands);
+    // 只绘制脏节点，初始渲染时所有节点都是脏的
+    if (node.dirty) {
+      // 优先使用 draw 方法，如果没有则使用 drawCommands 方法
+      if (typeof node.draw === 'function') {
+        const drawApi = new Canvas2DDrawAPI(this.ctx);
+        node.draw(drawApi);
+      } else if (typeof node.drawCommands === 'function') {
+        const commands = node.drawCommands();
+        this.drawCommands(commands);
+      }
+      
+      // 清除节点的脏标记
+      node.clearDirty();
     }
     
     // 恢复状态
     this.ctx.restore();
-    
-    // 清除节点的脏标记
-    node.clearDirty();
     
     // 递归绘制子节点
     for (const child of node.children) {
