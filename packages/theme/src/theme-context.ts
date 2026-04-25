@@ -1,5 +1,6 @@
 import { signal } from '@pug/reactivity';
 import { Theme, defaultTheme } from './theme';
+import { AppContext } from '@pug/core';
 
 export class ThemeContext {
   private themeSignal;
@@ -21,18 +22,31 @@ export class ThemeContext {
   }
 }
 
-// 全局主题上下文实例
+// 全局主题上下文实例（保持向后兼容）
 export const globalThemeContext = new ThemeContext();
+
+// 全局 AppContext 引用（用于全局钩子函数）
+let globalAppContext: AppContext | null = null;
+
+// 设置全局 AppContext
+export function setGlobalAppContext(context: AppContext): void {
+  globalAppContext = context;
+}
+
+// 获取主题上下文（优先从 AppContext 获取）
+export function getThemeContext(): ThemeContext {
+  return globalAppContext?.theme || globalThemeContext;
+}
 
 // 主题钩子函数，用于在组件中访问主题
 export function useTheme(): Theme {
-  // 直接返回主题值，信号系统会自动追踪依赖
-  return globalThemeContext.theme;
+  // 优先从 AppContext 获取，否则使用全局主题上下文
+  return getThemeContext().theme;
 }
 
 // 主题切换钩子函数，用于在组件中切换主题
 export function useThemeSwitcher() {
   return (theme: Theme) => {
-    globalThemeContext.setTheme(theme);
+    getThemeContext().setTheme(theme);
   };
 }

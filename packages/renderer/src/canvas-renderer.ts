@@ -3,6 +3,7 @@ import { DrawCommand, executeDrawCommand } from './draw-command';
 import { DirtyRect } from './dirty-rect';
 import { Canvas2DDrawAPI } from './draw-api';
 import { Renderer, RendererConfig } from './renderer-interface';
+import { AppContext } from '@pug/core';
 
 export class CanvasRenderer implements Renderer {
   config: RendererConfig;
@@ -11,8 +12,9 @@ export class CanvasRenderer implements Renderer {
   private dirtyRects: DirtyRect[] = [];
   private rootNode: ComposeNode | null = null;
   private animationFrameId: number | null = null;
+  private appContext: AppContext | null = null;
 
-  constructor(canvas: HTMLCanvasElement, config?: Partial<RendererConfig>) {
+  constructor(canvas: HTMLCanvasElement, config?: Partial<RendererConfig>, appContext?: AppContext) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -26,12 +28,25 @@ export class CanvasRenderer implements Renderer {
       debug: false,
       ...config
     };
+    this.appContext = appContext || null;
     this.startFrameLoop();
   }
 
   setRoot(node: ComposeNode): void {
     this.rootNode = node;
+    // 传递 appContext 给根节点
+    if (this.appContext) {
+      node.appContext = this.appContext;
+    }
     this.markDirty({ x: 0, y: 0, w: this.canvas.width, h: this.canvas.height });
+  }
+
+  setAppContext(appContext: AppContext): void {
+    this.appContext = appContext;
+    // 传递 appContext 给根节点
+    if (this.rootNode) {
+      this.rootNode.appContext = appContext;
+    }
   }
 
   markDirty(rect: DirtyRect): void {

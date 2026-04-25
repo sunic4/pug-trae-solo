@@ -2,7 +2,7 @@ import { ComposeNode } from './node';
 import { SlotTable } from './slot-table';
 import { setCurrentContext } from '@pug/reactivity';
 
-export type ComposableFunction = () => ComposeNode;
+export type ComposableFunction = (...args: any[]) => ComposeNode;
 
 export class Composer {
   private rootNode: ComposeNode | null = null;

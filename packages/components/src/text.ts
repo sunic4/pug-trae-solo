@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
 
 export interface TextProps {
   text: string;
@@ -17,17 +18,25 @@ export interface TextProps {
   marginRight?: number;
   marginTop?: number;
   marginLeft?: number;
+  appContext?: AppContext;
 }
 
 export class Text extends ComposeNode<TextProps> {
-  constructor(props: TextProps, key?: string) {
-    super(key);
-    this.props = props;
+  constructor(props: TextProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     this.markLayoutDirty();
   }
 
+  private getTheme() {
+    // 优先从 appContext 获取主题，否则使用全局主题
+    if (this.appContext) {
+      return this.appContext.theme.theme;
+    }
+    return useTheme();
+  }
+
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const fontSize = this.props.fontSize || theme.typography.fontSize.base;
     const fontWeight = this.props.fontWeight || theme.typography.fontWeight.normal;
     const fontFamily = theme.typography.fontFamily;
@@ -65,7 +74,7 @@ export class Text extends ComposeNode<TextProps> {
   }
 
   draw(drawApi: DrawAPI) {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const fontSize = this.props.fontSize || theme.typography.fontSize.base;
     const fontWeight = this.props.fontWeight || theme.typography.fontWeight.normal;
     const color = this.props.color || theme.colors.text;
@@ -85,5 +94,5 @@ export class Text extends ComposeNode<TextProps> {
 }
 
 export function TextComponent(props: TextProps) {
-  return new Text(props);
+  return new Text(props, undefined, props.appContext);
 }

@@ -3,6 +3,7 @@ import { useTheme } from '@pug/theme';
 import { TextComponent } from './text';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect } from './utils';
+import { AppContext } from '@pug/core';
 
 export interface ButtonProps {
   text: string;
@@ -19,19 +20,20 @@ export interface ButtonProps {
   padding?: number;
   backgroundColor?: string;
   color?: string;
+  appContext?: AppContext;
 }
 
 export class Button extends ComposeNode<ButtonProps> {
   private textNode: ComposeNode;
 
-  constructor(props: ButtonProps, key?: string) {
-    super(key);
-    this.props = props;
+  constructor(props: ButtonProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     this.textNode = TextComponent({
       text: props.text,
       color: this.getTextColor(),
       fontWeight: 500,
       textAlign: 'center',
+      appContext: appContext || props.appContext
     });
     this.addChild(this.textNode);
     
@@ -45,8 +47,16 @@ export class Button extends ComposeNode<ButtonProps> {
     this.markLayoutDirty();
   }
 
+  private getTheme() {
+    // 优先从 appContext 获取主题，否则使用全局主题
+    if (this.appContext) {
+      return this.appContext.theme.theme;
+    }
+    return useTheme();
+  }
+
   private getTextColor(): string {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const { variant, disabled } = this.props;
 
     if (disabled) {
@@ -68,7 +78,7 @@ export class Button extends ComposeNode<ButtonProps> {
   }
 
   private getBackgroundColor(): string {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const { variant, disabled } = this.props;
 
     if (disabled) {
@@ -90,7 +100,7 @@ export class Button extends ComposeNode<ButtonProps> {
   }
 
   private getBorderColor(): string {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const { variant, disabled } = this.props;
 
     if (disabled) {
@@ -110,7 +120,7 @@ export class Button extends ComposeNode<ButtonProps> {
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const { size, width, height } = this.props;
 
     let buttonWidth = width;
@@ -151,7 +161,7 @@ export class Button extends ComposeNode<ButtonProps> {
   }
 
   draw(drawApi: DrawAPI) {
-    const theme = useTheme();
+    const theme = this.getTheme();
     const borderRadius = theme.borderRadius.base;
 
     // 绘制按钮背景
@@ -179,5 +189,5 @@ export class Button extends ComposeNode<ButtonProps> {
 }
 
 export function ButtonComponent(props: ButtonProps) {
-  return new Button(props);
+  return new Button(props, undefined, props.appContext);
 }

@@ -5,6 +5,7 @@ export default defineConfig({
   root: path.resolve(__dirname),
   resolve: {
     alias: {
+      '@pug/core': path.resolve(__dirname, '../../packages/core/src'),
       '@pug/reactivity': path.resolve(__dirname, '../../packages/reactivity/src'),
       '@pug/composer': path.resolve(__dirname, '../../packages/composer/src'),
       '@pug/layout': path.resolve(__dirname, '../../packages/layout/src'),

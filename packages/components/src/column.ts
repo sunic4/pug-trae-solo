@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
 
 export interface ColumnProps {
   width?: number | string;
@@ -9,11 +10,12 @@ export interface ColumnProps {
   alignItems?: 'start' | 'center' | 'end' | 'flex-start' | 'flex-end';
   justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
   children?: ComposeNode[];
+  appContext?: AppContext;
 }
 
-export class Column extends ComposeNode {
-  constructor(public props: ColumnProps) {
-    super();
+export class Column extends ComposeNode<ColumnProps> {
+  constructor(props: ColumnProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
@@ -83,5 +85,5 @@ export class Column extends ComposeNode {
 }
 
 export function ColumnComponent(props: ColumnProps) {
-  return new Column(props);
+  return new Column(props, undefined, props.appContext);
 }

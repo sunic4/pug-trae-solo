@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
 
 export interface StackProps {
   alignment?: 'start' | 'center' | 'end';
@@ -8,11 +9,12 @@ export interface StackProps {
   y?: number;
   width?: number;
   height?: number;
+  appContext?: AppContext;
 }
 
-export class Stack extends ComposeNode {
-  constructor(public props: StackProps) {
-    super();
+export class Stack extends ComposeNode<StackProps> {
+  constructor(props: StackProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
@@ -89,5 +91,5 @@ export class Stack extends ComposeNode {
 }
 
 export function StackComponent(props: StackProps) {
-  return new Stack(props);
+  return new Stack(props, undefined, props.appContext);
 }

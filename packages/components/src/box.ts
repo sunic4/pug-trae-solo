@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect } from './utils';
+import { AppContext } from '@pug/core';
 
 export interface BoxProps {
   backgroundColor?: string;
@@ -23,11 +24,12 @@ export interface BoxProps {
   borderBottom?: string;
   overflow?: 'hidden' | 'visible' | 'scroll';
   children?: ComposeNode | ComposeNode[];
+  appContext?: AppContext;
 }
 
-export class Box extends ComposeNode {
-  constructor(public props: BoxProps) {
-    super();
+export class Box extends ComposeNode<BoxProps> {
+  constructor(props: BoxProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     if (props.children) {
       if (Array.isArray(props.children)) {
         props.children.forEach(child => this.addChild(child));
@@ -133,5 +135,5 @@ export class Box extends ComposeNode {
 }
 
 export function BoxComponent(props: BoxProps) {
-  return new Box(props);
+  return new Box(props, undefined, props.appContext);
 }

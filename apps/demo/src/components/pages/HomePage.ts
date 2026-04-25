@@ -1,21 +1,25 @@
 import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent } from '@pug/components';
 import { useTheme } from '../../hooks/useTheme';
 import { navigateTo } from '../../state/navigationState';
+import { AppContext } from '@pug/core';
 
-export function HomePage() {
+export function HomePage(appContext: AppContext) {
   const theme = useTheme();
 
   return BoxComponent({
+    appContext,
     width: '100%',
     height: '100%',
     backgroundColor: theme.colors.background,
     padding: 20,
     children: ColumnComponent({
+      appContext,
       alignItems: 'center',
       spacing: 20,
       children: [
         // 页面标题
         TextComponent({
+          appContext,
           text: '组件示例导航',
           fontSize: 28,
           fontWeight: 600,
@@ -24,6 +28,7 @@ export function HomePage() {
         
         // 导航按钮
         ButtonComponent({
+          appContext,
           text: '文本组件示例',
           onClick: () => {
             navigateTo('details', { page: 'text' });
@@ -34,6 +39,7 @@ export function HomePage() {
         }),
         
         ButtonComponent({
+          appContext,
           text: '按钮组件示例',
           onClick: () => {
             navigateTo('details', { page: 'button' });
@@ -44,6 +50,7 @@ export function HomePage() {
         }),
         
         ButtonComponent({
+          appContext,
           text: '复选框组件示例',
           onClick: () => {
             navigateTo('details', { page: 'checkbox' });
@@ -54,6 +61,7 @@ export function HomePage() {
         }),
         
         ButtonComponent({
+          appContext,
           text: '文本输入组件示例',
           onClick: () => {
             navigateTo('details', { page: 'textinput' });
@@ -64,6 +72,7 @@ export function HomePage() {
         }),
         
         ButtonComponent({
+          appContext,
           text: '布局组件示例',
           onClick: () => {
             navigateTo('details', { page: 'layout' });
@@ -74,6 +83,7 @@ export function HomePage() {
         }),
         
         ButtonComponent({
+          appContext,
           text: '设置页面',
           onClick: () => {
             navigateTo('settings');

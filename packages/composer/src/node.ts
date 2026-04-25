@@ -19,6 +19,7 @@ export interface ComposeNodeProps {
 }
 
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
 
 export class ComposeNode<P extends ComposeNodeProps = ComposeNodeProps> {
   readonly key: string;
@@ -32,12 +33,14 @@ export class ComposeNode<P extends ComposeNodeProps = ComposeNodeProps> {
   private _dirty = false;
   private _layoutDirty = false;
   parent: ComposeNode | null = null;
+  appContext: AppContext | null = null;
 
-  constructor(key: string = Math.random().toString(36).substr(2, 9), props?: P) {
+  constructor(key: string = Math.random().toString(36).substr(2, 9), props?: P, appContext?: AppContext) {
     this.key = key;
     if (props) {
       this.props = props;
     }
+    this.appContext = appContext || null;
   }
 
   get dirty(): boolean {
@@ -70,6 +73,10 @@ export class ComposeNode<P extends ComposeNodeProps = ComposeNodeProps> {
   addChild(child: ComposeNode): void {
     if (!child) return; // 类型保护
     child.parent = this;
+    // 传递 appContext 给子节点
+    if (!child.appContext && this.appContext) {
+      child.appContext = this.appContext;
+    }
     this.children.push(child);
     this.markLayoutDirty();
   }

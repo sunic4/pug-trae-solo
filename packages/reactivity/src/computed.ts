@@ -1,4 +1,4 @@
-import { trackDependencies } from './signal.js';
+import { trackDependencies } from './signal';
 
 export interface ComputedSignal<T> {
   get value(): T;

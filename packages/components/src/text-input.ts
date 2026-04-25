@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect } from './utils';
+import { AppContext } from '@pug/core';
 
 export interface TextInputProps {
   value: string;
@@ -11,14 +12,14 @@ export interface TextInputProps {
   height?: number;
   x?: number;
   y?: number;
+  appContext?: AppContext;
 }
 
 export class TextInput extends ComposeNode<TextInputProps> {
   private isFocused = false;
 
-  constructor(props: TextInputProps, key?: string) {
-    super(key);
-    this.props = props;
+  constructor(props: TextInputProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     this.handlers['click'] = this.onClick.bind(this);
     this.markLayoutDirty();
   }
@@ -99,5 +100,5 @@ export class TextInput extends ComposeNode<TextInputProps> {
 }
 
 export function TextInputComponent(props: TextInputProps) {
-  return new TextInput(props);
+  return new TextInput(props, undefined, props.appContext);
 }

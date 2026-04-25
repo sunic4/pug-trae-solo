@@ -1,5 +1,6 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
+import { AppContext } from '@pug/core';
 
 export interface RowProps {
   width?: number;
@@ -9,11 +10,12 @@ export interface RowProps {
   alignItems?: 'start' | 'center' | 'end';
   justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
   children?: ComposeNode[];
+  appContext?: AppContext;
 }
 
-export class Row extends ComposeNode {
-  constructor(public props: RowProps) {
-    super();
+export class Row extends ComposeNode<RowProps> {
+  constructor(props: RowProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     if (props.children) {
       props.children.forEach(child => this.addChild(child));
     }
@@ -76,5 +78,5 @@ export class Row extends ComposeNode {
 }
 
 export function RowComponent(props: RowProps) {
-  return new Row(props);
+  return new Row(props, undefined, props.appContext);
 }

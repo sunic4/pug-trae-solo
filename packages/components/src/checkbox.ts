@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect } from './utils';
+import { AppContext } from '@pug/core';
 
 export interface CheckboxProps {
   checked: boolean;
@@ -11,12 +12,12 @@ export interface CheckboxProps {
   height?: number;
   x?: number;
   y?: number;
+  appContext?: AppContext;
 }
 
 export class Checkbox extends ComposeNode<CheckboxProps> {
-  constructor(props: CheckboxProps, key?: string) {
-    super(key);
-    this.props = props;
+  constructor(props: CheckboxProps, key?: string, appContext?: AppContext) {
+    super(key, props, appContext || props.appContext);
     this.handlers['click'] = this.onClick.bind(this);
     this.markLayoutDirty();
   }
@@ -106,5 +107,5 @@ export class Checkbox extends ComposeNode<CheckboxProps> {
 }
 
 export function CheckboxComponent(props: CheckboxProps) {
-  return new Checkbox(props);
+  return new Checkbox(props, undefined, props.appContext);
 }

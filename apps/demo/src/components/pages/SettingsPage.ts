@@ -2,21 +2,25 @@ import { BoxComponent, TextComponent, ButtonComponent, ColumnComponent, Checkbox
 import { useTheme } from '../../hooks/useTheme';
 import { signal } from '@pug/reactivity';
 import { navigateBack } from '../../state/navigationState';
+import { AppContext } from '@pug/core';
 
-export function SettingsPage() {
+export function SettingsPage(appContext: AppContext) {
   const theme = useTheme();
   const notificationsEnabled = signal(true);
   const darkModeEnabled = signal(false);
 
   return BoxComponent({
+    appContext,
     width: '100%',
     height: '100%',
     backgroundColor: theme.colors.background,
     padding: 20,
     children: ColumnComponent({
+      appContext,
       alignItems: 'flex-start',
       children: [
         TextComponent({
+          appContext,
           text: '设置页',
           fontSize: 24,
           fontWeight: 600,
@@ -24,6 +28,7 @@ export function SettingsPage() {
           marginBottom: 20,
         }),
         TextComponent({
+          appContext,
           text: '应用设置',
           fontSize: 18,
           fontWeight: 500,
@@ -31,17 +36,20 @@ export function SettingsPage() {
           marginBottom: 15,
         }),
         BoxComponent({
+          appContext,
           flexDirection: 'row',
           alignItems: 'center',
           marginBottom: 15,
           children: [
             TextComponent({
+              appContext,
               text: '启用通知',
               fontSize: 16,
               color: theme.colors.text,
               marginRight: 20,
             }),
             CheckboxComponent({
+              appContext,
               checked: notificationsEnabled.value,
               onCheckedChange: (checked) => {
                 notificationsEnabled.value = checked;
@@ -50,17 +58,20 @@ export function SettingsPage() {
           ],
         }),
         BoxComponent({
+          appContext,
           flexDirection: 'row',
           alignItems: 'center',
           marginBottom: 30,
           children: [
             TextComponent({
+              appContext,
               text: '深色模式',
               fontSize: 16,
               color: theme.colors.text,
               marginRight: 20,
             }),
             CheckboxComponent({
+              appContext,
               checked: darkModeEnabled.value,
               onCheckedChange: (checked) => {
                 darkModeEnabled.value = checked;
@@ -69,6 +80,7 @@ export function SettingsPage() {
           ],
         }),
         ButtonComponent({
+          appContext,
           text: '保存设置',
           onClick: () => {
             // 保存设置逻辑
@@ -79,6 +91,7 @@ export function SettingsPage() {
           marginBottom: 15,
         }),
         ButtonComponent({
+          appContext,
           text: '返回首页',
           onClick: () => {
             navigateBack();

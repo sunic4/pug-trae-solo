@@ -1,3 +1,3 @@
-export * from './node.js';
-export * from './slot-table.js';
-export * from './composer.js';
+export * from './node';
+export * from './slot-table';
+export * from './composer';

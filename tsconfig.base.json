@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@pug/core": ["./packages/core/src"],
       "@pug/reactivity": ["./packages/reactivity/src"],
       "@pug/composer": ["./packages/composer/src"],
       "@pug/layout": ["./packages/layout/src"],
@@ -26,5 +27,6 @@
       "@pug/components": ["./packages/components/src"]
     }
   },
-  "include": ["packages/**/*.ts", "apps/**/*.ts"]
+  "include": ["packages/**/*.ts", "apps/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
 }
