@@ -6,51 +6,59 @@ import { AppContext } from '@pug/core';
 export function NavigationBar(appContext: AppContext) {
   const theme = useTheme();
 
+  // 提取常量
+  const BUTTON_PADDING = 10;
+  const NAV_BAR_HEIGHT = 60;
+  const NAV_BAR_PADDING = 10;
+  
+  // 提取按钮配置
+  const primaryButtonProps = {
+    appContext,
+    padding: BUTTON_PADDING,
+    backgroundColor: theme.colors.primary,
+    color: theme.colors.onPrimary,
+  };
+  
+  const secondaryButtonProps = {
+    appContext,
+    padding: BUTTON_PADDING,
+    backgroundColor: theme.colors.secondary,
+    color: theme.colors.onSecondary,
+  };
+
   return BoxComponent({
     appContext,
     width: '100%',
-    height: 60,
+    height: NAV_BAR_HEIGHT,
     backgroundColor: theme.colors.surface,
     borderBottom: `1px solid ${theme.colors.border}`,
-    padding: 10,
+    padding: NAV_BAR_PADDING,
     children: RowComponent({
       appContext,
       justifyContent: 'space-around',
       alignItems: 'center',
       children: [
         ButtonComponent({
-          appContext,
+          ...secondaryButtonProps,
           text: '返回',
           onClick: () => {
             navigateBack();
           },
-          padding: 10,
-          backgroundColor: theme.colors.secondary,
-          color: theme.colors.onSecondary,
         }),
         ButtonComponent({
-          appContext,
+          ...primaryButtonProps,
           text: '首页',
           onClick: () => navigateTo('home'),
-          padding: 10,
-          backgroundColor: theme.colors.primary,
-          color: theme.colors.onPrimary,
         }),
         ButtonComponent({
-          appContext,
+          ...primaryButtonProps,
           text: '详情',
           onClick: () => navigateTo('details'),
-          padding: 10,
-          backgroundColor: theme.colors.primary,
-          color: theme.colors.onPrimary,
         }),
         ButtonComponent({
-          appContext,
+          ...primaryButtonProps,
           text: '设置',
           onClick: () => navigateTo('settings'),
-          padding: 10,
-          backgroundColor: theme.colors.primary,
-          color: theme.colors.onPrimary,
         }),
       ],
     }),
