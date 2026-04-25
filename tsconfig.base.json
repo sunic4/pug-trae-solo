@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pug/core": ["./packages/core/src"],
+      "@pug/reactivity": ["./packages/reactivity/src"],
+      "@pug/composer": ["./packages/composer/src"],
+      "@pug/layout": ["./packages/layout/src"],
+      "@pug/renderer": ["./packages/renderer/src"],
+      "@pug/event": ["./packages/event/src"],
+      "@pug/theme": ["./packages/theme/src"],
+      "@pug/components": ["./packages/components/src"]
+    }
+  },
+  "include": ["packages/**/*.ts", "apps/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
+}
