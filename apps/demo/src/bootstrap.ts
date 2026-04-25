@@ -1,7 +1,6 @@
 import { createAppContext } from '@pug/core';
 import { CanvasRenderer } from '@pug/renderer';
 import { defaultTheme } from '@pug/theme';
-import { setGlobalAppContext } from '@pug/theme';
 import { App } from './App';
 
 export interface BootstrapOptions {
@@ -29,8 +28,7 @@ export function bootstrap(options: BootstrapOptions): () => void {
     renderer
   });
 
-  // 设置全局 AppContext（用于保持向后兼容）
-  setGlobalAppContext(appContext);
+  // 不再需要设置全局 AppContext，因为我们现在使用依赖注入
 
   // 传递 AppContext 给渲染器
   renderer.setAppContext(appContext);
