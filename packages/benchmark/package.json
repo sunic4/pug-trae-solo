@@ -1,0 +1,22 @@
+{
+  "name": "@pug/benchmark",
+  "version": "1.0.0",
+  "description": "Performance benchmark tests for the Pug framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "benchmark": "node dist/index.js"
+  },
+  "dependencies": {
+    "@pug/core": "workspace:*",
+    "@pug/composer": "workspace:*",
+    "@pug/renderer": "workspace:*",
+    "@pug/reactivity": "workspace:*",
+    "@pug/components": "workspace:*",
+    "@pug/theme": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

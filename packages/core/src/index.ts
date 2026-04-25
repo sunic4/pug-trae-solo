@@ -4,7 +4,7 @@
  */
 
 // 导出应用上下文系统
-export * from './app-context';
+export * from './app-context.ts';
 
 // 导出测试工具
-export * from './test-utils';
+export * from './test-utils.ts';

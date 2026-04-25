@@ -5,6 +5,10 @@ import { NavigationBar } from './components/NavigationBar';
 import { HomePage } from './components/pages/HomePage';
 import { DetailsPage } from './components/pages/DetailsPage';
 import { SettingsPage } from './components/pages/SettingsPage';
+import { FeaturesPage } from './components/pages/FeaturesPage';
+import { PerformancePage } from './components/pages/PerformancePage';
+import { TestingPage } from './components/pages/TestingPage';
+import { AdvancedExamplesPage } from './components/pages/AdvancedExamplesPage';
 import { AppContext } from '@pug/core';
 
 // 根组件
@@ -21,6 +25,14 @@ export function App(appContext: AppContext) {
         return DetailsPage();
       case 'settings':
         return SettingsPage();
+      case 'features':
+        return FeaturesPage();
+      case 'performance':
+        return PerformancePage();
+      case 'testing':
+        return TestingPage();
+      case 'advanced':
+        return AdvancedExamplesPage();
       default:
         return HomePage();
     }

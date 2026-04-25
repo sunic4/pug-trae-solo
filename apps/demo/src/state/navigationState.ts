@@ -1,7 +1,7 @@
 import { signal } from '@pug/reactivity';
 
 // 定义页面类型
-export type Page = 'home' | 'details' | 'settings';
+export type Page = 'home' | 'details' | 'settings' | 'features' | 'performance' | 'testing' | 'advanced';
 
 // 导航历史记录项
 interface NavigationHistoryItem {

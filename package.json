@@ -7,7 +7,10 @@
     "dev": "vite --config apps/demo/vite.config.ts",
     "test": "vitest run",
     "build": "tsc && vite build --config apps/demo/vite.config.ts",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "prettier": "prettier --write .",
+    "format": "npm run prettier && npm run lint",
+    "benchmark": "npx ts-node packages/benchmark/src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
