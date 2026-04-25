@@ -359,9 +359,6 @@ export function DetailsPage(appContext: AppContext) {
 
   // 获取页面标题
   function getPageTitle() {
-    const params = navigationState.value.params;
-    const pageType = params.page || 'text';
-    
     switch (pageType) {
       case 'text':
         return '文本组件示例页';

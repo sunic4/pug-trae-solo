@@ -1,0 +1,15 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-demo-refactor-loop-1
+status: draft
+
+steps:
+  - id: step-1
+    name: 优化 DetailsPage.ts
+    description: 移除 getPageTitle 函数中重复的参数获取，直接使用已有的 pageType 变量
+    actions:
+      - file: apps/demo/src/components/pages/DetailsPage.ts
+        changes: 移除重复的参数获取，直接使用已有的 pageType 变量
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
