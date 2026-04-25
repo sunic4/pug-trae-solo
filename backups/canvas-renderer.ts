@@ -13,8 +13,6 @@ export class CanvasRenderer implements Renderer {
   private rootNode: ComposeNode | null = null;
   private animationFrameId: number | null = null;
   private appContext: AppContext | null = null;
-  private isRendering = false;
-  private errorHandlers: Array<(error: Error) => void> = [];
 
   constructor(canvas: HTMLCanvasElement, config?: Partial<RendererConfig>, appContext?: AppContext) {
     // 类型检查
@@ -59,29 +57,6 @@ export class CanvasRenderer implements Renderer {
     }
   }
 
-  // 错误处理
-  addErrorHandler(handler: (error: Error) => void): void {
-    this.errorHandlers.push(handler);
-  }
-
-  removeErrorHandler(handler: (error: Error) => void): void {
-    const index = this.errorHandlers.indexOf(handler);
-    if (index > -1) {
-      this.errorHandlers.splice(index, 1);
-    }
-  }
-
-  private handleError(error: Error): void {
-    console.error('CanvasRenderer error:', error);
-    this.errorHandlers.forEach(handler => {
-      try {
-        handler(error);
-      } catch (handlerError) {
-        console.error('Error in error handler:', handlerError);
-      }
-    });
-  }
-
   markDirty(rect: DirtyRect): void {
     // 边界检查
     if (!rect || typeof rect.x !== 'number' || typeof rect.y !== 'number' || typeof rect.w !== 'number' || typeof rect.h !== 'number') {
@@ -100,40 +75,33 @@ export class CanvasRenderer implements Renderer {
     this.dirtyRects = this.mergeDirtyRects([...this.dirtyRects, clampedRect]);
   }
 
-  // 合并重叠的脏区域 - 优化版本
+  // 合并重叠的脏区域
   private mergeDirtyRects(rects: DirtyRect[]): DirtyRect[] {
     if (rects.length <= 1) {
       return rects;
     }
     
-    // 使用更高效的合并算法
-    let merged: DirtyRect[] = [];
+    // 按 x 坐标排序
+    rects.sort((a, b) => a.x - b.x);
     
-    for (const rect of rects) {
-      let mergedWithExisting = false;
+    const merged: DirtyRect[] = [rects[0]];
+    
+    for (let i = 1; i < rects.length; i++) {
+      const current = rects[i];
+      const last = merged[merged.length - 1];
       
-      for (let i = 0; i < merged.length; i++) {
-        const existingRect = merged[i];
-        
-        // 检查是否重叠
-        if (rect.x < existingRect.x + existingRect.w && 
-            rect.x + rect.w > existingRect.x && 
-            rect.y < existingRect.y + existingRect.h && 
-            rect.y + rect.h > existingRect.y) {
-          // 合并重叠的区域
-          merged[i] = {
-            x: Math.min(existingRect.x, rect.x),
-            y: Math.min(existingRect.y, rect.y),
-            w: Math.max(existingRect.x + existingRect.w, rect.x + rect.w) - Math.min(existingRect.x, rect.x),
-            h: Math.max(existingRect.y + existingRect.h, rect.y + rect.h) - Math.min(existingRect.y, rect.y)
-          };
-          mergedWithExisting = true;
-          break;
-        }
-      }
-      
-      if (!mergedWithExisting) {
-        merged.push(rect);
+      // 检查是否重叠
+      if (current.x <= last.x + last.w && current.y <= last.y + last.h && current.x + current.w >= last.x && current.y + current.h >= last.y) {
+        // 合并重叠的区域
+        const mergedRect: DirtyRect = {
+          x: Math.min(last.x, current.x),
+          y: Math.min(last.y, current.y),
+          w: Math.max(last.x + last.w, current.x + current.w) - Math.min(last.x, current.x),
+          h: Math.max(last.y + last.h, current.y + current.h) - Math.min(last.y, current.y)
+        };
+        merged[merged.length - 1] = mergedRect;
+      } else {
+        merged.push(current);
       }
     }
     
@@ -148,16 +116,9 @@ export class CanvasRenderer implements Renderer {
     const frameLoop = (timestamp: number) => {
       // 控制渲染帧率
       if (timestamp - this.lastRenderTime >= this.frameInterval) {
-        if (this.dirtyRects.length > 0 && !this.isRendering) {
-          this.isRendering = true;
-          try {
-            this.renderFrame();
-            this.lastRenderTime = timestamp;
-          } catch (error) {
-            this.handleError(error as Error);
-          } finally {
-            this.isRendering = false;
-          }
+        if (this.dirtyRects.length > 0) {
+          this.renderFrame();
+          this.lastRenderTime = timestamp;
         }
       }
       this.animationFrameId = requestAnimationFrame(frameLoop);
@@ -178,17 +139,13 @@ export class CanvasRenderer implements Renderer {
       // 检查是否需要重新计算整个布局
       if (this.rootNode.layoutDirty) {
         // 对根节点进行布局计算
-        try {
-          const rootSize = this.rootNode.measure({
-            minWidth: 0,
-            maxWidth: this.canvas.width,
-            minHeight: 0,
-            maxHeight: this.canvas.height
-          });
-          this.rootNode.place(0, 0, rootSize.width, rootSize.height);
-        } catch (error) {
-          this.handleError(error as Error);
-        }
+        const rootSize = this.rootNode.measure({
+          minWidth: 0,
+          maxWidth: this.canvas.width,
+          minHeight: 0,
+          maxHeight: this.canvas.height
+        });
+        this.rootNode.place(0, 0, rootSize.width, rootSize.height);
       } else {
         // 只对脏节点进行布局计算
         this.updateDirtyNodesLayout(this.rootNode);
@@ -229,7 +186,7 @@ export class CanvasRenderer implements Renderer {
         // 恢复状态
         this.ctx.restore();
       } catch (error) {
-        this.handleError(error as Error);
+        console.error('Error drawing node:', error);
         // 确保状态被恢复
         try {
           this.ctx.restore();
@@ -266,7 +223,7 @@ export class CanvasRenderer implements Renderer {
           node.place(node.x, node.y, nodeSize.width, nodeSize.height);
         }
       } catch (error) {
-        this.handleError(error as Error);
+        console.error('Error updating node layout:', error);
       }
     }
     
@@ -278,11 +235,7 @@ export class CanvasRenderer implements Renderer {
 
   drawCommands(commands: DrawCommand[]): void {
     for (const cmd of commands) {
-      try {
-        executeDrawCommand(this.ctx, cmd);
-      } catch (error) {
-        this.handleError(error as Error);
-      }
+      executeDrawCommand(this.ctx, cmd);
     }
   }
 
@@ -302,9 +255,6 @@ export class CanvasRenderer implements Renderer {
     
     // 清空脏矩形
     this.dirtyRects = [];
-    
-    // 清除错误处理器
-    this.errorHandlers = [];
     
     // 清除 appContext 引用
     this.appContext = null;
