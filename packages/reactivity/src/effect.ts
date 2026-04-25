@@ -1,13 +1,35 @@
 import { trackDependencies } from './signal';
 
+/**
+ * 可销毁对象接口，定义了销毁操作
+ */
 export interface Disposable {
+  /**
+   * 销毁对象，清理资源
+   */
   dispose(): void;
 }
 
+/**
+ * 创建一个响应式效果
+ * @param fn 效果函数
+ * @param options 选项参数
+ * @returns 可销毁对象
+ */
 export function effect(fn: () => void, options?: {
   cleanup?: () => void;
   onError?: (error: Error) => void;
 }): Disposable {
+  // 类型检查
+  if (!fn || typeof fn !== 'function') {
+    throw new Error('Invalid effect function');
+  }
+  
+  // 选项参数类型检查
+  if (options && typeof options !== 'object') {
+    throw new Error('Invalid options object');
+  }
+  
   // 用于存储 cleanup 函数
   let cleanup: (() => void) | null = null;
   let isDisposed = false;

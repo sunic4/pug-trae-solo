@@ -4,7 +4,7 @@ import { AppContext } from '@pug/core';
 
 export interface StackProps {
   alignment?: 'start' | 'center' | 'end';
-  children?: ComposeNode[];
+  children?: ComposeNode | ComposeNode[];
   x?: number;
   y?: number;
   width?: number;
@@ -13,11 +13,13 @@ export interface StackProps {
 }
 
 export class Stack extends ComposeNode<StackProps> {
-  constructor(props: StackProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: StackProps, key?: string) {
+    super(key, props, props.appContext);
     if (props.children) {
-      props.children.forEach(child => this.addChild(child));
+      const children = Array.isArray(props.children) ? props.children : [props.children];
+      children.forEach(child => this.addChild(child));
     }
+    this.markLayoutDirty();
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
@@ -91,5 +93,5 @@ export class Stack extends ComposeNode<StackProps> {
 }
 
 export function StackComponent(props: StackProps) {
-  return new Stack(props, undefined, props.appContext);
+  return new Stack(props);
 }

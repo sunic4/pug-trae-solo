@@ -1,0 +1,43 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-5
+status: draft
+
+steps:
+  - id: step-1
+    name: 统一组件 API 设计
+    description: 修改 Checkbox 组件构造函数，只从 props 中获取 appContext
+    actions:
+      - file: packages/components/src/checkbox.ts
+        changes: 修改构造函数，只从 props 中获取 appContext
+      - file: packages/components/src/checkbox.ts
+        changes: 更新 CheckboxComponent 工厂函数
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-2
+    name: 使用 getThemeFromContext 函数获取主题
+    description: 修改 Checkbox 组件的 measure 和 draw 方法，使用 getThemeFromContext 函数获取主题
+    actions:
+      - file: packages/components/src/checkbox.ts
+        changes: 导入 getThemeFromContext 函数
+      - file: packages/components/src/checkbox.ts
+        changes: 修改 measure 方法，使用 getThemeFromContext 函数获取主题
+      - file: packages/components/src/checkbox.ts
+        changes: 修改 draw 方法，使用 getThemeFromContext 函数获取主题
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-3
+    name: 优化 onClick 方法绑定方式
+    description: 优化 Checkbox 组件的 onClick 方法绑定方式，避免使用 bind 方法
+    actions:
+      - file: packages/components/src/checkbox.ts
+        changes: 优化 onClick 方法绑定方式
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误

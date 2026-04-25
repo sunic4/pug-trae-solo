@@ -1,7 +1,6 @@
 import { ComposeNode } from '@pug/composer';
-import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
-import { drawRoundedRect } from './utils';
+import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
 
 export interface BoxProps {
@@ -28,14 +27,11 @@ export interface BoxProps {
 }
 
 export class Box extends ComposeNode<BoxProps> {
-  constructor(props: BoxProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: BoxProps, key?: string) {
+    super(key, props, props.appContext);
     if (props.children) {
-      if (Array.isArray(props.children)) {
-        props.children.forEach(child => this.addChild(child));
-      } else {
-        this.addChild(props.children);
-      }
+      const children = Array.isArray(props.children) ? props.children : [props.children];
+      children.forEach(child => this.addChild(child));
     }
     this.markLayoutDirty();
   }
@@ -114,7 +110,7 @@ export class Box extends ComposeNode<BoxProps> {
   }
 
   draw(drawApi: DrawAPI) {
-    const theme = useTheme();
+    const theme = getThemeFromContext(this.appContext);
     const { backgroundColor = theme.colors.surface, borderColor, borderWidth = 0, borderRadius = theme.borderRadius.base } = this.props;
 
     // 绘制背景
@@ -135,5 +131,5 @@ export class Box extends ComposeNode<BoxProps> {
 }
 
 export function BoxComponent(props: BoxProps) {
-  return new Box(props, undefined, props.appContext);
+  return new Box(props);
 }

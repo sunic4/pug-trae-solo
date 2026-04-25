@@ -24,6 +24,8 @@ export interface ButtonProps {
 
 export class Button extends ComposeNode<ButtonProps> {
   private textNode: ComposeNode;
+  private isHovered = false;
+  private isActive = false;
 
   constructor(props: ButtonProps, key?: string) {
     super(key, props, props.appContext);
@@ -32,14 +34,43 @@ export class Button extends ComposeNode<ButtonProps> {
       color: this.getTextColor(),
       fontWeight: 500,
       textAlign: 'center',
-      appContext: props.appContext
+      appContext: this.appContext
     });
     this.addChild(this.textNode);
     
-    // 添加点击事件处理器
+    // 添加事件处理器
     this.handlers['click'] = (_x: number, _y: number) => {
       if (!this.props.disabled && this.props.onClick) {
         this.props.onClick();
+      }
+    };
+    
+    this.handlers['mouseenter'] = () => {
+      if (!this.props.disabled) {
+        this.isHovered = true;
+        this.markDirty();
+      }
+    };
+    
+    this.handlers['mouseleave'] = () => {
+      if (!this.props.disabled) {
+        this.isHovered = false;
+        this.isActive = false;
+        this.markDirty();
+      }
+    };
+    
+    this.handlers['mousedown'] = () => {
+      if (!this.props.disabled) {
+        this.isActive = true;
+        this.markDirty();
+      }
+    };
+    
+    this.handlers['mouseup'] = () => {
+      if (!this.props.disabled) {
+        this.isActive = false;
+        this.markDirty();
       }
     };
     
@@ -50,95 +81,83 @@ export class Button extends ComposeNode<ButtonProps> {
     return getThemeFromContext(this.appContext);
   }
 
-  private getTextColor(): string {
+  private getColor(colors: Record<string, string>): string {
     const theme = this.getTheme();
     const { variant, disabled } = this.props;
 
     if (disabled) {
-      return theme.colors.disabled;
+      return colors.disabled || theme.colors.disabled;
     }
 
-    switch (variant) {
-      case 'primary':
-        return '#ffffff';
-      case 'secondary':
-        return '#ffffff';
-      case 'outline':
-        return theme.colors.primary;
-      case 'text':
-        return theme.colors.primary;
-      default:
-        return '#ffffff';
+    if (this.isActive) {
+      return colors[`${variant}Active`] || colors[variant] || colors.default || theme.colors.primary;
     }
+
+    if (this.isHovered) {
+      return colors[`${variant}Hover`] || colors[variant] || colors.default || theme.colors.primary;
+    }
+
+    return colors[variant] || colors.default || theme.colors.primary;
+  }
+
+  private getTextColor(): string {
+    const theme = this.getTheme();
+    const colors = {
+      primary: '#ffffff',
+      secondary: '#ffffff',
+      outline: theme.colors.primary,
+      text: theme.colors.primary,
+      default: '#ffffff',
+      disabled: theme.colors.disabled
+    };
+
+    return this.getColor(colors);
   }
 
   private getBackgroundColor(): string {
     const theme = this.getTheme();
-    const { variant, disabled } = this.props;
+    const colors = {
+      primary: theme.colors.primary,
+      secondary: theme.colors.secondary,
+      outline: 'transparent',
+      text: 'transparent',
+      default: theme.colors.primary,
+      disabled: theme.colors.surface
+    };
 
-    if (disabled) {
-      return theme.colors.surface;
-    }
-
-    switch (variant) {
-      case 'primary':
-        return theme.colors.primary;
-      case 'secondary':
-        return theme.colors.secondary;
-      case 'outline':
-        return 'transparent';
-      case 'text':
-        return 'transparent';
-      default:
-        return theme.colors.primary;
-    }
+    return this.getColor(colors);
   }
 
   private getBorderColor(): string {
     const theme = this.getTheme();
-    const { variant, disabled } = this.props;
+    const colors = {
+      primary: 'transparent',
+      secondary: 'transparent',
+      outline: theme.colors.primary,
+      text: 'transparent',
+      default: 'transparent',
+      disabled: theme.colors.border
+    };
 
-    if (disabled) {
-      return theme.colors.border;
-    }
-
-    switch (variant) {
-      case 'primary':
-      case 'secondary':
-      case 'text':
-        return 'transparent';
-      case 'outline':
-        return theme.colors.primary;
-      default:
-        return 'transparent';
-    }
+    return this.getColor(colors);
   }
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
     const theme = this.getTheme();
     const { size, width, height } = this.props;
 
-    let buttonWidth = width;
-    let buttonHeight = height;
+    // 计算按钮高度
+    const buttonHeight = height || {
+      sm: 32,
+      lg: 48,
+      base: 40
+    }[size] || 40;
 
-    if (!buttonHeight) {
-      switch (size) {
-        case 'sm':
-          buttonHeight = 32;
-          break;
-        case 'lg':
-          buttonHeight = 48;
-          break;
-        default:
-          buttonHeight = 40;
-      }
-    }
-
-    if (!buttonWidth) {
-      // 测量文本宽度并添加padding
+    // 计算按钮宽度
+    const buttonWidth = width || (() => {
       const textWidth = this.textNode.measure(constraints).width;
-      buttonWidth = textWidth + theme.spacing.base * 2;
-    }
+      return textWidth + theme.spacing.base * 2;
+    })();
 
     return { 
       width: Math.min(buttonWidth, constraints.maxWidth), 

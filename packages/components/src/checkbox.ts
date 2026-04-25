@@ -1,7 +1,6 @@
 import { ComposeNode } from '@pug/composer';
-import { useTheme } from '@pug/theme';
 import { DrawAPI } from '@pug/renderer';
-import { drawRoundedRect } from './utils';
+import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
 
 export interface CheckboxProps {
@@ -16,9 +15,9 @@ export interface CheckboxProps {
 }
 
 export class Checkbox extends ComposeNode<CheckboxProps> {
-  constructor(props: CheckboxProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
-    this.handlers['click'] = this.onClick.bind(this);
+  constructor(props: CheckboxProps, key?: string) {
+    super(key, props, props.appContext);
+    this.handlers['click'] = (x: number, y: number) => this.onClick(x, y);
     this.markLayoutDirty();
   }
 
@@ -33,7 +32,7 @@ export class Checkbox extends ComposeNode<CheckboxProps> {
 
 
   measure(constraints: { minWidth: number; maxWidth: number; minHeight: number; maxHeight: number }) {
-    const theme = useTheme();
+    const theme = getThemeFromContext(this.appContext);
     const { width, height, label } = this.props;
 
     let checkboxWidth = 20;
@@ -69,7 +68,7 @@ export class Checkbox extends ComposeNode<CheckboxProps> {
   }
 
   draw(drawApi: DrawAPI) {
-    const theme = useTheme();
+    const theme = getThemeFromContext(this.appContext);
     const { checked, label } = this.props;
 
     const checkboxSize = 20;
@@ -107,5 +106,5 @@ export class Checkbox extends ComposeNode<CheckboxProps> {
 }
 
 export function CheckboxComponent(props: CheckboxProps) {
-  return new Checkbox(props, undefined, props.appContext);
+  return new Checkbox(props);
 }

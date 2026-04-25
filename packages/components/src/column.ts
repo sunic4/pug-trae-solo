@@ -9,15 +9,16 @@ export interface ColumnProps {
   spacing?: number;
   alignItems?: 'start' | 'center' | 'end' | 'flex-start' | 'flex-end';
   justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
-  children?: ComposeNode[];
+  children?: ComposeNode | ComposeNode[];
   appContext?: AppContext;
 }
 
 export class Column extends ComposeNode<ColumnProps> {
-  constructor(props: ColumnProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: ColumnProps, key?: string) {
+    super(key, props, props.appContext);
     if (props.children) {
-      props.children.forEach(child => this.addChild(child));
+      const children = Array.isArray(props.children) ? props.children : [props.children];
+      children.forEach(child => this.addChild(child));
     }
     this.markLayoutDirty();
   }
@@ -85,5 +86,5 @@ export class Column extends ComposeNode<ColumnProps> {
 }
 
 export function ColumnComponent(props: ColumnProps) {
-  return new Column(props, undefined, props.appContext);
+  return new Column(props);
 }

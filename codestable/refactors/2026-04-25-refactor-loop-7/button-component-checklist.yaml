@@ -1,0 +1,50 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-7
+status: draft
+
+steps:
+  - id: step-1
+    name: 统一 appContext 使用方式
+    description: 修改 TextComponent 创建代码，使用 this.appContext 而不是 props.appContext
+    actions:
+      - file: packages/components/src/button.ts
+        changes: 修改 TextComponent 创建代码，使用 this.appContext
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-2
+    name: 优化颜色获取方法
+    description: 优化 getTextColor、getBackgroundColor 和 getBorderColor 方法，使用更简洁的代码结构
+    actions:
+      - file: packages/components/src/button.ts
+        changes: 优化颜色获取方法
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-3
+    name: 添加按钮状态支持
+    description: 添加对 hover 和 active 状态的支持
+    actions:
+      - file: packages/components/src/button.ts
+        changes: 添加按钮状态支持
+      - file: packages/components/src/button.ts
+        changes: 添加相应的事件处理逻辑
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-4
+    name: 优化 measure 方法
+    description: 优化 measure 方法，使用更简洁的代码结构
+    actions:
+      - file: packages/components/src/button.ts
+        changes: 优化 measure 方法
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误

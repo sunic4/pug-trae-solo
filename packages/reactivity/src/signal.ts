@@ -1,13 +1,64 @@
+/**
+ * 信号接口，定义了响应式信号的基本操作
+ * @template T 信号的值类型
+ */
 export interface Signal<T> {
+  /**
+   * 获取信号的值
+   */
   get value(): T;
+  
+  /**
+   * 设置信号的值
+   */
   set value(v: T);
+  
+  /**
+   * 订阅信号的变化
+   * @param callback 信号变化时的回调函数
+   * @returns 取消订阅的函数
+   */
   subscribe(callback: () => void): () => void;
+  
+  /**
+   * 清除所有订阅者
+   */
+  clearSubscribers(): void;
+  
+  /**
+   * 获取订阅者数量
+   */
+  get subscriberCount(): number;
 }
 
 // 全局依赖跟踪栈
 const dependencyStack: Set<() => void>[] = [];
 
+// 清理依赖跟踪栈
+export function clearDependencyStack(): void {
+  dependencyStack.length = 0;
+}
+
+// 获取依赖跟踪栈的长度
+export function getDependencyStackLength(): number {
+  return dependencyStack.length;
+}
+
+// 检查依赖跟踪栈是否为空
+export function isDependencyStackEmpty(): boolean {
+  return dependencyStack.length === 0;
+}
+
+/**
+ * 创建一个响应式信号
+ * @template T 信号的值类型
+ * @param initialValue 信号的初始值
+ * @returns 信号实例
+ */
 export function signal<T>(initialValue: T): Signal<T> {
+  // 类型检查：确保 initialValue 不是 undefined 或 null（除非 T 允许这些值）
+  // 注意：这里不做严格检查，因为 T 可能允许 undefined 或 null
+  
   const subscribers = new Set<() => void>();
   // 使用一个单独的 Set 来跟踪已添加的回调，避免重复订阅
   const addedCallbacks = new WeakSet<() => void>();
@@ -45,6 +96,13 @@ export function signal<T>(initialValue: T): Signal<T> {
     subscribe(callback: () => void) {
       subscribers.add(callback);
       return () => subscribers.delete(callback);
+    },
+    clearSubscribers() {
+      subscribers.clear();
+      addedCallbacks.clear();
+    },
+    get subscriberCount() {
+      return subscribers.size;
     }
   };
 
@@ -53,6 +111,14 @@ export function signal<T>(initialValue: T): Signal<T> {
 
 // 用于跟踪依赖的工具函数
 export function trackDependencies(fn: () => void, onDependencyChange: () => void): void {
+  // 类型检查
+  if (!fn || typeof fn !== 'function') {
+    throw new Error('Invalid function to track');
+  }
+  if (!onDependencyChange || typeof onDependencyChange !== 'function') {
+    throw new Error('Invalid dependency change callback');
+  }
+  
   // 创建一个新的依赖跟踪上下文
   const trackers = new Set<() => void>();
   trackers.add(onDependencyChange);

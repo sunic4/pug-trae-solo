@@ -1,0 +1,81 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-10
+status: draft
+
+steps:
+  - id: step-1
+    name: 优化构造函数
+    description: 优化构造函数，添加对 props 的类型检查
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 优化构造函数，添加对 props 的类型检查
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-2
+    name: 优化脏状态管理
+    description: 优化脏状态管理，避免重复标记
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 优化脏状态管理，添加更多的状态检查和优化
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-3
+    name: 优化子节点管理
+    description: 优化子节点管理，添加更多的类型保护和错误处理
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 优化子节点管理，添加更多的类型保护和错误处理
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-4
+    name: 优化布局相关方法
+    description: 优化布局相关方法，确保参数的有效性
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 优化布局相关方法，确保参数的有效性
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-5
+    name: 添加更多的事件处理相关方法
+    description: 添加更多的事件处理相关方法，如 addEventListener 和 removeEventListener
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 添加更多的事件处理相关方法
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-6
+    name: 添加更多的辅助方法
+    description: 添加更多的辅助方法，如 getChildByKey、getChildren 等
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 添加更多的辅助方法
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-7
+    name: 优化递归方法
+    description: 优化递归方法，使用更高效的递归方式
+    actions:
+      - file: packages/composer/src/node.ts
+        changes: 优化递归方法，使用更高效的递归方式
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误

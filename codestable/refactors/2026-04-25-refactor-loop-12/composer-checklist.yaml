@@ -1,0 +1,81 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-12
+status: draft
+
+steps:
+  - id: step-1
+    name: 优化构造函数
+    description: 优化构造函数，添加对参数的类型检查
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化构造函数，添加对参数的类型检查
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-2
+    name: 优化 startCompose 方法
+    description: 优化 startCompose 方法，添加更多的错误处理，提高代码的健壮性
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化 startCompose 方法，添加更多的错误处理
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-3
+    name: 优化 recompose 方法
+    description: 优化 recompose 方法，使用更高效的方式处理脏节点，添加对脏节点的过滤
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化 recompose 方法，使用更高效的方式处理脏节点
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-4
+    name: 优化 cleanupUnusedNodes 方法
+    description: 优化 cleanupUnusedNodes 方法，添加更多的清理逻辑，确保资源正确释放
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化 cleanupUnusedNodes 方法，添加更多的清理逻辑
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-5
+    name: 优化全局 composer 实例的管理
+    description: 优化全局 composer 实例的管理，添加更多的安全性检查
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化全局 composer 实例的管理，添加更多的安全性检查
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-6
+    name: 添加更多的辅助方法
+    description: 添加更多的辅助方法，如 getDirtyNodes、clearDirtyNodes 等，提高代码的可维护性
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 添加更多的辅助方法，如 getDirtyNodes、clearDirtyNodes 等
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-7
+    name: 优化代码结构
+    description: 优化代码结构，使其更加清晰和可维护，添加更多的注释
+    actions:
+      - file: packages/composer/src/composer.ts
+        changes: 优化代码结构，添加更多的注释
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误

@@ -9,15 +9,16 @@ export interface RowProps {
   spacing?: number;
   alignItems?: 'start' | 'center' | 'end';
   justifyContent?: 'start' | 'center' | 'end' | 'space-around' | 'space-between';
-  children?: ComposeNode[];
+  children?: ComposeNode | ComposeNode[];
   appContext?: AppContext;
 }
 
 export class Row extends ComposeNode<RowProps> {
-  constructor(props: RowProps, key?: string, appContext?: AppContext) {
-    super(key, props, appContext || props.appContext);
+  constructor(props: RowProps, key?: string) {
+    super(key, props, props.appContext);
     if (props.children) {
-      props.children.forEach(child => this.addChild(child));
+      const children = Array.isArray(props.children) ? props.children : [props.children];
+      children.forEach(child => this.addChild(child));
     }
     this.markLayoutDirty();
   }
@@ -78,5 +79,5 @@ export class Row extends ComposeNode<RowProps> {
 }
 
 export function RowComponent(props: RowProps) {
-  return new Row(props, undefined, props.appContext);
+  return new Row(props);
 }

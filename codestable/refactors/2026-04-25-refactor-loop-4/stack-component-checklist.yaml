@@ -1,0 +1,41 @@
+doc_type: refactor-checklist
+refactor: 2026-04-25-refactor-loop-4
+status: draft
+
+steps:
+  - id: step-1
+    name: 统一组件 API 设计
+    description: 修改 Stack 组件构造函数，只从 props 中获取 appContext
+    actions:
+      - file: packages/components/src/stack.ts
+        changes: 修改构造函数，只从 props 中获取 appContext
+      - file: packages/components/src/stack.ts
+        changes: 更新 StackComponent 工厂函数
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-2
+    name: 优化 children 处理逻辑
+    description: 优化 Stack 组件构造函数中的 children 处理逻辑，添加对单个子节点的支持
+    actions:
+      - file: packages/components/src/stack.ts
+        changes: 修改 StackProps 接口，添加对单个子节点的支持
+      - file: packages/components/src/stack.ts
+        changes: 优化 children 处理逻辑
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
+
+  - id: step-3
+    name: 添加 markLayoutDirty() 调用
+    description: 在 Stack 组件构造函数中添加 markLayoutDirty() 调用
+    actions:
+      - file: packages/components/src/stack.ts
+        changes: 在构造函数中添加 markLayoutDirty() 调用
+    checks:
+      - name: TypeScript 类型检查
+        command: tsc --noEmit
+        expected: 无类型错误
