@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface TextInputProps {
   value: string;
@@ -18,7 +19,8 @@ export class TextInput extends ComposeNode<TextInputProps> {
   private isFocused = false;
 
   constructor(props: TextInputProps, key?: string) {
-    super(key, props, props.appContext);
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     this.handlers['click'] = (x: number, y: number) => this.onClick(x, y);
     this.markLayoutDirty();
   }

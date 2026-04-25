@@ -42,7 +42,9 @@ export class AppContextImpl implements AppContext {
     this._theme = new ThemeContext(config.theme);
     
     // 使用提供的 composer 或创建新的
-    this._composer = config.composer || new Composer();
+    this._composer = config.composer || new Composer(this);
+    // Ensure composer has appContext
+    this._composer.setAppContext(this);
     
     // 使用提供的 renderer
     this._renderer = config.renderer || null;
@@ -73,6 +75,7 @@ export class AppContextImpl implements AppContext {
     
     // 清理资源
     this._renderer?.dispose();
+    this._composer.dispose();
     
     this.disposed = true;
   }

@@ -3,7 +3,6 @@ import { useTheme } from '../../hooks/useTheme';
 import { navigateBack } from '../../state/navigationState';
 import { navigationState } from '../../state/navigationState';
 import { signal } from '@pug/reactivity';
-import { AppContext } from '@pug/core';
 
 // 示例配置
 interface ExampleConfig {
@@ -161,19 +160,16 @@ const examples: Record<string, ExampleConfig> = {
 };
 
 // 通用示例容器
-function ExampleContainer({ appContext, title, children }: { appContext: AppContext; title: string; children: any }) {
+function ExampleContainer({ title, children }: { title: string; children: any }) {
   const theme = useTheme();
   return BoxComponent({
-    appContext,
     width: '100%',
     padding: 15,
     backgroundColor: theme.colors.surface,
     borderRadius: 8,
     children: ColumnComponent({
-      appContext,
       children: [
         TextComponent({
-          appContext,
           text: title,
           fontSize: 18,
           fontWeight: 500,
@@ -186,23 +182,7 @@ function ExampleContainer({ appContext, title, children }: { appContext: AppCont
   });
 }
 
-// 处理组件的 appContext 传递
-function withAppContext(appContext: AppContext, theme: any, component: any): any {
-  if (Array.isArray(component)) {
-    return component.map(child => withAppContext(appContext, theme, child));
-  }
-  if (typeof component === 'object' && component !== null) {
-    return {
-      ...component,
-      appContext,
-      color: component.color || theme.colors.text,
-      backgroundColor: component.backgroundColor || theme.colors.primary,
-    };
-  }
-  return component;
-}
-
-export function DetailsPage(appContext: AppContext) {
+export function DetailsPage() {
   const theme = useTheme();
   const params = navigationState.value.params;
   const pageType = params.page || 'text';
@@ -216,23 +196,19 @@ export function DetailsPage(appContext: AppContext) {
     // 对于需要状态的组件，单独处理
     if (pageType === 'checkbox') {
       return ExampleContainer({
-        appContext,
         title: 'Checkbox 组件示例',
         children: [
           RowComponent({
-            appContext,
             alignItems: 'center',
             spacing: 10,
             children: [
               CheckboxComponent({
-                appContext,
                 checked: checkboxChecked.value,
                 onCheckedChange: (checked) => {
                   checkboxChecked.value = checked;
                 },
               }),
               TextComponent({
-                appContext,
                 text: `复选框: ${checkboxChecked.value ? '选中' : '未选中'}`,
                 fontSize: 16,
                 color: theme.colors.text,
@@ -245,11 +221,9 @@ export function DetailsPage(appContext: AppContext) {
 
     if (pageType === 'textinput') {
       return ExampleContainer({
-        appContext,
         title: 'TextInput 组件示例',
         children: [
           TextInputComponent({
-            appContext,
             value: textInputValue.value,
             onValueChange: (value: string) => {
               textInputValue.value = value;
@@ -258,7 +232,6 @@ export function DetailsPage(appContext: AppContext) {
             width: 300,
           }),
           TextComponent({
-            appContext,
             text: `输入内容: ${textInputValue.value}`,
             fontSize: 16,
             color: theme.colors.text,
@@ -270,12 +243,10 @@ export function DetailsPage(appContext: AppContext) {
 
     // 对于配置化的组件，使用通用容器
     const example = examples[pageType] || examples.text;
-    const children = withAppContext(appContext, theme, example.content);
     
     return ExampleContainer({
-      appContext,
       title: example.title,
-      children,
+      children: example.content,
     });
   }
 
@@ -285,18 +256,15 @@ export function DetailsPage(appContext: AppContext) {
   }
 
   return BoxComponent({
-    appContext,
     width: '100%',
     height: '100%',
     backgroundColor: theme.colors.background,
     padding: 20,
     children: ColumnComponent({
-      appContext,
       alignItems: 'flex-start',
       spacing: 20,
       children: [
         TextComponent({
-          appContext,
           text: getPageTitle(),
           fontSize: 24,
           fontWeight: 600,
@@ -308,7 +276,6 @@ export function DetailsPage(appContext: AppContext) {
         
         // 返回按钮
         ButtonComponent({
-          appContext,
           text: '返回首页',
           onClick: () => {
             navigateBack();

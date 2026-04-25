@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from 'vitest';
 import { ButtonComponent } from '../src/button';
 import { createTestAppContext } from '@pug/core';
 
@@ -7,7 +8,7 @@ describe('ButtonComponent', () => {
     const appContext = createTestAppContext();
     
     // 模拟点击事件
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     
     // 创建按钮组件
     const button = ButtonComponent({
@@ -36,7 +37,7 @@ describe('ButtonComponent', () => {
     const appContext = createTestAppContext();
     
     // 模拟点击事件
-    const onClick = jest.fn();
+    const onClick = vi.fn();
     
     // 创建禁用的按钮
     const button = ButtonComponent({

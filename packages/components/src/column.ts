@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface ColumnProps {
   width?: number | string;
@@ -15,7 +16,8 @@ export interface ColumnProps {
 
 export class Column extends ComposeNode<ColumnProps> {
   constructor(props: ColumnProps, key?: string) {
-    super(key, props, props.appContext);
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     if (props.children) {
       const children = Array.isArray(props.children) ? props.children : [props.children];
       children.forEach(child => this.addChild(child));

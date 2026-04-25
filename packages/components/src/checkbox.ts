@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface CheckboxProps {
   checked: boolean;
@@ -16,7 +17,8 @@ export interface CheckboxProps {
 
 export class Checkbox extends ComposeNode<CheckboxProps> {
   constructor(props: CheckboxProps, key?: string) {
-    super(key, props, props.appContext);
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     this.handlers['click'] = (x: number, y: number) => this.onClick(x, y);
     this.markLayoutDirty();
   }

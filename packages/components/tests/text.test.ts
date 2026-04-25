@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { TextComponent } from '../src/text';
 import { createTestAppContext } from '@pug/core';
 

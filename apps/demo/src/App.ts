@@ -9,37 +9,34 @@ import { AppContext } from '@pug/core';
 
 // 根组件
 export function App(appContext: AppContext) {
-  const theme = useTheme();
+  const theme = useTheme(appContext);
   
   // 渲染当前页面 - 直接在函数中访问 navigationState.value，确保依赖追踪正常工作
   function renderCurrentPage() {
     const { currentPage } = navigationState.value;
     switch (currentPage) {
       case 'home':
-        return HomePage(appContext);
+        return HomePage();
       case 'details':
-        return DetailsPage(appContext);
+        return DetailsPage();
       case 'settings':
-        return SettingsPage(appContext);
+        return SettingsPage();
       default:
-        return HomePage(appContext);
+        return HomePage();
     }
   }
 
   return BoxComponent({
-    appContext,
     backgroundColor: theme.colors.background,
     width: '100%',
     height: '100%',
     children: ColumnComponent({
-      appContext,
       height: '100%',
       children: [
         // 导航栏
-        NavigationBar(appContext),
+        NavigationBar(),
         // 页面内容
         BoxComponent({
-          appContext,
           width: '100%',
           height: '100%',
           children: renderCurrentPage(),

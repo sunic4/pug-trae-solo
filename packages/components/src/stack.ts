@@ -1,6 +1,7 @@
 import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface StackProps {
   alignment?: 'start' | 'center' | 'end';
@@ -14,7 +15,8 @@ export interface StackProps {
 
 export class Stack extends ComposeNode<StackProps> {
   constructor(props: StackProps, key?: string) {
-    super(key, props, props.appContext);
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     if (props.children) {
       const children = Array.isArray(props.children) ? props.children : [props.children];
       children.forEach(child => this.addChild(child));

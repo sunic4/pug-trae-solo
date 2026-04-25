@@ -2,6 +2,7 @@ import { ComposeNode } from '@pug/composer';
 import { DrawAPI } from '@pug/renderer';
 import { getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface TextProps {
   text: string;
@@ -24,7 +25,8 @@ export interface TextProps {
 
 export class Text extends ComposeNode<TextProps> {
   constructor(props: TextProps, key?: string) {
-    super(key, props, props.appContext);
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     this.markLayoutDirty();
   }
 

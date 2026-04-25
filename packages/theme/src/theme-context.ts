@@ -1,6 +1,7 @@
 import { signal } from '@pug/reactivity';
 import { Theme, defaultTheme } from './theme';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export class ThemeContext {
   private themeSignal;
@@ -22,20 +23,29 @@ export class ThemeContext {
   }
 }
 
+// 获取 AppContext，优先使用传入的，否则从当前上下文中获取
+function getAppContext(appContext?: AppContext): AppContext | null {
+  if (appContext) {
+    return appContext;
+  }
+  return getCurrentAppContext();
+}
+
 // 主题钩子函数，用于在组件中访问主题
 export function useTheme(appContext?: AppContext): Theme {
-  if (appContext) {
-    return appContext.theme.theme;
+  const ctx = getAppContext(appContext);
+  if (ctx) {
+    return ctx.theme.theme;
   }
-  // 向后兼容：使用默认主题
   return defaultTheme;
 }
 
 // 主题切换钩子函数，用于在组件中切换主题
 export function useThemeSwitcher(appContext?: AppContext) {
+  const ctx = getAppContext(appContext);
   return (theme: Theme) => {
-    if (appContext) {
-      appContext.theme.setTheme(theme);
+    if (ctx) {
+      ctx.theme.setTheme(theme);
     }
   };
 }

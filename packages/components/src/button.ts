@@ -3,6 +3,7 @@ import { TextComponent } from './text';
 import { DrawAPI } from '@pug/renderer';
 import { drawRoundedRect, getThemeFromContext } from './utils';
 import { AppContext } from '@pug/core';
+import { getCurrentAppContext } from '@pug/reactivity';
 
 export interface ButtonProps {
   text: string;
@@ -28,7 +29,9 @@ export class Button extends ComposeNode<ButtonProps> {
   private isActive = false;
 
   constructor(props: ButtonProps, key?: string) {
-    super(key, props, props.appContext);
+    // Auto get appContext if not provided
+    const appContext = props.appContext || getCurrentAppContext();
+    super(key, props, appContext);
     this.textNode = TextComponent({
       text: props.text,
       color: this.getTextColor(),
