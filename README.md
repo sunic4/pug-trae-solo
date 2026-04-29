@@ -1,1 +1,1 @@
-移动端优先的 TypeScript Canvas UI 运行时，细粒度响应式驱动，零 DOM 依赖
+移动端优先的 TypeScript Canvas UI 运行时，参考Android compose 重组的细粒度响应式驱动，零 DOM 依赖
