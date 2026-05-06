@@ -1,0 +1,209 @@
+import type { ComponentBase } from '@/components/basic/types'
+import type { MeasurePolicy, Measurable, Constraints, MeasureResult } from '@/layout/types'
+import { DEFAULT_MODIFIER } from '@/components/shared/constants'
+import type { ReadonlyModifier } from '@/layout/modifier'
+import { createMeasureResult } from '@/layout/measure'
+import { constrainWidth, constrainHeight } from '@/layout/constraints'
+import { createMeasurePolicy } from '@/layout/simple-measure-policy'
+
+type LazyDirection = 'vertical' | 'horizontal'
+
+interface LazyItemInfo {
+  readonly index: number
+  readonly key: string
+  readonly offset: number
+  readonly size: number
+}
+
+type LazyComponentBase = {
+  readonly itemCount: number
+  readonly itemSize: number | null
+  readonly spacing: number
+  readonly contentPadding: number
+  readonly firstVisibleItemIndex: number
+  readonly firstVisibleItemScrollOffset: number
+  readonly visibleItems: readonly LazyItemInfo[]
+} & ComponentBase
+
+type LazyColumnComponent = {
+  readonly kind: 'lazy-column'
+} & LazyComponentBase
+
+type LazyRowComponent = {
+  readonly kind: 'lazy-row'
+} & LazyComponentBase
+
+function lazyLayoutMeasurePolicy(
+  direction: LazyDirection,
+  itemCount: number,
+  itemSize: number | null,
+  spacing: number,
+  contentPadding: number,
+  firstVisibleItemIndex: number,
+  firstVisibleItemScrollOffset: number,
+): MeasurePolicy {
+  return createMeasurePolicy({
+    measure(measurables: Measurable[], constraints: Constraints): MeasureResult {
+      const isVertical = direction === 'vertical'
+      const itemDim = itemSize ?? 48
+      const totalSpacing = itemCount > 1 ? (itemCount - 1) * spacing : 0
+      const totalContentDim = itemCount * itemDim + totalSpacing + contentPadding * 2
+
+      const visibleStart = firstVisibleItemIndex * (itemDim + spacing) - firstVisibleItemScrollOffset + contentPadding
+      const viewportDim = isVertical ? constraints.maxHeight : constraints.maxWidth
+      const visibleEnd = visibleStart + viewportDim
+
+      for (let i = 0; i < itemCount; i++) {
+        const itemStart = i * (itemDim + spacing) + contentPadding
+        const itemEnd = itemStart + itemDim
+
+        if (itemEnd > visibleStart && itemStart < visibleEnd) {
+          const measurableIdx = i - firstVisibleItemIndex
+          if (measurableIdx >= 0 && measurableIdx < measurables.length) {
+            const childConstraints: Constraints = itemSize !== null
+              ? isVertical
+                ? { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: itemDim, maxHeight: itemDim }
+                : { minWidth: itemDim, maxWidth: itemDim, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
+              : isVertical
+                ? { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: 0, maxHeight: itemDim }
+                : { minWidth: 0, maxWidth: itemDim, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
+            const m = measurables[measurableIdx]!
+            m.measure(childConstraints)
+          }
+        }
+      }
+
+      if (isVertical) {
+        const width = constrainWidth(constraints, constraints.maxWidth)
+        const height = constrainHeight(constraints, Math.min(totalContentDim, constraints.maxHeight))
+        return createMeasureResult(width, height)
+      } else {
+        const width = constrainWidth(constraints, Math.min(totalContentDim, constraints.maxWidth))
+        const height = constrainHeight(constraints, constraints.maxHeight)
+        return createMeasureResult(width, height)
+      }
+    },
+    minIntrinsicWidth(measurables: Measurable[]): number {
+      if (direction === 'horizontal') {
+        const itemDim = itemSize ?? 48
+        const totalSpacing = itemCount > 1 ? (itemCount - 1) * spacing : 0
+        return itemCount * itemDim + totalSpacing + contentPadding * 2
+      }
+      if (measurables.length === 0) return 0
+      let maxWidth = 0
+      for (const m of measurables) {
+        const placeable = m.measure({ minWidth: 0, maxWidth: Infinity, minHeight: 0, maxHeight: Infinity })
+        if (placeable.measureResult.width > maxWidth) maxWidth = placeable.measureResult.width
+      }
+      return maxWidth
+    },
+    minIntrinsicHeight(measurables: Measurable[]): number {
+      if (direction === 'vertical') {
+        const itemDim = itemSize ?? 48
+        const totalSpacing = itemCount > 1 ? (itemCount - 1) * spacing : 0
+        return itemCount * itemDim + totalSpacing + contentPadding * 2
+      }
+      if (measurables.length === 0) return 0
+      let maxHeight = 0
+      for (const m of measurables) {
+        const placeable = m.measure({ minWidth: 0, maxWidth: Infinity, minHeight: 0, maxHeight: Infinity })
+        if (placeable.measureResult.height > maxHeight) maxHeight = placeable.measureResult.height
+      }
+      return maxHeight
+    },
+  })
+}
+
+function computeVisibleItems(
+  direction: LazyDirection,
+  itemCount: number,
+  itemSize: number | null,
+  spacing: number,
+  contentPadding: number,
+  firstVisibleItemIndex: number,
+  firstVisibleItemScrollOffset: number,
+  viewportDim: number,
+  keyPrefix: string,
+): LazyItemInfo[] {
+  const itemDim = itemSize ?? 48
+  const items: LazyItemInfo[] = []
+  let offset = contentPadding
+
+  for (let i = 0; i < itemCount; i++) {
+    const itemStart = offset - firstVisibleItemScrollOffset
+    const itemEnd = itemStart + itemDim
+
+    if (itemEnd > 0 && itemStart < viewportDim) {
+      items.push({
+        index: i,
+        key: `${keyPrefix}-${i}`,
+        offset: itemStart,
+        size: itemDim,
+      })
+    }
+    offset += itemDim + spacing
+  }
+
+  return items
+}
+
+function LazyColumn(
+  itemCount: number,
+  modifier: ReadonlyModifier = DEFAULT_MODIFIER,
+  itemSize: number | null = null,
+  spacing: number = 0,
+  contentPadding: number = 0,
+  firstVisibleItemIndex: number = 0,
+  firstVisibleItemScrollOffset: number = 0,
+): LazyColumnComponent {
+  const measurePolicy = lazyLayoutMeasurePolicy(
+    'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
+  )
+  const visibleItems = computeVisibleItems(
+    'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 600, 'lazy-column-item',
+  )
+  return {
+    kind: 'lazy-column',
+    modifier,
+    itemCount,
+    itemSize,
+    spacing,
+    contentPadding,
+    firstVisibleItemIndex,
+    firstVisibleItemScrollOffset,
+    visibleItems,
+    measurePolicy,
+  }
+}
+
+function LazyRow(
+  itemCount: number,
+  modifier: ReadonlyModifier = DEFAULT_MODIFIER,
+  itemSize: number | null = null,
+  spacing: number = 0,
+  contentPadding: number = 0,
+  firstVisibleItemIndex: number = 0,
+  firstVisibleItemScrollOffset: number = 0,
+): LazyRowComponent {
+  const measurePolicy = lazyLayoutMeasurePolicy(
+    'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
+  )
+  const visibleItems = computeVisibleItems(
+    'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 360, 'lazy-row-item',
+  )
+  return {
+    kind: 'lazy-row',
+    modifier,
+    itemCount,
+    itemSize,
+    spacing,
+    contentPadding,
+    firstVisibleItemIndex,
+    firstVisibleItemScrollOffset,
+    visibleItems,
+    measurePolicy,
+  }
+}
+
+export type { LazyColumnComponent, LazyRowComponent, LazyItemInfo, LazyComponentBase }
+export { LazyColumn, LazyRow, lazyLayoutMeasurePolicy as LazyLayoutMeasurePolicy, computeVisibleItems }

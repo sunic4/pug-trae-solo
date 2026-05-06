@@ -1,0 +1,31 @@
+checklist:
+  - file: "src/components/layout/column.ts"
+    description: "Column 垂直线性布局组件"
+    status: done
+
+  - file: "src/components/layout/row.ts"
+    description: "Row 水平线性布局组件"
+    status: done
+
+  - file: "src/components/layout/surface.ts"
+    description: "Surface Material 风格容器组件"
+    status: done
+
+  - file: "src/components/layout/index.ts"
+    description: "布局组件导出"
+    status: done
+
+  - file: "src/components/__tests__/layout-components.test.ts"
+    description: "布局组件 单元测试"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

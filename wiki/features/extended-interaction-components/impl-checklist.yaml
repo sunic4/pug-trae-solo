@@ -1,0 +1,31 @@
+checklist:
+  - file: "src/components/interaction/text-field.ts"
+    description: "TextField 文本输入组件"
+    status: done
+
+  - file: "src/components/interaction/checkbox.ts"
+    description: "Checkbox 复选框组件"
+    status: done
+
+  - file: "src/components/interaction/radio-button.ts"
+    description: "RadioButton 单选按钮组件"
+    status: done
+
+  - file: "src/components/interaction/index.ts"
+    description: "交互组件导出更新"
+    status: done
+
+  - file: "src/components/__tests__/interaction-components.test.ts"
+    description: "新增交互组件测试"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

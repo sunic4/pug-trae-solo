@@ -1,0 +1,35 @@
+checklist:
+  - file: "src/components/overlay/dialog.ts"
+    description: "Dialog 模态对话框"
+    status: done
+
+  - file: "src/components/overlay/modal-bottom-sheet.ts"
+    description: "ModalBottomSheet 底部面板"
+    status: done
+
+  - file: "src/components/overlay/dropdown-menu.ts"
+    description: "DropdownMenu 下拉菜单"
+    status: done
+
+  - file: "src/components/overlay/popup.ts"
+    description: "Popup 弹出层"
+    status: done
+
+  - file: "src/components/overlay/index.ts"
+    description: "弹窗组件导出"
+    status: done
+
+  - file: "src/components/__tests__/overlay-components.test.ts"
+    description: "弹窗组件 单元测试"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

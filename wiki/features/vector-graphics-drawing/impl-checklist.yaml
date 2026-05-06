@@ -1,0 +1,35 @@
+checklist:
+  - file: "src/renderer/types.ts"
+    description: "新增 PathCommandType/PathCommand/BlendMode/Shadow/VectorPath 类型，CommandType 扩展 fillPath/strokePath/setBlendMode/setShadow"
+    status: done
+
+  - file: "src/renderer/path.ts"
+    description: "VectorPathBuilder 路径构建器 + VectorPathImpl 不可变路径 + createVectorPathBuilder 工厂"
+    status: done
+
+  - file: "src/renderer/draw-command.ts"
+    description: "新增 createFillPath/createStrokePath/createSetBlendMode/createSetShadow 工厂函数"
+    status: done
+
+  - file: "src/renderer/draw-scope.ts"
+    description: "DrawScopeImpl 新增 fillPath/strokePath/setBlendMode/setShadow 方法"
+    status: done
+
+  - file: "src/renderer/index.ts"
+    description: "模块公共 API 导出（新增类型和工厂函数）"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层公共 API 导出（新增类型和工厂函数）"
+    status: done
+
+  - file: "src/renderer/__tests__/vector-graphics.test.ts"
+    description: "VectorPath/Path DrawCommand/BlendMode/Shadow 单元测试（19 个用例）"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

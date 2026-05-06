@@ -1,0 +1,27 @@
+checklist:
+  - file: "src/components/lazy/lazy-column.ts"
+    description: "LazyColumn 垂直虚拟列表"
+    status: done
+
+  - file: "src/components/lazy/lazy-row.ts"
+    description: "LazyRow 水平虚拟列表"
+    status: done
+
+  - file: "src/components/lazy/index.ts"
+    description: "虚拟列表组件导出"
+    status: done
+
+  - file: "src/components/__tests__/lazy-components.test.ts"
+    description: "虚拟列表单元测试"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

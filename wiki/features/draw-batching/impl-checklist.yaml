@@ -1,0 +1,31 @@
+checklist:
+  - file: "src/renderer/draw-batch.ts"
+    description: "DrawCommandBatcher: BatchKey/areBatchKeysEqual/buildBatchGroups/batchCommands + createBatchFill/createBatchStroke/createBatchText"
+    status: done
+
+  - file: "src/renderer/canvas-host.ts"
+    description: "CanvasHost 集成批量绘制（setBatchEnabled + render 自动调用 batchCommands）"
+    status: done
+
+  - file: "src/renderer/types.ts"
+    description: "CanvasHost 接口新增 setBatchEnabled 方法"
+    status: done
+
+  - file: "src/renderer/__tests__/draw-batch.test.ts"
+    description: "DrawBatching 单元测试 (20 个用例)"
+    status: done
+
+  - file: "src/renderer/index.ts"
+    description: "模块导出更新"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

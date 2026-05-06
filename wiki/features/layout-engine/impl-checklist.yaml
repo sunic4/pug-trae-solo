@@ -1,0 +1,35 @@
+checklist:
+  - file: "src/layout/types.ts"
+    description: "布局共享类型（Constraints, MeasureResult, Placeable, Measurable, Arrangement, Alignment, MeasurePolicy）"
+    status: done
+
+  - file: "src/layout/constraints.ts"
+    description: "ConstraintsImpl + 工厂函数（tight/loose/unconstrained/fixed）+ constrainWidth/constrainHeight"
+    status: done
+
+  - file: "src/layout/measure.ts"
+    description: "MeasureResultImpl + PlaceableImpl + MeasurableImpl + createMeasureResult/createMeasurable"
+    status: done
+
+  - file: "src/layout/measure-policy.ts"
+    description: "LinearMeasurePolicy 线性布局策略（arrangement: start/center/end/spaceEvenly/spaceBetween/spacedBy + alignment）"
+    status: done
+
+  - file: "src/layout/index.ts"
+    description: "模块公共 API 导出"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层公共 API 导出（新增布局类型和工厂函数）"
+    status: done
+
+  - file: "src/layout/__tests__/layout.test.ts"
+    description: "Constraints/Measure/MeasurePolicy 单元测试（15 个用例）"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

@@ -1,0 +1,35 @@
+checklist:
+  - file: "src/renderer/types.ts"
+    description: "渲染器共享类型（NodeId, CommandType, Rect, Point, Color, DrawCommand, DrawScope, CanvasHost）"
+    status: done
+
+  - file: "src/renderer/draw-command.ts"
+    description: "DrawCommand 实现 + 12 个工厂函数（fillRect/strokeRect/fillCircle/strokeCircle/fillText/drawLine/fillRoundRect/strokeRoundRect/clipRect/save/restore/setAlpha）"
+    status: done
+
+  - file: "src/renderer/draw-scope.ts"
+    description: "DrawScopeImpl 声明式绘制 API + createDrawScope 工厂"
+    status: done
+
+  - file: "src/renderer/canvas-host.ts"
+    description: "CanvasHostImpl Canvas 宿主管理 + createCanvasHost 工厂"
+    status: done
+
+  - file: "src/renderer/index.ts"
+    description: "模块公共 API 导出"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层公共 API 导出（新增渲染器类型和工厂函数）"
+    status: done
+
+  - file: "src/renderer/__tests__/renderer.test.ts"
+    description: "DrawCommand/DrawScope/CanvasHost 单元测试（13 个用例）"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

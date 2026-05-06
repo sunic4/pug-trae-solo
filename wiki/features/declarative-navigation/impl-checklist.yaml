@@ -1,0 +1,23 @@
+checklist:
+  - file: "src/components/navigation/nav-controller.ts"
+    description: "NavController + NavGraph + NavHost 实现"
+    status: done
+
+  - file: "src/components/navigation/__tests__/navigation.test.ts"
+    description: "导航单元测试"
+    status: done
+
+  - file: "src/components/navigation/index.ts"
+    description: "模块导出"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

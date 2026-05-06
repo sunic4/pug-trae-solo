@@ -1,0 +1,51 @@
+checklist:
+  - file: "src/core/types.ts"
+    description: "共享类型定义（StateId, SnapshotId, ScopeId）"
+    status: done
+
+  - file: "src/core/state.ts"
+    description: "State/MutableState 实现 + mutableStateOf 工厂函数"
+    status: done
+
+  - file: "src/core/snapshot.ts"
+    description: "Snapshot/MutableSnapshot 实现（read/write/apply/dispose）"
+    status: done
+
+  - file: "src/core/recomposer.ts"
+    description: "RecomposeScope + Recomposer 实现（push/pop/schedule/perform）"
+    status: done
+
+  - file: "src/core/composable.ts"
+    description: "composable() HOC + ComposerContext 定义"
+    status: done
+
+  - file: "src/core/index.ts"
+    description: "模块公共 API 导出"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层公共 API 导出"
+    status: done
+
+  - file: "src/core/__tests__/state.test.ts"
+    description: "State 读写追踪单元测试"
+    status: done
+
+  - file: "src/core/__tests__/snapshot.test.ts"
+    description: "Snapshot 事务单元测试"
+    status: done
+
+  - file: "src/core/__tests__/recomposer.test.ts"
+    description: "Recomposer 调度单元测试"
+    status: done
+
+  - file: "src/core/__tests__/composable.test.ts"
+    description: "composable() HOC 单元测试"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

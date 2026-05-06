@@ -1,0 +1,31 @@
+checklist:
+  - file: "src/input/keyboard.ts"
+    description: "KeyboardEventData/KeyboardEventDataImpl/KeyboardShortcut/KeyboardHandler/KeyboardManager + keyboardShortcut/createKeyboardManager"
+    status: done
+
+  - file: "src/input/gesture-modifier.ts"
+    description: "新增 KeyboardInputElement + keyboardInputElement 工厂函数"
+    status: done
+
+  - file: "src/layout/modifier.ts"
+    description: "Modifier 类新增 keyboardInput 方法 + KeyboardEventHandler 类型导入"
+    status: done
+
+  - file: "src/input/__tests__/keyboard.test.ts"
+    description: "键盘输入单元测试 (20 个用例, jsdom 环境)"
+    status: done
+
+  - file: "src/input/index.ts"
+    description: "模块导出更新"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

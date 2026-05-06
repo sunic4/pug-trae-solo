@@ -1,0 +1,23 @@
+checklist:
+  - file: "src/components/interaction/icon-button.ts"
+    description: "IconButton 组件（正方形/圆形图标按钮）+ FAB 组件（浮动操作按钮，圆形+阴影+主题色）"
+    status: done
+
+  - file: "src/components/__tests__/icon-button.test.ts"
+    description: "IconButton + FAB 单元测试 (18 个用例)"
+    status: done
+
+  - file: "src/components/interaction/index.ts"
+    description: "模块导出更新"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

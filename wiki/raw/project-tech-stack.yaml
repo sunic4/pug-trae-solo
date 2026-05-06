@@ -1,0 +1,42 @@
+language: typescript
+framework: none
+runtime: browser-canvas2d
+confidence: high
+source: arch_detected
+
+build:
+  dev: vite
+  bundle: tsup
+  package_manager: npm
+
+typescript:
+  version: "^5.x"
+  strict: true
+  noImplicitAny: true
+  strictNullChecks: true
+  strictFunctionTypes: true
+  noUncheckedIndexedAccess: true
+
+test:
+  unit: vitest
+  e2e: playwright
+  mock: msw
+  coverage: c8
+
+architecture:
+  style: composable-function-chain
+  state_management: self-built-snapshot-context
+  rendering: hybrid-mode
+  layout: custom-linear-column-row
+  no_jsx: true
+  no_dom: true
+  no_global_static: true
+
+modules:
+  - core
+  - renderer
+  - layout
+  - input
+  - animation
+  - components
+  - platform

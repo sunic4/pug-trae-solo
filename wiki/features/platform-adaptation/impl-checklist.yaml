@@ -1,0 +1,31 @@
+checklist:
+  - file: "src/platform/density.ts"
+    description: "Density 类型 + createDensity/dp/sp 转换函数"
+    status: done
+
+  - file: "src/platform/safe-area.ts"
+    description: "SafeArea 类型 + detectSafeArea 检测函数"
+    status: done
+
+  - file: "src/platform/screen-info.ts"
+    description: "ScreenOrientation/ScreenInfo/PlatformAdapter 类型 + detectScreenInfo/createPlatformAdapter"
+    status: done
+
+  - file: "src/platform/__tests__/platform.test.ts"
+    description: "平台适配单元测试 (Density/SafeArea/ScreenInfo/PlatformAdapter)"
+    status: done
+
+  - file: "src/platform/index.ts"
+    description: "模块导出更新"
+    status: done
+
+  - file: "src/index.ts"
+    description: "顶层导出更新"
+    status: done
+
+security_check:
+  s1_input_validation: "pass"
+  s2_auth: "n/a"
+  s3_sensitive_data: "n/a"
+  s4_dependencies: "pass"
+  s5_error_leak: "pass"

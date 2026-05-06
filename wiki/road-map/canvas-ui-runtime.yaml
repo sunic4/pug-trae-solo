@@ -1,0 +1,244 @@
+features:
+  # ===== Phase 1: 核心跑通 (P0 基础) =====
+  - id: "feat-01"
+    title: "响应式状态系统核心 (State/Snapshot)"
+    priority: p0
+    depends_on: []
+    scope_files: 8
+    modules: ["reactive-core"]
+    status: implemented
+
+  - id: "feat-02"
+    title: "@Composable 函数追踪与重组调度器"
+    priority: p0
+    depends_on: ["feat-01"]
+    scope_files: 10
+    modules: ["reactive-core"]
+    status: implemented
+
+  - id: "feat-03"
+    title: "Canvas 2D 渲染管线基础 (DrawCommand/DrawScope)"
+    priority: p0
+    depends_on: []
+    scope_files: 12
+    modules: ["renderer"]
+    status: implemented
+
+  - id: "feat-04"
+    title: "图层管理与脏区域检测"
+    priority: p0
+    depends_on: ["feat-03", "feat-02"]
+    scope_files: 8
+    modules: ["renderer", "reactive-core"]
+    status: implemented
+
+  - id: "feat-05"
+    title: "矢量图形绘制 (Rect/Circle/RoundRect/Path)"
+    priority: p0
+    depends_on: ["feat-03"]
+    scope_files: 6
+    modules: ["renderer"]
+    status: implemented
+
+  - id: "feat-06"
+    title: "Constraints + Measure/Layout 两阶段布局引擎"
+    priority: p0
+    depends_on: []
+    scope_files: 14
+    modules: ["layout"]
+    status: implemented
+
+  - id: "feat-07"
+    title: "线性布局算法实现 (Column/Row + Weight + LayoutNode)"
+    priority: p0
+    depends_on: ["feat-06"]
+    scope_files: 10
+    modules: ["layout"]
+    status: implemented
+
+  # ===== Phase 2: 交互就绪 (P0+P1) =====
+  - id: "feat-08"
+    title: "文本测量、排版与绘制"
+    priority: p0
+    depends_on: ["feat-03", "feat-06"]
+    scope_files: 8
+    modules: ["renderer", "layout"]
+    status: implemented
+
+  - id: "feat-09"
+    title: "Modifier 链式修饰符系统"
+    priority: p0
+    depends_on: ["feat-06", "feat-04"]
+    scope_files: 12
+    modules: ["renderer", "layout"]
+    status: implemented
+
+  - id: "feat-10"
+    title: "Pointer Event 封装与命中测试"
+    priority: p0
+    depends_on: ["feat-09"]
+    scope_files: 10
+    modules: ["input", "layout"]
+    status: implemented
+
+  - id: "feat-11"
+    title: "手势识别器 (Tap/LongPress/Drag/Pinch/Fling)"
+    priority: p0
+    depends_on: ["feat-10"]
+    scope_files: 14
+    modules: ["input"]
+    status: implemented
+
+  - id: "feat-12"
+    title: "事件冒泡、拦截与焦点管理"
+    priority: p1
+    depends_on: ["feat-10", "feat-11"]
+    scope_files: 8
+    modules: ["input"]
+    status: implemented
+
+  - id: "feat-13"
+    title: "属性动画框架 (AnimationSpec/Animatable/animateAsState)"
+    priority: p1
+    depends_on: ["feat-01", "feat-02"]
+    scope_files: 12
+    modules: ["animation", "reactive-core"]
+    status: implemented
+
+  - id: "feat-14"
+    title: "图像加载、纹理管理九宫格"
+    priority: p1
+    depends_on: ["feat-03"]
+    scope_files: 8
+    modules: ["renderer"]
+    status: implemented
+
+  # ===== Phase 3: 组件丰富 (P1) =====
+  - id: "feat-15"
+    title: "原子组件 (Text/Image/Box/Column/Row/Spacer/Surface)"
+    priority: p1
+    depends_on: ["feat-09", "feat-08", "feat-05", "feat-14"]
+    scope_files: 16
+    modules: ["components"]
+    status: implemented
+
+  - id: "feat-16"
+    title: "交互组件 (Button/TextField/Switch/Checkbox/RadioButton/Slider)"
+    priority: p1
+    depends_on: ["feat-15", "feat-11", "feat-12"]
+    scope_files: 18
+    modules: ["components", "input"]
+    status: implemented
+
+  - id: "feat-17"
+    title: "约束布局与绝对定位"
+    priority: p1
+    depends_on: ["feat-06"]
+    scope_files: 6
+    modules: ["layout"]
+    status: implemented
+
+  - id: "feat-18"
+    title: "容器组件 (Card/Scaffold/TopAppBar/TabRow/BottomNavigation)"
+    priority: p1
+    depends_on: ["feat-15", "feat-16"]
+    scope_files: 20
+    modules: ["components"]
+    status: implemented
+
+  - id: "feat-19"
+    title: "虚拟列表 LazyColumn/LazyRow"
+    priority: p1
+    depends_on: ["feat-15", "feat-07"]
+    scope_files: 14
+    modules: ["components", "layout"]
+    status: implemented
+
+  - id: "feat-20"
+    title: "弹窗组件 (Dialog/ModalBottomSheet/DropdownMenu/Popup)"
+    priority: p1
+    depends_on: ["feat-18", "feat-11"]
+    scope_files: 12
+    modules: ["components", "input"]
+    status: implemented
+
+  - id: "feat-21"
+    title: "布局转场动画 (Crossfade/AnimatedContent)"
+    priority: p1
+    depends_on: ["feat-13", "feat-15"]
+    scope_files: 10
+    modules: ["animation", "components"]
+    status: implemented
+
+  - id: "feat-22"
+    title: "进度指示器与 Snackbar"
+    priority: p1
+    depends_on: ["feat-15", "feat-13"]
+    scope_files: 6
+    modules: ["components"]
+    status: implemented
+
+  # ===== Phase 4: 生产可用 (P2) =====
+  - id: "feat-23"
+    title: "声明式导航路由 (NavHost/NavController)"
+    priority: p2
+    depends_on: ["feat-18", "feat-21"]
+    scope_files: 10
+    modules: ["components"]
+    status: implemented
+
+  - id: "feat-24"
+    title: "移动端平台适配 (SafeArea/DPI/屏幕方向)"
+    priority: p2
+    depends_on: ["feat-15"]
+    scope_files: 8
+    modules: ["platform"]
+    status: implemented
+
+  - id: "feat-25"
+    title: "性能监控与调试工具 (FPS/Recomposition Counter/Layout Inspector)"
+    priority: p2
+    depends_on: ["feat-02", "feat-04", "feat-06"]
+    scope_files: 10
+    modules: ["platform", "renderer", "layout"]
+    status: implemented
+
+  - id: "feat-26"
+    title: "内存优化 (对象池/离屏Canvas管理/GC调优)"
+    priority: p2
+    depends_on: ["feat-04", "feat-19"]
+    scope_files: 10
+    modules: ["platform", "renderer"]
+    status: implemented
+
+  - id: "feat-27"
+    title: "手势驱动动画 (Drag跟随/惯性滑动/Spring回弹)"
+    priority: p2
+    depends_on: ["feat-11", "feat-13"]
+    scope_files: 10
+    modules: ["animation", "input"]
+    status: implemented
+
+  - id: "feat-28"
+    title: "无障碍支持 (Semantics/ScreenReader/ARIA)"
+    priority: p2
+    depends_on: ["feat-15", "feat-24"]
+    scope_files: 8
+    modules: ["platform"]
+    status: implemented
+
+shared_tasks:
+  - id: "setup-project"
+    title: "项目初始化：TS配置、包结构、构建脚本"
+    status: done
+    blocks: ["feat-01", "feat-03", "feat-06"]
+
+  - id: "setup-test-infrastructure"
+    title: "搭建测试基础设施：单元测试+E2E+性能基准"
+    status: done
+    blocks: ["feat-02", "feat-07", "feat-11"]
+
+  - id: "define-public-api-types"
+    title: "定义公共 API 类型体系（统一导出入口）"
+    status: done
+    blocks: ["feat-15", "feat-18"]
