@@ -103,89 +103,85 @@ describe('formatCurrency', () => {
   });
 });
 
-// ===== 示例 2: Hook 单元测试 =====
+// ===== 示例 2: 状态管理单元测试 =====
 
-// hooks/useCounter.ts
-export function useCounter(initialValue: number = 0) {
-  const [count, setCount] = useState(initialValue);
-  
-  const increment = useCallback(() => setCount(c => c + 1), []);
-  const decrement = useCallback(() => setCount(c => c - 1), []);
-  const reset = useCallback(() => setCount(initialValue), [initialValue]);
-  
+// core/state.ts 中的 mutableStateOf 使用模式
+function createCounter(initialValue: number = 0) {
+  const count = mutableStateOf(initialValue);
+
+  const increment = () => { count.value = count.value + 1; };
+  const decrement = () => { count.value = count.value - 1; };
+  const reset = () => { count.value = initialValue; };
+
   return { count, increment, decrement, reset };
 }
 
-// __tests__/hooks/useCounter.test.ts
-import { renderHook, act } from '@testing-library/react-hooks';
-
-describe('useCounter', () => {
+// __tests__/core/counter-logic.test.ts
+describe('counter logic', () => {
   it('should initialize with default value (0)', () => {
-    const { result } = renderHook(() => useCounter());
-    expect(result.current.count).toBe(0);
+    const { count } = createCounter();
+    expect(count.value).toBe(0);
   });
-  
+
   it('should initialize with custom value', () => {
-    const { result } = renderHook(() => useCounter(10));
-    expect(result.current.count).toBe(10);
+    const { count } = createCounter(10);
+    expect(count.value).toBe(10);
   });
-  
+
   it('should increment counter', () => {
-    const { result } = renderHook(() => useCounter());
-    
-    act(() => {
-      result.current.increment();
-    });
-    
-    expect(result.current.count).toBe(1);
+    const { count, increment } = createCounter();
+
+    increment();
+
+    expect(count.value).toBe(1);
   });
-  
+
   it('should decrement counter', () => {
-    const { result } = renderHook(() => useCounter(5));
-    
-    act(() => {
-      result.current.decrement();
-    });
-    
-    expect(result.current.count).toBe(4);
+    const { count, decrement } = createCounter(5);
+
+    decrement();
+
+    expect(count.value).toBe(4);
   });
-  
+
   it('should reset to initial value', () => {
-    const { result } = renderHook(() => useCounter(10));
-    
-    act(() => {
-      result.current.increment();
-      result.current.increment();
-      result.current.reset();
-    });
-    
-    expect(result.current.count).toBe(10);
+    const { count, increment, reset } = createCounter(10);
+
+    increment();
+    increment();
+    reset();
+
+    expect(count.value).toBe(10);
   });
 });
 
 // ===== 示例 3: Composable 组件单元测试 =====
 
 // components/Greeting.ts
-const Greeting = composable<{ name: string }>(({ name }) => {
-  return Column() {
-    Text({ text: `Hello, ${name}!` });
-  };
+const Greeting = composable<{ name: string }>((ctx, { name }) => {
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(8)', 'start', () => {
+    Text(ctx, `Hello, ${name}!`, Modifier.create().freeze());
+  });
 });
 
 // __tests__/components/Greeting.test.ts
-import { render, screen } from '@testing-library/canvas';
-
 describe('Greeting component', () => {
   it('should render greeting with name', () => {
-    render(<Greeting name="World" />);
-    
-    expect(screen.getByText('Hello, World!')).toBeInTheDocument();
+    const ctx = createTestCompositionContext();
+    Greeting(ctx, { name: 'World' });
+
+    const emittedNodes = Array.from(ctx.emittedNodes.values());
+    const textNode = emittedNodes.find(n => n.data?.text?.includes('Hello, World'));
+    expect(textNode).toBeDefined();
   });
-  
+
   it('should handle empty name gracefully', () => {
-    render(<Greeting name="" />);
-    
-    expect(screen.getByText('Hello, !')).toBeInTheDocument();
+    const ctx = createTestCompositionContext();
+    Greeting(ctx, { name: '' });
+
+    const emittedNodes = Array.from(ctx.emittedNodes.values());
+    const textNode = emittedNodes.find(n => n.data?.text?.includes('Hello, !'));
+    expect(textNode).toBeDefined();
   });
 });
 ```

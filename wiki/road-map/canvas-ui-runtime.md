@@ -148,31 +148,51 @@ stale: false
 | 复杂度 | 组件数 ~30+ / 主要是组合工作 |
 | 风险点 | API 设计一致性、可扩展性（Slot API / CompositionLocal） |
 
-#### 核心能力
-- **原子组件**
-  - [x] Text（文本：样式、行数限制、溢出处理）
-  - [x] Image（图片：加载、占位符、ContentScale）
-  - [x] Box（容器：alignment、contentAlignment）
-  - [x] Column / Row（线性布局方向）
-  - [x] Spacer（间距填充）
-  - [x] Surface（背景+ elevation+ 形状）
-- **交互组件**
-  - [x] Button（按钮：onClick、enabled、形状）
-  - [x] TextField（输入框：单行/多行、value/onValueChange）
-  - [x] Switch / Checkbox / RadioButton（选择控件）
-  - [x] Slider（滑块）
-  - [x] IconButton / FAB（图标按钮）
-- **容器组件**
-  - [ ] Card（卡片：elevation、shape、clickable）
-  - [ ] Scaffold（脚手架：topBar/bottomBar/content/snackbarHost）
-  - [ ] LazyColumn / LazyRow（虚拟列表：item/lazyItem、itemKey）
-  - [ ] TabRow / ScrollableTabRow（标签栏）
-  - [ ] BottomNavigation / NavigationBar（底部导航）
-  - [ ] TopAppBar（顶部栏）
-  - [x] ModalBottomSheet / Dialog（弹窗）
-  - [x] DropdownMenu / Popup（弹出菜单）
-  - [x] CircularProgressIndicator / LinearProgressIndicator（进度指示器）
-  - [x] Snackbar（消息提示）
+#### 核心能力（Emit-based Composition 模型 — 2026-05-07 架构升级后）
+
+> **架构迁移说明（2026-05-07）**：组件模型已从"返回 ComponentNode 树"全面迁移到 **Emit-based Composition 模型**：
+> - 所有组件签名：`fn(ctx: CompositionContext, ...props): void`（ctx-first，void 返回）
+> - 叶子组件通过 `ctx.emitLeaf()` 发射节点到 Map
+> - 容器组件通过 `ctx.startGroup()` / `ctx.endGroup()` 发射节点
+> - 渲染器通过 `renderEmittedTree(Map<NodeId, EmittedNode>)` 消费
+> - 分为 L0（原子）和 L1（组合）两层
+
+- **L0 原子组件**（直接 emit 节点，全部公共导出）
+  - [x] Text（文本：ctx.emitLeaf + textMeasurePolicy + textDrawPolicy）
+  - [x] Image（图片：ctx.emitLeaf）
+  - [x] Spacer（占位：ctx.emitLeaf + ConstrainedMeasurePolicy）
+  - [x] Box（容器：ctx.startGroup/endGroup + BoxAlignmentMeasurePolicy）
+  - [x] Column / Row（线性布局：ctx.startGroup + linearMeasurePolicy + layoutColumnChildren/layoutRowChildren）
+  - [x] Surface（Material容器：ctx.startGroup/endGroup）
+  - [x] Slider（滑块：ctx.emitLeaf）
+  - [x] Checkbox（选择：ctx.emitLeaf）
+  - [x] TextField（输入框：ctx.emitLeaf）
+  - [x] CircularProgressIndicator / LinearProgressIndicator（进度：ctx.emitLeaf）
+- **L1 组合组件**（组合 L0 组件，同样 ctx-first + void 返回）
+  - [x] Button（Surface + Text + clickable Modifier）
+  - [x] FAB（Surface + 圆形裁剪）
+  - [x] ~~Card~~（**已从公共 API 移除**，转为内部组件，demo 通过 `M.card()` 封装使用 Surface 实现）
+  - [x] Scaffold（topBar/content/bottomBar/snackbarHost 四槽位）
+  - [x] TopAppBar（Row + title + actions）
+  - [x] TabRow（Surface + Row + indicator）
+  - [x] BottomNavigation（Row + BottomNavItem[]）
+  - [x] Snackbar（Surface + Text + Button）
+  - [x] Dialog（Surface半透明 + content + buttons）
+  - [x] ModalBottomSheet（底部弹出面板）
+  - [x] DropdownMenu（下拉菜单）
+  - [x] Popup（轻量弹出层）
+  - [x] LazyColumn / LazyRow（虚拟列表：item/lazyItem、itemKey）
+
+> **Demo 覆盖情况**（5 Tab 演示应用）：
+> | Tab | 页面 | 覆盖组件 |
+> |-----|------|---------|
+> | 首页 | home-page.ts | Text, Button, Box, Surface, Column, Row, Spacer, M 主题工具全量 |
+> | 交互 | interaction-page.ts | Slider, Checkbox, Button, TextField, FAB, Snackbar |
+> | 布局 | layout-page.ts | Column, Row, Box, Surface, Spacer, Modifier 链 (全部 Arrangement/Alignment) |
+> | 反馈 | feedback-page.ts | CircularProgressIndicator, LinearProgressIndicator, Dialog, Snackbar |
+> | 列表 | list-page.ts | Column, Button, Box, Surface (M.card), 动态列表渲染 |
+
+> **最终公共 API**：约 **41 个值导出**（不含 type-only 导出），无 ui.ts barrel 文件。
 
 ### 模块: Platform（平台适配与工具）
 | 属性 | 值 |
@@ -267,7 +287,7 @@ interface AnimationFrame {
 }
 ```
 
-### 接口: Components → 所有模块（聚合接口）
+### 接口: Components → 所有模块（聚合接口，Emit-based 模型）
 | 属性 | 值 |
 |------|-----|
 | 方向 | Components → 各模块 |
@@ -275,32 +295,42 @@ interface AnimationFrame {
 | 格式 | TypeScript 类型 |
 
 ```typescript
-// 公共 API 入口
+// 公共 API 入口（Emit-based Composition 模型）
 interface ComposeRuntime {
+  // 应用入口
+  setContent: (canvas: HTMLCanvasElement, appComposable: (ctx: CompositionContext) => void) => AppHost
+
   // Reactive Core
-  state: <T>(initial: T) => MutableState<T>;
-  remember: <T>(calc: () => T, keys?: any[]) => T;
-  derivedStateOf: <T>(calc: () => T) => State<T>;
+  mutableStateOf: <T>(initial: T, snapshot: Snapshot) => MutableState<T>
+  remember: <T>(ctx: CompositionContext, calculation: () => T, keys?: readonly RememberKey[]) => T
+  derivedStateOf: <T>(calc: () => T) => DerivedState<T>
+  composable: <TProps>(fn: (ctx: CompositionContext, props: TProps) => void) => ComposableFunction<TProps>
+  createAppContext: (options?: AppContextOptions) => ComposerContext
 
-  // Layout
-  Modifier: ModifierFactory;
-  Box: ComposableFunction<TextProps>;
-  Column: ComposableFunction<ColumnProps>;
-  Row: ComposableFunction<RowProps>;
-  // ... more components
+  // L0 组件（ctx-first + void 返回）
+  Text: (ctx: CompositionContext, text: string, modifier?, style?) => void
+  Image: (ctx: CompositionContext, src: ImageSource, modifier?, options?) => void
+  Spacer: (ctx: CompositionContext, width?, height?, modifier?) => void
+  Box: (ctx: CompositionContext, contentFn?, modifier?, alignment?) => void
+  Column: (ctx: CompositionContext, modifier?, arrangement?, alignment?, childrenFn?) => void
+  Row: (ctx: CompositionContext, modifier?, arrangement?, alignment?, childrenFn?) => void
+  Surface: (ctx: CompositionContext, contentFn?, options?) => void
 
-  // Renderer (internal)
-  Canvas: CanvasHost;
+  // L1 组合组件（同样 ctx-first + void 返回）
+  Button: (ctx: CompositionContext, text: string, onClick: () => void, modifier?, options?) => void
+  Scaffold: (ctx: CompositionContext, topBar?, content?, bottomBar?, snackbarHost?, options?) => void
+  // ... 更多组件
 
-  // Input
-  PointerInputFilter: Modifier;
+  // 渲染器（内部使用）
+  renderEmittedTree: (ctx: DrawContext, nodes: Map<number, EmittedNode>, rootNodeId: number, width: number, height: number) => DrawCommand[]
 
-  // Animation
-  animateFloatAsState: (targetValue: Float, animationSpec?: AnimationSpec<Float>) => State<Float>;
+  // Modifier
+  Modifier: ModifierFactory
 
-  // Platform
-  LocalDensity: ProvidableCompositionLocal<Density>;
-  LocalConfiguration: ProvidableCompositionLocal<Configuration>;
+  // 类型导出
+  CompositionContext: typeof import('./core/composition-context').CompositionContext
+  EmittedNode: typeof import('./core/composition-context').EmittedNode
+  NodeId: number
 }
 ```
 

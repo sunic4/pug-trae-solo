@@ -1,10 +1,11 @@
-import { ConstrainedMeasurePolicy, Modifier, DEFAULT_MODIFIER, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
+import { ConstrainedMeasurePolicy, Modifier, DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
+import type { ReadonlyModifier } from '@/components/shared/imports'
 import type { Color, DrawScope, Rect } from '@/renderer/types'
 import { PrimaryColor } from '@/theme/colors'
 import type { GestureCallback } from '@/input/gesture-recognizer'
 import { clickable } from '@/input/gesture-modifier'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function checkboxDrawPolicy(checked: boolean, checkmarkColor: Color): DrawPolicy {
   return (scope: DrawScope, bounds: Rect): void => {
@@ -28,23 +29,15 @@ function checkboxDrawPolicy(checked: boolean, checkmarkColor: Color): DrawPolicy
   }
 }
 
-type CheckboxComponent = {
-  readonly kind: 'checkbox'
-  readonly checked: boolean
-  readonly onCheckedChange: (checked: boolean) => void
-  readonly checkedColor: Color
-  readonly uncheckedColor: Color
-  readonly checkmarkColor: Color
-} & ComponentBase
-
 function Checkbox(
+  ctx: CompositionContext,
   checked: boolean,
   onCheckedChange: (checked: boolean) => void,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   checkedColor: Color = PrimaryColor,
   uncheckedColor: Color = { r: 189, g: 189, b: 189, a: 1 },
   checkmarkColor: Color = { r: 255, g: 255, b: 255, a: 1 },
-): CheckboxComponent {
+): void {
   const onClick: GestureCallback = () => {
     onCheckedChange(!checked)
   }
@@ -54,20 +47,12 @@ function Checkbox(
     .background(checked ? checkedColor : uncheckedColor, 4)
     .freeze()
   const measurePolicy = ConstrainedMeasurePolicy(24, 24)
-  return {
-    kind: 'checkbox',
-    modifier: modWithClick,
-    checked,
-    onCheckedChange,
-    checkedColor,
-    uncheckedColor,
-    checkmarkColor,
+  ctx.emitNode(
+    { checked, onCheckedChange, checkedColor, uncheckedColor, checkmarkColor },
+    modWithClick,
     measurePolicy,
-    drawPolicy: checkboxDrawPolicy(checked, checkmarkColor),
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+    checkboxDrawPolicy(checked, checkmarkColor),
+  )
 }
 
-export type { CheckboxComponent }
 export { Checkbox }

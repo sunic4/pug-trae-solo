@@ -1,8 +1,9 @@
-import { Modifier, DEFAULT_MODIFIER, ConstrainedMeasurePolicy, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ReadonlyModifier, Color } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, ConstrainedMeasurePolicy, normalizeModifier } from '@/components/shared/imports'
+import type { ReadonlyModifier, Color } from '@/components/shared/imports'
 import { PrimaryColor, TrackColor } from '@/theme/colors'
 import type { DrawScope, Rect } from '@/renderer/types'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function linearProgressDrawPolicy(progress: number, color: Color, trackColor: Color, barHeight: number): DrawPolicy {
   return (scope: DrawScope, bounds: Rect): void => {
@@ -23,42 +24,26 @@ function linearProgressDrawPolicy(progress: number, color: Color, trackColor: Co
   }
 }
 
-type LinearProgressIndicatorComponent = {
-  readonly kind: 'linear-progress-indicator'
-  readonly progress: number
-  readonly determinate: boolean
-  readonly color: Color
-  readonly trackColor: Color
-  readonly height: number
-} & ComponentBase
-
 function LinearProgressIndicator(
+  ctx: CompositionContext,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   progress: number = 0,
   determinate: boolean = false,
   color: Color = PrimaryColor,
   trackColor: Color = TrackColor,
   height: number = 4,
-): LinearProgressIndicatorComponent {
+): void {
   const normalizedMod = normalizeModifier(modifier)
   const progressModifier = Modifier.extendFrom(normalizedMod)
     .background(trackColor, height / 2)
     .freeze()
   const measurePolicy = ConstrainedMeasurePolicy(200, height)
-  return {
-    kind: 'linear-progress-indicator',
-    modifier: progressModifier,
-    progress,
-    determinate,
-    color,
-    trackColor,
-    height,
+  ctx.emitLeaf(
+    { progress, determinate, color, trackColor, height },
+    progressModifier,
     measurePolicy,
-    drawPolicy: linearProgressDrawPolicy(progress, color, trackColor, height),
-    getChildren: leafGetChildren,
-    layoutChildren: leafLayoutChildren,
-  }
+    linearProgressDrawPolicy(progress, color, trackColor, height),
+  )
 }
 
-export type { LinearProgressIndicatorComponent }
 export { LinearProgressIndicator }

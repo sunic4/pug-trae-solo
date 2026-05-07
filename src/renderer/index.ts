@@ -79,7 +79,7 @@ export { executePathCommands } from '@/renderer/draw-command'
 
 export { DrawScopeImpl, createDrawScope } from '@/renderer/draw-scope'
 export { CanvasHostImpl, createCanvasHost } from '@/renderer/canvas-host'
-export { renderComponentTree } from '@/renderer/component-renderer'
+export { renderEmittedTree } from '@/renderer/component-renderer'
 export { NOOP_DRAW_POLICY } from '@/components/basic/types'
 export { VectorPathImpl, VectorPathBuilder, createVectorPathBuilder } from '@/renderer/path'
 export { LayerNodeImpl, LayerTreeImpl, createLayerNode, createLayerTree } from '@/renderer/layer'

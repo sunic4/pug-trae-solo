@@ -1,12 +1,3 @@
 import { CircularProgressIndicator } from '@/components/feedback/circular-progress'
-import type { CircularProgressIndicatorComponent } from '@/components/feedback/circular-progress'
 import { LinearProgressIndicator } from '@/components/feedback/linear-progress'
-import type { LinearProgressIndicatorComponent } from '@/components/feedback/linear-progress'
-import { Snackbar } from '@/components/feedback/snackbar'
-import type { SnackbarComponent, SnackbarDuration } from '@/components/feedback/snackbar'
-export type { CircularProgressIndicatorComponent } from '@/components/feedback/circular-progress'
-export { CircularProgressIndicator } from '@/components/feedback/circular-progress'
-export type { LinearProgressIndicatorComponent } from '@/components/feedback/linear-progress'
-export { LinearProgressIndicator } from '@/components/feedback/linear-progress'
-export type { SnackbarComponent, SnackbarDuration } from '@/components/feedback/snackbar'
-export { Snackbar } from '@/components/feedback/snackbar'
+export { CircularProgressIndicator, LinearProgressIndicator }

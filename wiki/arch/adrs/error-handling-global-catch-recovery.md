@@ -87,9 +87,9 @@ stale: false
 
 ```typescript
 interface ErrorBoundaryProps {
-  fallback?: (error: Error, retry: () => void) => ComposableNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  children: () => ComposableNode;
+  fallback?: (error: Error, retry: () => void) => void
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  children: () => void
 }
 
 interface ErrorInfo {
@@ -98,51 +98,47 @@ interface ErrorInfo {
   context: Record<string, any>;  // 额外上下文信息
 }
 
-const ErrorBoundary = composable<ErrorBoundaryProps>(({
+const ErrorBoundary = composable<ErrorBoundaryProps>((ctx, {
   fallback,
   onError,
   children
 }) => {
-  const error = remember<Error | null>(null);
-  
-  // 内部使用 try-catch 包裹子组件执行
+  const error = remember(ctx, (): Error | null => null);
+
   try {
     if (error.value === null) {
-      return children();
+      children();
     }
   } catch (caughtError) {
     error.value = caughtError as Error;
-    
-    // 调用错误回调（用于日志上报）
+
     onError?.(caughtError as Error, {
       componentStack: getComponentStack(),
       timestamp: Date.now(),
       context: {}
     });
   }
-  
-  // 显示降级 UI
+
   if (error.value !== null && fallback) {
-    return fallback(error.value, () => {
-      error.value = null;  // 重试：清除错误状态，重新渲染子组件
+    fallback(error.value, () => {
+      error.value = null;
     });
+    return;
   }
-  
-  // 默认 Fallback UI
-  return DefaultErrorFallback({ 
-    error: error.value!, 
-    onRetry: () => error.value = null 
-  });
+
+  DefaultErrorFallback(ctx, { error: error.value!, onRetry: () => { error.value = null } });
 });
 
 // 使用示例
-const UserProfile = composable<{ userId: string }>(({ userId }) => {
-  return ErrorBoundary({
-    fallback: (error, retry) => Column() {
-      Text({ text: '加载用户资料失败', color: Color.Red });
-      Button({ text: '重试', onClick: retry });
+const UserProfile = composable<{ userId: string }>((ctx, { userId }) => {
+  ErrorBoundary(ctx, {
+    fallback: (err, retry) => {
+      Column(ctx, Modifier.create().freeze(), 'spacedBy(8)', 'start', () => {
+        Text(ctx, '加载用户资料失败', Modifier.create().freeze(), { color: { r: 255, g: 0, b: 0, a: 1 } });
+        Button(ctx, '重试', retry, Modifier.create().freeze());
+      });
     },
-    children: () => UserDetail({ userId })
+    children: () => { UserDetail(ctx, { userId }); }
   });
 });
 ```
@@ -313,14 +309,14 @@ const loginUser = async (credentials: LoginCredentials): Promise<User> => {
 #### 4. 副作用错误处理（useEffect 集成）
 
 ```typescript
-const DataFetcher = composable<{ url: string }>(({ url }) => {
-  const data = remember(() => mutableStateOf<any>(null));
-  const error = remember<AppError | null>(null);
-  const loading = remember(() => mutableStateOf(true));
-  
-  useEffect(() => {
+const DataFetcher = composable<{ url: string }>((ctx, { url }) => {
+  const data = remember(ctx, () => mutableStateOf<any>(null));
+  const error = remember(ctx, (): AppError | null => null);
+  const loading = remember(ctx, () => mutableStateOf(true));
+
+  sideEffect(ctx.composerContext, () => {
     let cancelled = false;
-    
+
     fetchData(url)
       .then(result => {
         if (!cancelled) {
@@ -331,9 +327,8 @@ const DataFetcher = composable<{ url: string }>(({ url }) => {
       })
       .catch(err => {
         if (!cancelled) {
-          // 将原生 Error 转换为 AppError
-          error.value = err instanceof AppError 
-            ? err 
+          error.value = err instanceof AppError
+            ? err
             : new AppError(
                 err.message,
                 ErrorCode.INTERNAL_UNKNOWN,
@@ -345,29 +340,27 @@ const DataFetcher = composable<{ url: string }>(({ url }) => {
           data.value = null;
         }
       });
-      
+
     return () => { cancelled = true; };
-  }, [url]);
-  
-  // 加载状态
+  });
+
   if (loading.value) {
-    return LoadingSpinner();
+    LoadingSpinner(ctx);
+    return;
   }
-  
-  // 错误状态（带重试能力）
+
   if (error.value !== null) {
-    return ErrorView({
+    ErrorView(ctx, {
       error: error.value,
       onRetry: () => {
         loading.value = true;
         error.value = null;
-        // 触发重新 fetch（通过改变依赖或使用 ref）
       }
     });
+    return;
   }
-  
-  // 正常状态
-  return DataRenderer({ data: data.value! });
+
+  DataRenderer(ctx, { data: data.value! });
 });
 ```
 
@@ -376,12 +369,12 @@ const DataFetcher = composable<{ url: string }>(({ url }) => {
 ```typescript
 // ===== useErrorHandler Hook =====
 
-function useErrorHandler(context: string = '') {
-  const [error, setError] = useState<AppError | null>(null);
-  
-  const handleError = useCallback((err: unknown, userMessage?: string) => {
-    const appError = err instanceof AppError 
-      ? err 
+function createErrorHandler(context: string = '') {
+  const error = mutableStateOf<AppError | null>(null);
+
+  const handleError = (err: unknown, userMessage?: string) => {
+    const appError = err instanceof AppError
+      ? err
       : new AppError(
           String(err),
           ErrorCode.INTERNAL_UNKNOWN,
@@ -390,27 +383,26 @@ function useErrorHandler(context: string = '') {
           true,
           { source: context }
         );
-    
-    setError(appError);
-    
-    // 调用全局处理器
+
+    error.value = appError;
+
     GlobalErrorHandler.handle(appError);
-  }, [context]);
-  
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-  
+  };
+
+  const clearError = () => {
+    error.value = null;
+  };
+
   return { error, handleError, clearError };
 }
 
 // 使用示例
-const FormSubmitButton = composable(() => {
+const FormSubmitButton = composable<Record<string, never>>((ctx) => {
   const { error, handleError, clearError } = useErrorHandler('form-submit');
-  const [submitting, setSubmitting] = useState(false);
-  
+  const submitting = remember(ctx, () => mutableStateOf(false));
+
   const handleSubmit = async () => {
-    setSubmitting(true);
+    submitting.value = true;
     try {
       await submitForm();
       clearError();
@@ -418,25 +410,22 @@ const FormSubmitButton = composable(() => {
     } catch (err) {
       handleError(err, '表单提交失败');
     } finally {
-      setSubmitting(false);
+      submitting.value = false;
     }
   };
-  
-  return Column() {
-    if (error) {
-      Alert({ 
-        message: error.userMessage, 
+
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(8)', 'start', () => {
+    if (error.value !== null) {
+      Alert(ctx, {
+        message: error.value.userMessage,
         type: 'error',
-        onClose: clearError 
+        onClose: clearError
       });
     }
-    
-    Button({
-      text: submitting ? '提交中...' : '提交',
-      onClick: handleSubmit,
-      enabled: !submitting
-    });
-  };
+
+    Button(ctx, submitting.value ? '提交中...' : '提交', handleSubmit,
+      Modifier.create().freeze());
+  });
 });
 ```
 
@@ -472,7 +461,7 @@ const FormSubmitButton = composable(() => {
 | 风险 | 影响 | 缓解措施 |
 |------|------|---------|
 | 性能开销 | try-catch 和 ErrorBoundary 带来 ~1-2% 性能损耗 | 仅在关键路径使用；V8 引擎优化 try-catch |
-| 代码复杂度增加 | 需要编写额外的错误处理逻辑 | 提供 useErrorHandler 等 Hook 封装通用模式 |
+| 代码复杂度增加 | 需要编写额外的错误处理逻辑 | 提供 createErrorHandler 等工具函数封装通用模式 |
 | 过度使用 ErrorBoundary | 导致组件树嵌套过深 | 仅在模块边界使用（如页面级、功能块级） |
 | 错误分类标准不统一 | 开发者随意定义错误码 | 提供 ErrorCode 枚举和规范文档 |
 | 静默吞掉错误 | 错误被捕获但未正确处理 | 强制要求所有 catch 块必须处理或 rethrow |
@@ -506,7 +495,7 @@ const FormSubmitButton = composable(() => {
 
 | 指标 | 数值 |
 |------|------|
-| 影响文件数 | ~10 文件（core/error/, components/ErrorBoundary.ts, hooks/useErrorHandler.ts） |
+| 影响文件数 | ~10 文件（core/error/, components/ErrorBoundary.ts, utils/error-handler.ts） |
 | 影响模块数 | 2 个模块（error-handling, components） |
 | 数据迁移 | 无（新代码） |
 | API 变更风险 | 中等（如果移除，需要移除所有 ErrorBoundary 使用处） |
@@ -531,10 +520,10 @@ const FormSubmitButton = composable(() => {
 
 ```typescript
 // 1. 页面级 ErrorBoundary（必需）
-const HomePage = composable(() => {
-  return ErrorBoundary({
-    fallback: (error, retry) => PageErrorFallback({ error, retry }),
-    children: () => HomeContent()
+const HomePage = composable<Record<string, never>>((ctx) => {
+  ErrorBoundary(ctx, {
+    fallback: (err, retry) => { PageErrorFallback(ctx, { error: err, retry }); },
+    children: () => { HomeContent(ctx); }
   });
 });
 
@@ -552,8 +541,8 @@ const handleDelete = async (itemId: string) => {
   }
 };
 
-// 3. useEffect 错误处理（副作用）
-useEffect(() => {
+// 3. sideEffect 错误处理（副作用）
+sideEffect(composerContext, () => {
   const subscription = dataSource.subscribe({
     next: (data) => updateState(data),
     error: (err) => showErrorToast('数据同步失败')
@@ -588,11 +577,11 @@ try {
 throw 'Something went wrong';  // ❌ 错误！应该 throw new Error(...)
 
 // 3. 在渲染路径中产生副作用
-const BadComponent = composable(() => {
+const BadComponent = composable<Record<string, never>>((ctx) => {
   if (Math.random() > 0.5) {
-    throw new Error('随机崩溃');  // ❌ 错误！应该使用条件渲染
+    throw new Error('随机崩溃');
   }
-  return Text({ text: 'Hello' });
+  Text(ctx, 'Hello', Modifier.create().freeze());
 });
 
 // 4. 全局变量存储错误状态
@@ -605,7 +594,7 @@ let globalError: Error | null = null;  // ❌ 错误！违反单向数据流原�
 |------|---------|------|-----------|
 | **Phase 1 (MVP)** | ErrorBoundary 组件 + 基础 AppError 类 + 默认 Fallback UI | 页面级错误隔离 | 3 天 |
 | **Phase 2** | GlobalErrorHandler + 错误分类器 + 日志上报接口 | 监控集成 | 2-3 天 |
-| **Phase 3** | useErrorHandler/useAsyncError Hooks + 副作用错误封装 | 开发效率提升 | 2 天 |
+| **Phase 3** | createErrorHandler 等工具函数 + 副作用错误封装 | 开发效率提升 | 2 天 |
 | **Phase 4** | 错误恢复策略（重试/降级/离线缓存） | 用户体验优化 | 2-3 天 |
 | **Phase 5** | DevTools 错误面板 + 时间旅行调试 | 调试体验完善 | 3-4 天 |
 

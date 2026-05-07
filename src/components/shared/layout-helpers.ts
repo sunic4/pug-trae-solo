@@ -1,18 +1,18 @@
-import type { ComponentNode, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { Rect } from '@/renderer/types'
 import type { Alignment, Arrangement } from '@/layout/types'
 
 function layoutColumnChildren(
-  children: readonly ComponentNode[],
+  childIds: readonly number[],
   contentArea: Rect,
   measuredSizes: MeasuredSizeMap,
   arrangement: Arrangement,
   alignment: Alignment = 'start',
 ): ChildLayout[] {
-  if (children.length === 0) return []
+  if (childIds.length === 0) return []
 
   const layouts: ChildLayout[] = []
-  const sizes = children.map(c => measuredSizes.get(c) ?? { width: contentArea.width, height: 48 })
+  const sizes = childIds.map(id => measuredSizes.get(id) ?? { width: contentArea.width, height: 48 })
   const totalHeight = sizes.reduce((sum, s) => sum + s.height, 0)
   const remaining = Math.max(0, contentArea.height - totalHeight)
 
@@ -23,12 +23,12 @@ function layoutColumnChildren(
     yOffset = remaining
   }
 
-  const spacing = arrangement === 'spaceBetween' && children.length > 1
-    ? remaining / (children.length - 1)
+  const spacing = arrangement === 'spaceBetween' && childIds.length > 1
+    ? remaining / (childIds.length - 1)
     : 0
 
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i]!
+  for (let i = 0; i < childIds.length; i++) {
+    const childId = childIds[i]!
     const size = sizes[i]!
     let x = contentArea.x
     if (alignment === 'center') {
@@ -37,14 +37,14 @@ function layoutColumnChildren(
       x = contentArea.x + contentArea.width - size.width
     }
     layouts.push({
-      node: child,
+      nodeId: childId,
       x,
       y: contentArea.y + yOffset,
       width: size.width,
       height: size.height,
     })
     yOffset += size.height
-    if (arrangement === 'spaceBetween' && i < children.length - 1) {
+    if (arrangement === 'spaceBetween' && i < childIds.length - 1) {
       yOffset += spacing
     }
   }
@@ -53,16 +53,16 @@ function layoutColumnChildren(
 }
 
 function layoutRowChildren(
-  children: readonly ComponentNode[],
+  childIds: readonly number[],
   contentArea: Rect,
   measuredSizes: MeasuredSizeMap,
   arrangement: Arrangement,
   alignment: Alignment = 'start',
 ): ChildLayout[] {
-  if (children.length === 0) return []
+  if (childIds.length === 0) return []
 
   const layouts: ChildLayout[] = []
-  const sizes = children.map(c => measuredSizes.get(c) ?? { width: 48, height: contentArea.height })
+  const sizes = childIds.map(id => measuredSizes.get(id) ?? { width: 48, height: contentArea.height })
   const totalWidth = sizes.reduce((sum, s) => sum + s.width, 0)
   const remaining = Math.max(0, contentArea.width - totalWidth)
 
@@ -73,12 +73,12 @@ function layoutRowChildren(
     xOffset = remaining
   }
 
-  const spacing = arrangement === 'spaceBetween' && children.length > 1
-    ? remaining / (children.length - 1)
+  const spacing = arrangement === 'spaceBetween' && childIds.length > 1
+    ? remaining / (childIds.length - 1)
     : 0
 
-  for (let i = 0; i < children.length; i++) {
-    const child = children[i]!
+  for (let i = 0; i < childIds.length; i++) {
+    const childId = childIds[i]!
     const size = sizes[i]!
     let y = contentArea.y
     if (alignment === 'center') {
@@ -87,14 +87,14 @@ function layoutRowChildren(
       y = contentArea.y + contentArea.height - size.height
     }
     layouts.push({
-      node: child,
+      nodeId: childId,
       x: contentArea.x + xOffset,
       y,
       width: size.width,
       height: size.height,
     })
     xOffset += size.width
-    if (arrangement === 'spaceBetween' && i < children.length - 1) {
+    if (arrangement === 'spaceBetween' && i < childIds.length - 1) {
       xOffset += spacing
     }
   }
@@ -103,13 +103,13 @@ function layoutRowChildren(
 }
 
 function layoutBoxChildren(
-  children: readonly ComponentNode[],
+  childIds: readonly number[],
   contentArea: Rect,
   measuredSizes: MeasuredSizeMap,
   alignment: Alignment,
 ): ChildLayout[] {
-  return children.map(child => {
-    const size = measuredSizes.get(child) ?? { width: contentArea.width, height: contentArea.height }
+  return childIds.map(childId => {
+    const size = measuredSizes.get(childId) ?? { width: contentArea.width, height: contentArea.height }
     let x = contentArea.x
     let y = contentArea.y
 
@@ -121,7 +121,7 @@ function layoutBoxChildren(
       y = contentArea.y + contentArea.height - size.height
     }
 
-    return { node: child, x, y, width: size.width, height: size.height }
+    return { nodeId: childId, x, y, width: size.width, height: size.height }
   })
 }
 

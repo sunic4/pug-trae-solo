@@ -104,7 +104,7 @@ interface VirtualListProps<T> {
   items: T[];
   itemCount: number;                    // 总数量
   itemSize: (index: number) => number;  // 动态高度估算函数
-  renderItem: (item: T, index: number) => ComposableNode;
+  renderItem: (item: T, index: number) => void;
   
   // 可视区域配置
   viewportSize: { width: number; height: number };
@@ -115,7 +115,7 @@ interface VirtualListProps<T> {
   estimateSize?: number;                // 默认预估尺寸（用于初始化）
 }
 
-const LazyColumn = composable<VirtualListProps<any>>(({
+const LazyColumn = composable<VirtualListProps<any>>((ctx, {
   items,
   itemCount,
   itemSize,
@@ -124,68 +124,47 @@ const LazyColumn = composable<VirtualListProps<any>>(({
   overscanCount = 5,
   estimateSize = 50
 }) => {
-  const [scrollOffset, setScrollOffset] = useState(0);
-  const sizeCache = useRef(new Map<number, number>());
-  
-  // 计算可视范围
-  const visibleRange = useMemo(() => {
-    const start = findNearestItemIndex(scrollOffset, sizeCache.current, estimateSize);
-    const end = findNearestItemIndex(
-      scrollOffset + viewportSize.height, 
-      sizeCache.current, 
-      estimateSize
-    );
-    
-    return {
-      start: Math.max(0, start - overscanCount),
-      end: Math.min(itemCount - 1, end + overscanCount)
-    };
-  }, [scrollOffset, itemCount, viewportSize]);
-  
-  // 总内容高度（用于滚动条）
-  const totalHeight = useMemo(() => {
-    let total = 0;
-    for (let i = 0; i < itemCount; i++) {
-      total += sizeCache.current.get(i) ?? estimateSize;
-    }
-    return total;
-  }, [itemCount, sizeCache.current]);
-  
-  return Column({
-    modifier: Modifier.height(viewportSize.height).verticalScroll(onScroll = (offset) => {
-      setScrollOffset(offset);
-    })
-  }) {
-    // 占位容器（撑开总高度）
-    Box({ modifier: Modifier.height(totalHeight) }) {
-      // 仅渲染可视项
-      for (let i = visibleRange.start; i <= visibleRange.end; i++) {
-        const item = items[i];
-        if (item) {
-          // 测量并缓存实际尺寸
-          Measurable({
-            key: `item-${i}`,
-            onMeasure: (size) => { sizeCache.current.set(i, size.height); }
-          }) {
-            renderItem(item, i);
-          };
-        }
+  const scrollOffset = remember(ctx, () => mutableStateOf(0));
+  const sizeCache = remember(ctx, () => new Map<number, number>());
+
+  const visibleStart = findNearestItemIndex(scrollOffset.value, sizeCache, estimateSize);
+  const visibleEnd = findNearestItemIndex(
+    scrollOffset.value + viewportSize.height,
+    sizeCache,
+    estimateSize
+  );
+
+  const start = Math.max(0, visibleStart - overscanCount);
+  const end = Math.min(itemCount - 1, visibleEnd + overscanCount);
+
+  let totalHeight = 0;
+  for (let i = 0; i < itemCount; i++) {
+    totalHeight += sizeCache.get(i) ?? estimateSize;
+  }
+
+  Column(ctx, Modifier.create().height(viewportSize.height).freeze(), 'top', 'start', () => {
+    Box(ctx, () => {
+    }, Modifier.create().height(totalHeight).freeze());
+
+    for (let i = start; i <= end; i++) {
+      const item = items[i];
+      if (item) {
+        renderItem(item, i);
       }
     }
-  };
+  });
 });
 
 // 使用示例
-const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
-  return LazyColumn({
+const MessageList = composable<{ messages: Message[] }>((ctx, { messages }) => {
+  LazyColumn(ctx, {
     items: messages,
     itemCount: messages.length,
     itemSize: (index) => {
-      // 根据消息类型动态估算高度
       const msg = messages[index];
       return msg.type === 'image' ? 300 : 80;
     },
-    renderItem: (msg, index) => MessageBubble({ message: msg }),
+    renderItem: (msg) => { MessageBubble(ctx, { message: msg }); },
     viewportSize: { width: window.innerWidth, height: window.innerHeight - 100 }
   });
 });
@@ -198,42 +177,26 @@ const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
 ```typescript
 // ===== Level 1: 组件级 memo (避免不必要的重组) =====
 
-const ExpensiveComponent = composable<{ data: ComplexData }>(({ data }) => {
-  // ✅ 使用 React.memo / Compose 的 remember 语义
-  // 仅当 data 引用变化时才重新执行
-  
-  const processedData = useMemo(() => {
-    console.log('Heavy computation running...');
-    return heavyComputation(data);  // O(n²) 复杂度
-  }, [data]);  // 依赖数组
-  
-  return Text({ text: processedData.result });
+const ExpensiveComponent = composable<{ data: ComplexData }>((ctx, { data }) => {
+  const processedData = remember(ctx, () => derivedStateOf(() => {
+    return heavyComputation(data);
+  }));
+
+  Text(ctx, processedData.value.result, Modifier.create().freeze());
 });
 
 // ===== Level 2: 计算结果缓存 (useMemo) =====
 
-const ShoppingCart = composable(({ items }) => {
-  // ✅ 派生状态自动缓存
-  const subtotal = useMemo(
-    () => calculateSubtotal(items),
-    [items]  // 仅当 items 变化时重算
-  );
-  
-  const tax = useMemo(
-    () => calculateTax(subtotal),
-    [subtotal]  // 依赖链自动追踪
-  );
-  
-  const total = useMemo(
-    () => subtotal + tax,
-    [subtotal, tax]
-  );
-  
-  return Column() {
-    Text({ text: `小计: ¥${subtotal}` });
-    Text({ text: `税费: ¥${tax}` });
-    Text({ text: `总计: ¥${total}`, fontWeight: FontWeight.Bold });
-  };
+const ShoppingCart = composable<{ items: Item[] }>((ctx, { items }) => {
+  const subtotal = remember(ctx, () => derivedStateOf(() => calculateSubtotal(items)));
+  const tax = remember(ctx, () => derivedStateOf(() => calculateTax(subtotal.value)));
+  const total = remember(ctx, () => derivedStateOf(() => subtotal.value + tax.value));
+
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(4)', 'start', () => {
+    Text(ctx, `小计: ¥${subtotal.value}`, Modifier.create().freeze());
+    Text(ctx, `税费: ¥${tax.value}`, Modifier.create().freeze());
+    Text(ctx, `总计: ¥${total.value}`, Modifier.create().freeze(), { fontWeight: 'bold' });
+  });
 });
 
 // ===== Level 3: 布局缓存 (Layout Cache) =====
@@ -407,21 +370,20 @@ class StateUpdateBatcher {
 }
 
 // 使用示例
-const BatchUpdateExample = composable(() => {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState(0);
-  const [email, setEmail] = useState('');
-  
+const BatchUpdateExample = composable<Record<string, never>>((ctx) => {
+  const name = remember(ctx, () => mutableStateOf(''));
+  const age = remember(ctx, () => mutableStateOf(0));
+  const email = remember(ctx, () => mutableStateOf(''));
+
   const handleFormSubmit = () => {
-    // ✅ 自动批处理：这三次 setState 只触发一次重组
     batch(() => {
-     setName('John Doe');
-      setAge(30);
-      setEmail('john@example.com');
+      name.value = 'John Doe';
+      age.value = 30;
+      email.value = 'john@example.com';
     });
   };
-  
-  return Form({ onSubmit: handleFormSubmit }) { /* ... */ };
+
+  Form(ctx, { onSubmit: handleFormSubmit }, Modifier.create().freeze(), () => {});
 });
 ```
 
@@ -574,22 +536,20 @@ const GPU_ACCELERATED_PROPERTIES = [
 ] as const;
 
 // 使用示例
-const FadeInAnimation = composable<{ visible: boolean }>(({ visible }) => {
-  const opacity = useAnimated(0, { duration: 300, easing: Easing.easeOut });
-  
-  useEffect(() => {
+const FadeInAnimation = composable<{ visible: boolean }>((ctx, { visible }) => {
+  const opacity = remember(ctx, () => createAnimatable(0));
+
+  sideEffect(ctx.composerContext, () => {
     if (visible) {
-      opacity.animateTo(1);  // GPU 加速的淡入动画
+      opacity.animateTo(1, { duration: 300, easing: Easing.easeOut });
     } else {
-      opacity.animateTo(0);  // GPU 加速的淡出动画
+      opacity.animateTo(0, { duration: 300, easing: Easing.easeOut });
     }
-  }, [visible]);
-  
-  return Box({
-    modifier: Modifier.opacity(opacity.value)  // ✅ 使用 GPU 加速属性
-  }) {
-    Content();
-  };
+  });
+
+  Box(ctx, () => {
+    Content(ctx);
+  }, Modifier.create().opacity(opacity.value).freeze());
 });
 ```
 
@@ -706,38 +666,37 @@ const FadeInAnimation = composable<{ visible: boolean }>(({ visible }) => {
 
 ```typescript
 // 反模式 1: 在渲染路径中创建新对象/数组（破坏引用相等性）
-const BadComponent = composable(({ items }) => {
-  return Column() {
-    // ❌ 每次 render 都创建新数组，导致子组件无效重组
-    items.map(item => Child({ 
-      options: { color: 'red', size: 10 }  // 新对象！
-    }));
-  };
-});
-
-// 正确做法：使用 useMemo 或提取到外部
-const GoodComponent = composable(({ items }) => {
-  const defaultOptions = useMemo(() => ({ color: 'red', size: 10 }), []);
-  
-  return Column() {
-    items.map(item => Child({ options: defaultOptions }));
-  };
-});
-
-// 反模式 2: 内联函数定义（破坏 useCallback 优化）
-const BadEventHandling = composable(() => {
-  return Button({
-    onClick: () => { console.log('clicked'); }  // ❌ 每次都是新函数
+const BadComponent = composable<{ items: Item[] }>((ctx, { items }) => {
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(4)', 'start', () => {
+    items.forEach(item => {
+      Child(ctx, item, { color: 'red', size: 10 });
+    });
   });
 });
 
-// 正确做法：使用 useCallback
-const GoodEventHandling = composable(() => {
-  const handleClick = useCallback(() => {
-    console.log('clicked');
-  }, []);
-  
-  return Button({ onClick: handleClick });
+// 正确做法：提取到外部稳定引用
+const defaultOptions = { color: 'red', size: 10 };
+
+const GoodComponent = composable<{ items: Item[] }>((ctx, { items }) => {
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(4)', 'start', () => {
+    items.forEach(item => {
+      Child(ctx, item, defaultOptions);
+    });
+  });
+});
+
+// 反模式 2: 内联函数定义（破坏引用相等性）
+const BadEventHandling = composable<Record<string, never>>((ctx) => {
+  Button(ctx, 'Click', () => { console.log('clicked'); }, Modifier.create().freeze());
+});
+
+// 正确做法：提取到外部稳定引用
+const handleClick = () => {
+  console.log('clicked');
+};
+
+const GoodEventHandling = composable<Record<string, never>>((ctx) => {
+  Button(ctx, 'Click', handleClick, Modifier.create().freeze());
 });
 ```
 

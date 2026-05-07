@@ -1,103 +1,63 @@
-import { PrimaryColor } from '@/theme/colors'
+import { Surface } from '@/components/layout/surface'
+import type { SurfaceOptions } from '@/components/layout/surface'
+import { Text } from '@/components/basic/text'
+import { Row } from '@/components/layout/row'
+import { Spacer } from '@/components/basic/spacer'
+import { Modifier, DEFAULT_MODIFIER, normalizeModifier, defaultTextStyle } from '@/components/shared/imports'
 import { clickable } from '@/input/gesture-modifier'
-import { Modifier, DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ComponentBase, Color, ReadonlyModifier } from '@/components/shared/imports'
-import type { DrawScope, Rect } from '@/renderer/types'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
-
-function snackbarDrawPolicy(message: string, contentColor: Color, action: string | null, actionColor: Color): DrawPolicy {
-  return (scope: DrawScope, bounds: Rect): void => {
-    scope.fillText(message, { x: bounds.x + 24, y: bounds.y + 14 + DEFAULT_FONT_SIZE }, contentColor, DEFAULT_FONT_SIZE)
-    if (action) {
-      const actionX = bounds.x + bounds.width - textPixelWidth(action, DEFAULT_FONT_SIZE) - 24
-      scope.fillText(action, { x: actionX, y: bounds.y + 14 + DEFAULT_FONT_SIZE }, actionColor, DEFAULT_FONT_SIZE)
-    }
-  }
-}
-
-type SnackbarDuration = 'short' | 'long' | 'indefinite'
+import type { ReadonlyModifier, Color } from '@/components/shared/imports'
+import { PrimaryColor } from '@/theme/colors'
+import type { CompositionContext } from '@/core/composition-context'
 
 type SnackbarOptions = {
   readonly modifier?: ReadonlyModifier
   readonly onActionClick?: (() => void) | null
-  readonly duration?: SnackbarDuration
+  readonly duration?: 'short' | 'long' | 'indefinite'
   readonly backgroundColor?: Color
   readonly contentColor?: Color
   readonly actionColor?: Color
 }
 
-type SnackbarComponent = {
-  readonly kind: 'snackbar'
-  readonly message: string
-  readonly action: string | null
-  readonly onActionClick: (() => void) | null
-  readonly duration: SnackbarDuration
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-  readonly actionColor: Color
-} & ComponentBase
-
-function snackbarMeasurePolicy(message: string, action: string | null): MeasurePolicy {
-  const hPadding = 24
-  const vPadding = 14
-  const actionWidth = action ? textPixelWidth(action, DEFAULT_FONT_SIZE) + 24 : 0
-  const textWidth = textPixelWidth(message, DEFAULT_FONT_SIZE)
-  const totalWidth = textWidth + actionWidth + hPadding
-  const height = DEFAULT_FONT_SIZE * LINE_HEIGHT_RATIO + vPadding
-
-  return createMeasurePolicy({
-    measure(_measurables: Measurable[], constraints: Constraints): MeasureResult {
-      const width = constrainWidth(constraints, totalWidth)
-      const constrainedHeight = constrainHeight(constraints, height)
-      return createMeasureResult(width, constrainedHeight)
-    },
-    minIntrinsicWidth(): number {
-      return totalWidth
-    },
-    minIntrinsicHeight(): number {
-      return height
-    },
-  })
-}
-
 function Snackbar(
+  ctx: CompositionContext,
   message: string,
   action: string | null = null,
   options: SnackbarOptions = {},
-): SnackbarComponent {
+): void {
   const {
     modifier = DEFAULT_MODIFIER,
     onActionClick = null,
-    duration = 'short',
     backgroundColor = { r: 50, g: 50, b: 50, a: 1 },
     contentColor = { r: 255, g: 255, b: 255, a: 1 },
     actionColor = PrimaryColor,
   } = options
-  const normalizedModifier = normalizeModifier(modifier)
-  const builder = Modifier.extendFrom(normalizedModifier)
+  const normalizedMod = normalizeModifier(modifier)
+
+  const builder = Modifier.extendFrom(normalizedMod)
   if (action && onActionClick) {
     builder.then(clickable(() => onActionClick()))
   }
-  const snackbarModifier = builder
-    .background(backgroundColor, 4)
-    .freeze()
-  const measurePolicy = snackbarMeasurePolicy(message, action)
-  return {
-    kind: 'snackbar',
-    modifier: snackbarModifier,
-    message,
-    action,
-    onActionClick,
-    duration,
-    backgroundColor,
-    contentColor,
-    actionColor,
-    measurePolicy,
-    drawPolicy: snackbarDrawPolicy(message, contentColor, action, actionColor),
-    getChildren: leafGetChildren,
-    layoutChildren: leafLayoutChildren,
-  }
+
+  Surface(
+    ctx,
+    () => {
+      Row(ctx, DEFAULT_MODIFIER, 'center', 'center', () => {
+        Text(ctx, message, DEFAULT_MODIFIER, { ...defaultTextStyle(), fontSize: 14, color: contentColor })
+        if (action) {
+          Spacer(ctx, 24, 0)
+          Text(ctx, action, DEFAULT_MODIFIER, { ...defaultTextStyle(), fontSize: 14, color: actionColor })
+        }
+      })
+    },
+    {
+      modifier: builder.background(backgroundColor, 4).freeze(),
+      color: backgroundColor,
+      elevation: 0,
+      borderRadius: 4,
+      alignment: 'start',
+    },
+  )
 }
 
-export type { SnackbarComponent, SnackbarDuration, SnackbarOptions }
+export type { SnackbarOptions }
 export { Snackbar }

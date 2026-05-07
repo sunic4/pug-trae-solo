@@ -1,19 +1,12 @@
-import { BoxAlignmentMeasurePolicy, Modifier, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, OnPrimaryColor, PrimaryColor, defaultTextStyle, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, ReadonlyModifier, Color } from '@/components/shared/imports'
-import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
-import type { GestureCallback } from '@/input/gesture-recognizer'
-import type { Rect } from '@/renderer/types'
-import { clickable } from '@/input/gesture-modifier'
-import { layoutBoxChildren } from '@/components/shared/layout-helpers'
+import { Surface } from '@/components/layout/surface'
+import type { SurfaceOptions } from '@/components/layout/surface'
 import { Text } from '@/components/basic/text'
-
-type ButtonComponent = {
-  readonly kind: 'button'
-  readonly onClick: GestureCallback
-  readonly children: readonly ComponentNode[]
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-} & ComponentBase
+import { Modifier, DEFAULT_MODIFIER, OnPrimaryColor, PrimaryColor, normalizeModifier } from '@/components/shared/imports'
+import { clickable } from '@/input/gesture-modifier'
+import { defaultTextStyle } from '@/renderer/text-style'
+import type { ReadonlyModifier, Color } from '@/components/shared/imports'
+import type { GestureCallback } from '@/input/gesture-recognizer'
+import type { CompositionContext } from '@/core/composition-context'
 
 type ButtonOptions = {
   readonly modifier?: ReadonlyModifier
@@ -21,48 +14,32 @@ type ButtonOptions = {
   readonly contentColor?: Color
 }
 
-function resolveChildren(content: string | readonly ComponentNode[]): readonly ComponentNode[] {
-  if (typeof content === 'string') {
-    return [Text(content, DEFAULT_MODIFIER, { ...defaultTextStyle(), color: OnPrimaryColor })]
-  }
-  return [...content]
-}
-
 function Button(
+  ctx: CompositionContext,
   onClick: GestureCallback,
-  content: string | readonly ComponentNode[] = [],
+  content: string | (() => void) = () => {},
   options: ButtonOptions = {},
-): ButtonComponent {
-  const {
-    modifier = DEFAULT_MODIFIER,
-    backgroundColor = PrimaryColor,
-    contentColor = OnPrimaryColor,
-  } = options
-  const children = resolveChildren(content)
-  const normalizedModifier = normalizeModifier(modifier)
-  const modWithClick = Modifier.extendFrom(normalizedModifier)
-    .then(clickable(onClick))
-    .padding(16, 8)
-    .background(backgroundColor, 8)
-    .freeze()
-  const measurePolicy = BoxAlignmentMeasurePolicy('center')
-  return {
-    kind: 'button',
-    modifier: modWithClick,
-    onClick,
-    children,
-    backgroundColor,
-    contentColor,
-    measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return layoutBoxChildren(this.children, contentArea, measuredSizes, 'center')
-    },
-    getChildren(): ComponentNode[] {
-      return [...this.children]
-    },
+): void {
+  const { modifier = DEFAULT_MODIFIER, backgroundColor = PrimaryColor } = options
+  const normalizedMod = normalizeModifier(modifier)
+
+  const surfaceOptions: SurfaceOptions = {
+    modifier: Modifier.extendFrom(normalizedMod)
+      .then(clickable(onClick))
+      .padding(16, 8)
+      .freeze(),
+    color: backgroundColor,
+    elevation: 0,
+    borderRadius: 8,
+    alignment: 'center',
   }
+
+  const contentFn: () => void = typeof content === 'string'
+    ? () => { Text(ctx, content, DEFAULT_MODIFIER, { ...defaultTextStyle(), color: OnPrimaryColor }) }
+    : content
+
+  Surface(ctx, contentFn, surfaceOptions)
 }
 
-export type { ButtonComponent, ButtonOptions }
+export type { ButtonOptions }
 export { Button }

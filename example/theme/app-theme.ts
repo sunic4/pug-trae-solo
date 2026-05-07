@@ -1,11 +1,14 @@
 import type { Color, TextStyle } from '@/renderer/types'
+import type { CompositionContext } from '@/core/composition-context'
 import { defaultTextStyle } from '@/renderer/text-style'
 import { DEFAULT_MODIFIER } from '@/components/shared/constants'
-import type { ComponentNode } from '@/components/basic/types'
 import { Text } from '@/components/basic/text'
 import { Spacer } from '@/components/basic/spacer'
 import { Surface } from '@/components/layout/surface'
 import { Button } from '@/components/interaction/button'
+import { FAB } from '@/components/interaction/fab'
+import { CircularProgressIndicator } from '@/components/feedback/circular-progress'
+import { LinearProgressIndicator } from '@/components/feedback/linear-progress'
 import { Modifier } from '@/layout/modifier'
 import { PrimaryColor, BackgroundColor, SurfaceColor } from '@/theme/colors'
 
@@ -50,32 +53,30 @@ export function captionStyle(size: number = 12): TextStyle {
 }
 
 export const M = {
-  mod: Modifier.create,
-
-  heading(text: string, size: number = 24, styleOverride?: Partial<TextStyle>): ComponentNode {
-    return Text(text, DEFAULT_MODIFIER, styleOverride ? { ...headingStyle(size), ...styleOverride } : headingStyle(size))
+  heading(ctx: CompositionContext, text: string, size: number = 24, styleOverride?: Partial<TextStyle>): void {
+    Text(ctx, text, DEFAULT_MODIFIER, styleOverride ? { ...headingStyle(size), ...styleOverride } : headingStyle(size))
   },
 
-  body(text: string, size: number = 14, styleOverride?: Partial<TextStyle>): ComponentNode {
-    return Text(text, DEFAULT_MODIFIER, styleOverride ? { ...bodyStyle(size), ...styleOverride } : bodyStyle(size))
+  body(ctx: CompositionContext, text: string, size: number = 14, styleOverride?: Partial<TextStyle>): void {
+    Text(ctx, text, DEFAULT_MODIFIER, styleOverride ? { ...bodyStyle(size), ...styleOverride } : bodyStyle(size))
   },
 
-  caption(text: string, size: number = 12, styleOverride?: Partial<TextStyle>): ComponentNode {
-    return Text(text, DEFAULT_MODIFIER, styleOverride ? { ...captionStyle(size), ...styleOverride } : captionStyle(size))
+  caption(ctx: CompositionContext, text: string, size: number = 12, styleOverride?: Partial<TextStyle>): void {
+    Text(ctx, text, DEFAULT_MODIFIER, styleOverride ? { ...captionStyle(size), ...styleOverride } : captionStyle(size))
   },
 
-  spacer(height: number = 8): ComponentNode {
-    return Spacer(0, height)
+  spacer(ctx: CompositionContext, height: number = 8): void {
+    Spacer(ctx, 0, height)
   },
 
-  gap(width: number = 8): ComponentNode {
-    return Spacer(width, 0)
+  gap(ctx: CompositionContext, width: number = 8): void {
+    Spacer(ctx, width, 0)
   },
 
-  card(children: ComponentNode[], options?: { elevation?: number; padding?: number }): ComponentNode {
+  card(ctx: CompositionContext, childrenFn?: () => void, options?: { elevation?: number; padding?: number }): void {
     const p = options?.padding ?? 16
     const e = options?.elevation ?? 2
-    return Surface(children, {
+    Surface(ctx, childrenFn, {
       modifier: Modifier.create().fillMaxWidth().padding(p).freeze(),
       color: AppColors.cardBg,
       elevation: e,
@@ -84,8 +85,8 @@ export const M = {
     })
   },
 
-  section(children: ComponentNode[]): ComponentNode {
-    return Surface(children, {
+  section(ctx: CompositionContext, childrenFn?: () => void): void {
+    Surface(ctx, childrenFn, {
       modifier: Modifier.create().fillMaxWidth().padding(16).freeze(),
       color: AppColors.sectionBg,
       elevation: 0,
@@ -94,15 +95,46 @@ export const M = {
     })
   },
 
-  primaryButton(onClick: () => void, label: string): ComponentNode {
-    return Button(onClick, label, { backgroundColor: AppColors.primary })
+  primaryButton(ctx: CompositionContext, onClick: () => void, label: string): void {
+    Button(ctx, onClick, label, { backgroundColor: AppColors.primary })
   },
 
-  successButton(onClick: () => void, label: string): ComponentNode {
-    return Button(onClick, label, { backgroundColor: AppColors.success })
+  successButton(ctx: CompositionContext, onClick: () => void, label: string): void {
+    Button(ctx, onClick, label, { backgroundColor: AppColors.success })
   },
 
-  warningButton(onClick: () => void, label: string): ComponentNode {
-    return Button(onClick, label, { backgroundColor: AppColors.warning })
+  warningButton(ctx: CompositionContext, onClick: () => void, label: string): void {
+    Button(ctx, onClick, label, { backgroundColor: AppColors.warning })
+  },
+
+  errorButton(ctx: CompositionContext, onClick: () => void, label: string): void {
+    Button(ctx, onClick, label, { backgroundColor: AppColors.error })
+  },
+
+  fab(ctx: CompositionContext, onClick: () => void, label: string = '+'): void {
+    FAB(ctx, onClick, () => {
+      Text(ctx, label, DEFAULT_MODIFIER, { ...defaultTextStyle(), fontSize: 20, fontWeight: 'bold', color: AppColors.onPrimary })
+    }, { backgroundColor: AppColors.primary, contentColor: AppColors.onPrimary })
+  },
+
+  circularProgress(ctx: CompositionContext, progress: number, determinate: boolean = true, strokeWidth: number = 4): void {
+    CircularProgressIndicator(
+      ctx,
+      Modifier.create().freeze(),
+      progress,
+      determinate,
+      AppColors.primary,
+      strokeWidth,
+    )
+  },
+
+  linearProgress(ctx: CompositionContext, progress: number, determinate: boolean = true): void {
+    LinearProgressIndicator(
+      ctx,
+      Modifier.create().fillMaxWidth().freeze(),
+      progress,
+      determinate,
+      AppColors.primary,
+    )
   },
 }

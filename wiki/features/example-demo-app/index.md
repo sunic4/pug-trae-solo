@@ -2,42 +2,47 @@
 
 ## 概述
 
-在 `example/` 目录下创建一个多页面 Canvas UI 演示应用，通过 5 个页面全面展示 pug-canvas-ui 组件库的能力。
+在 `example/` 目录下创建一个多页面 Canvas UI 演示应用，全面展示 pug-canvas-ui 组件库的能力。
 
-## 实现思路
+**架构要点（Emit-based 模型）**：
+- 入口使用 `setContent(canvas, (rootCtx) => { ... })`
+- 每个组件调用传入 `rootCtx` 作为第一参数
+- `remember(rootCtx, ...)` 持久化状态
+- 页面组件通过 `composable()` 包装，签名 `(ctx, props) => void`
+- 无 ComponentNode 返回，无隐式上下文
 
 ### 架构设计
 
 ```
 example/
 ├── index.html              # HTML 入口 (Canvas 容器)
-├── app.ts                  # 主入口: App composable + setContent
+├── app.ts                  # 主入口: setContent + rootCtx + composable(App)
 ├── pages/
-│   ├── home-page.ts        # 首页: Text/Card/Button
-│   ├── interaction-page.ts # 交互: Button/Slider/Checkbox/FAB/TextField
-│   ├── layout-page.ts      # 布局: Column/Row/Box/Surface
-│   ├── feedback-page.ts    # 反馈: Snackbar/Progress/Dialog
-│   └── list-page.ts        # 列表: LazyColumn + Card 列表
+│   ├── home-page.ts        # 首页: Text/Button/Box/Surface/Column/Row + M 主题工具
+│   ├── interaction-page.ts # 交互: Slider/Checkbox/Button/TextField/FAB/Snackbar
+│   ├── layout-page.ts      # 布局: Column/Row/Box/Surface + Arrangement/Alignment/Modifier链
+│   ├── feedback-page.ts    # 反馈: CircularProgressIndicator/LinearProgressIndicator/Dialog/Snackbar
+│   └── list-page.ts        # 列表: 卡片列表 + 动态数量控制 + 选中交互
 └── theme/
-    └── app-theme.ts        # 颜色常量/样式工具
+    └── app-theme.ts        # AppColors + M 主题对象 (含 fab/circularProgress/linearProgress/errorButton)
 ```
 
 ### 导航方案
 
 - **Scaffold** 作为根布局容器
-- **BottomNavigation** (4 Tab) 切换主页面
-- **NavController** 管理路由状态
+- **BottomNavigation** (5 Tab) 切换主页面：首页 / 交互 / 布局 / 反馈 / 列表
 - **mutableStateOf** 驱动选中 Tab 响应式更新
+- 页面组件通过 **composable() HOC** 包装，签名 `(ctx, props) => void`
 
 ### 页面规划
 
-| 页面 | 路由 | 演示组件 | 核心能力 |
-|------|------|---------|---------|
-| Home | `home` | Text, Card, Button, Column | 基础组件 + 组合 |
-| Interaction | `interaction` | Button, Slider, Checkbox, FAB, TextField | 用户交互 + 状态驱动 |
-| Layout | `layout` | Column, Row, Box, Surface, Spacer | 布局系统 + 对齐 |
-| Feedback | `feedback` | Snackbar, CircularProgressIndicator, LinearProgressIndicator, Dialog | 反馈机制 + 覆盖层 |
-| List | `list` | LazyColumn, Card | 虚拟列表 + 性能 |
+| 页面 | Tab 标签 | 演示组件 | 核心能力 |
+|------|---------|---------|---------|
+| Home | 首页 | Text, Button, Box, Surface, Column, Row, Spacer | 基础组件 + M 主题工具 (heading/body/caption/card/section/primaryButton等) |
+| Interaction | 交互 | Slider, Checkbox, Button, TextField, FAB, Snackbar | 用户交互 + 状态驱动 + remember |
+| Layout | 布局 | Column, Row, Box, Surface, Spacer, Modifier 链 | 布局系统 + Arrangement/Alignment 变体 + 嵌套布局 |
+| Feedback | 反馈 | CircularProgressIndicator, LinearProgressIndicator, Dialog, Snackbar | 进度指示器(确定/不确定/多色) + 覆盖层Dialog + Snackbar |
+| List | 列表 | Column, Button, Box, Surface (Card via M.card) | 卡片列表渲染 + 动态数量控制 + 点击选中交互 |
 
 ## 文件变更清单
 
@@ -45,34 +50,71 @@ example/
 |------|---------|------|
 | 新建 | `example/index.html` | HTML 入口，包含 Canvas 元素 |
 | 新建 | `example/app.ts` | 应用主入口，组装 Scaffold + 导航 |
-| 新建 | `example/pages/home-page.ts` | 首页 composable |
-| 新建 | `example/pages/interaction-page.ts` | 交互页 composable |
-| 新建 | `example/pages/layout-page.ts` | 布局页 composable |
-| 新建 | `example/pages/feedback-page.ts` | 反馈页 composable |
-| 新建 | `example/pages/list-page.ts` | 列表页 composable |
+| 新建 | `example/pages/home-page.ts` | 首页函数 |
+| 新建 | `example/pages/interaction-page.ts` | 交互页函数 |
+| 新建 | `example/pages/layout-page.ts` | 布局页函数 |
+| 新建 | `example/pages/feedback-page.ts` | 反馈页函数 |
+| 新建 | `example/pages/list-page.ts` | 列表页函数 |
 | 新建 | `example/theme/app-theme.ts` | 主题颜色与样式工具函数 |
 
 ## 接口与类型定义
 
-### 页面 Composable 签名
+### 页面函数签名
 
-每个页面导出一个 `composable()` 包装函数:
-
-```ts
-function HomePage(props: {}, ctx: ComposerContext): ComposableNode | null
-function InteractionPage(props: { showSnackbar: MutableState<boolean> }, ctx: ComposerContext): ComposableNode | null
-function LayoutPage(props: {}, ctx: ComposerContext): ComposableNode | null
-function FeedbackPage(props: {}, ctx: ComposerContext): ComposableNode | null
-function ListPage(props: {}, ctx: ComposerContext): ComposableNode | null
-```
-
-### App 入口签名
+每个页面是一个普通函数（或 composable 包装），接收 `ctx: CompositionContext`：
 
 ```ts
-function App(props: {}, ctx: ComposerContext): ComposableNode | null
+function HomePage(ctx: CompositionContext): void
+function InteractionPage(ctx: CompositionContext): void
+function LayoutPage(ctx: CompositionContext): void
+function FeedbackPage(ctx: CompositionContext): void
+function ListPage(ctx: CompositionContext): void
 ```
 
-内部使用 `mutableStateOf<number>` 管理 selectedTab，驱动 BottomNavigation 和内容区切换。
+### App 入口
+
+```ts
+import { setContent, composable, remember, mutableStateOf } from 'pug-canvas-ui';
+import { Scaffold } from '@/components/container/scaffold';
+import { TopAppBar } from '@/components/container/top-app-bar';
+import { BottomNavigation } from '@/components/container/bottom-navigation';
+import { HomePageComposable } from './pages/home-page';
+import { InteractionPageComposable } from './pages/interaction-page';
+import { LayoutPageComposable } from './pages/layout-page';
+import { FeedbackPageComposable } from './pages/feedback-page';
+import { ListPageComposable } from './pages/list-page';
+
+const TAB_LABELS = ['首页', '交互', '布局', '反馈', '列表'];
+
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+
+setContent(canvas, (rootCtx) => {
+  const selectedTab = remember(rootCtx, () => mutableStateOf(0, rootCtx.snapshot));
+  const showSnackbar = remember(rootCtx, () => mutableStateOf(false, rootCtx.snapshot));
+  const snackbarMessage = remember(rootCtx, () => mutableStateOf('', rootCtx.snapshot));
+  const showDialog = remember(rootCtx, () => mutableStateOf(false, rootCtx.snapshot));
+
+  AppComposable(rootCtx, { selectedTab, showSnackbar, snackbarMessage, showDialog });
+});
+
+// App 函数通过 composable() HOC 包装，内部使用 switch/case 分发到 5 个页面
+```
+
+### 关键设计要点
+
+1. **无 ComposableNode 返回**：所有页面函数返回 void
+2. **ctx 显式传递**：每个组件调用都传入 rootCtx
+3. **remember(ctx, ...) 模式**：状态持久化使用 ctx-first + snapshot 参数
+4. **条件渲染**：直接 if/else，无需返回 null
+5. **列表渲染**：forEach + 组件调用
+6. **composable() HOC 包装**：每个页面导出 `XXXComposable = composable<Props>(XXXPage)`
+7. **M 主题对象**：`theme/app-theme.ts` 导出统一主题工具，包含：
+   - 文本工具: `M.heading()`, `M.body()`, `M.caption()`
+   - 间距工具: `M.spacer()`, `M.gap()`
+   - 容器工具: `M.card()`, `M.section()` (基于 Surface 封装)
+   - 按钮工具: `M.primaryButton()`, `M.successButton()`, `M.warningButton()`, `M.errorButton()`
+   - 反馈工具: `M.fab()`, `M.circularProgress()`, `M.linearProgress()`
+8. **无 ui.ts barrel 文件**：各页面直接从 `@/components/` 导入组件，无中间聚合层
 
 ## 测试策略
 
@@ -88,18 +130,13 @@ function App(props: {}, ctx: ComposerContext): ComposableNode | null
 4. Dialog 显示/消失
 5. LazyColumn 滚动渲染
 
-## 风险与依赖
-
-| 风险 | 影响 | 缓解措施 |
-|------|------|---------|
-| 渲染器未完整实现部分组件视觉效果 | 页面显示不完整 | 使用已有渲染支持的组件组合 |
-| Vite alias 配置需支持 example 目录 | 模块解析失败 | 在 vite.config.ts 中补充 example alias 或使用相对路径 |
-
 ## DoD 验收标准
 
 - [ ] `example/` 目录下所有 `.ts` 文件类型检查通过 (`tsc --noEmit`)
 - [ ] `npm run dev` 可正常启动，浏览器可访问
-- [ ] 5 个页面均可通过底部导航切换
-- [ ] 交互组件 (Slider/Checkbox/Button/FAB) 响应正常
+- [ ] **5 个页面**均可通过底部导航切换 (首页/交互/布局/反馈/列表)
+- [ ] 交互组件 (Slider/Checkbox/Button/FAB/TextField/Snackbar) 响应正常
+- [ ] 反馈组件 (CircularProgressIndicator/LinearProgressIndicator/Dialog) 渲染正确
+- [ ] M 主题对象所有工具函数正常工作
 - [ ] 无 console.log/debugger/TODO/HACK/FIXME 残留
-- [ ] 代码遵循项目 codestyle.md 规范（纯函数调用链、禁止 JSX、禁止注释）
+- [ ] 代码遵循项目 codestyle.md 规范（ctx-first、void 返回、禁止 JSX、禁止注释）

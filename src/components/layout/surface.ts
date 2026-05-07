@@ -1,9 +1,10 @@
 import { LinearMeasurePolicy, Modifier, createShadow, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, ReadonlyModifier } from '@/components/shared/imports'
+import type { Color, ReadonlyModifier } from '@/components/shared/imports'
 import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { Rect } from '@/renderer/types'
 import type { Alignment, Arrangement } from '@/layout/types'
 import { layoutColumnChildren } from '@/components/shared/layout-helpers'
+import type { CompositionContext } from '@/core/composition-context'
 
 type SurfaceOptions = {
   readonly modifier?: ReadonlyModifier
@@ -13,19 +14,11 @@ type SurfaceOptions = {
   readonly alignment?: Alignment
 }
 
-type SurfaceComponent = {
-  readonly kind: 'surface'
-  readonly color: Color
-  readonly elevation: number
-  readonly borderRadius: number
-  readonly alignment: Alignment
-  readonly children: ComponentNode[]
-} & ComponentBase
-
 function Surface(
-  children: ComponentNode[] = [],
+  ctx: CompositionContext,
+  childrenFn?: () => void,
   options: SurfaceOptions = {},
-): SurfaceComponent {
+): void {
   const {
     modifier = DEFAULT_MODIFIER,
     color = { r: 255, g: 255, b: 255, a: 1 },
@@ -45,24 +38,20 @@ function Surface(
   const surfaceModifier = builder.freeze()
   const arrangement: Arrangement = 'start'
   const measurePolicy = new LinearMeasurePolicy('vertical', arrangement, alignment)
-  return {
-    kind: 'surface',
-    modifier: surfaceModifier,
-    color,
-    elevation,
-    borderRadius,
-    alignment,
-    children,
+  ctx.emitNode(
+    { color, elevation, borderRadius, alignment },
+    surfaceModifier,
     measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return layoutColumnChildren(this.children, contentArea, measuredSizes, arrangement)
+    NOOP_DRAW_POLICY,
+    (contentArea: Rect, measuredSizes: MeasuredSizeMap, selfChildrenIds: readonly number[]): ChildLayout[] => {
+      return layoutColumnChildren(selfChildrenIds, contentArea, measuredSizes, arrangement)
     },
-    getChildren(): ComponentNode[] {
-      return this.children
-    },
+  )
+  if (childrenFn) {
+    childrenFn()
   }
+  ctx.endGroup()
 }
 
-export type { SurfaceComponent, SurfaceOptions }
+export type { SurfaceOptions }
 export { Surface }

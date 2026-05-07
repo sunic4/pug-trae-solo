@@ -1,7 +1,8 @@
-import { Modifier, DEFAULT_MODIFIER, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, normalizeModifier } from '@/components/shared/imports'
+import type { Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
 import type { DrawScope, Rect } from '@/renderer/types'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function dropdownMenuDrawPolicy(items: readonly DropdownMenuItem[], itemColor: Color, disabledColor: Color): DrawPolicy {
   return (scope: DrawScope, bounds: Rect): void => {
@@ -20,14 +21,6 @@ interface DropdownMenuItem {
   readonly onClick?: () => void
   readonly enabled?: boolean
 }
-
-type DropdownMenuComponent = {
-  readonly kind: 'dropdown-menu'
-  readonly items: DropdownMenuItem[]
-  readonly expanded: boolean
-  readonly onDismissRequest: () => void
-  readonly backgroundColor: Color
-} & ComponentBase
 
 function computeMaxLabelWidth(items: DropdownMenuItem[]): number {
   return items.reduce((max, item) => {
@@ -56,30 +49,25 @@ function dropdownMenuMeasurePolicy(items: DropdownMenuItem[]): MeasurePolicy {
 }
 
 function DropdownMenu(
+  ctx: CompositionContext,
   items: DropdownMenuItem[],
   expanded: boolean,
   onDismissRequest: () => void,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   backgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 },
-): DropdownMenuComponent {
+): void {
   const normalizedMod = normalizeModifier(modifier)
   const menuModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor, 8)
     .freeze()
   const measurePolicy = dropdownMenuMeasurePolicy(items)
-  return {
-    kind: 'dropdown-menu',
-    modifier: menuModifier,
-    items,
-    expanded,
-    onDismissRequest,
-    backgroundColor,
+  ctx.emitNode(
+    { items, expanded, onDismissRequest, backgroundColor },
+    menuModifier,
     measurePolicy,
-    drawPolicy: dropdownMenuDrawPolicy(items, { r: 33, g: 33, b: 33, a: 1 }, { r: 158, g: 158, b: 158, a: 1 }),
-    getChildren: leafGetChildren,
-    layoutChildren: leafLayoutChildren,
-  }
+    dropdownMenuDrawPolicy(items, { r: 33, g: 33, b: 33, a: 1 }, { r: 158, g: 158, b: 158, a: 1 }),
+  )
 }
 
-export type { DropdownMenuComponent, DropdownMenuItem }
+export type { DropdownMenuItem }
 export { DropdownMenu }

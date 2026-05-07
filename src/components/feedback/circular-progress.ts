@@ -1,8 +1,9 @@
-import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
+import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
+import type { ReadonlyModifier } from '@/components/shared/imports'
 import type { Color, DrawScope, Rect } from '@/renderer/types'
 import { PrimaryColor } from '@/theme/colors'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function circularProgressDrawPolicy(progress: number, determinate: boolean, color: Color, strokeWidth: number): DrawPolicy {
   return (scope: DrawScope, bounds: Rect): void => {
@@ -32,36 +33,22 @@ function circularProgressDrawPolicy(progress: number, determinate: boolean, colo
   }
 }
 
-type CircularProgressIndicatorComponent = {
-  readonly kind: 'circular-progress-indicator'
-  readonly progress: number
-  readonly determinate: boolean
-  readonly color: Color
-  readonly strokeWidth: number
-} & ComponentBase
-
 function CircularProgressIndicator(
+  ctx: CompositionContext,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   progress: number = 0,
   determinate: boolean = false,
   color: Color = PrimaryColor,
   strokeWidth: number = 4,
-): CircularProgressIndicatorComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = ConstrainedMeasurePolicy(36, 36)
-  return {
-    kind: 'circular-progress-indicator',
-    modifier: mod,
-    progress,
-    determinate,
-    color,
-    strokeWidth,
+  ctx.emitNode(
+    { progress, determinate, color, strokeWidth },
+    mod,
     measurePolicy,
-    drawPolicy: circularProgressDrawPolicy(progress, determinate, color, strokeWidth),
-    getChildren: leafGetChildren,
-    layoutChildren: leafLayoutChildren,
-  }
+    circularProgressDrawPolicy(progress, determinate, color, strokeWidth),
+  )
 }
 
-export type { CircularProgressIndicatorComponent }
 export { CircularProgressIndicator }

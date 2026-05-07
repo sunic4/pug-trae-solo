@@ -1,4 +1,4 @@
-import type { ComponentBase, ComponentNode, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import { DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
 import type { ReadonlyModifier } from '@/layout/modifier'
 import type { MeasurePolicy, Measurable, Constraints, MeasureResult } from '@/layout/types'
@@ -7,10 +7,11 @@ import { createMeasurePolicy } from '@/layout/simple-measure-policy'
 import { NOOP_DRAW_POLICY } from '@/components/basic/types'
 import type { Rect } from '@/renderer/types'
 import { layoutColumnChildren } from '@/components/shared/layout-helpers'
+import type { CompositionContext } from '@/core/composition-context'
 
 interface NavDestination {
   readonly route: string
-  readonly content: ComponentNode[]
+  readonly content: () => void
 }
 
 interface NavGraph {
@@ -119,36 +120,28 @@ function navHostMeasurePolicy(): MeasurePolicy {
   })
 }
 
-type NavHostComponent = {
-  readonly kind: 'nav-host'
-  readonly navController: NavController
-  readonly navGraph: NavGraph
-  readonly currentDestination: NavDestination | undefined
-} & ComponentBase
-
 function NavHost(
+  ctx: CompositionContext,
   navController: NavController,
   navGraph: NavGraph,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-): NavHostComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const currentDestination = navGraph.findDestination(navController.currentRoute)
-  return {
-    kind: 'nav-host',
-    navController,
-    navGraph,
-    modifier: mod,
-    currentDestination,
-    measurePolicy: navHostMeasurePolicy(),
-    drawPolicy: NOOP_DRAW_POLICY,
-    getChildren(): ComponentNode[] {
-      return this.currentDestination?.content ?? []
+  ctx.emitNode(
+    { navController, navGraph, currentDestination },
+    mod,
+    navHostMeasurePolicy(),
+    NOOP_DRAW_POLICY,
+    (contentArea: Rect, measuredSizes: MeasuredSizeMap, selfChildrenIds: readonly number[]): ChildLayout[] => {
+      return layoutColumnChildren(selfChildrenIds, contentArea, measuredSizes, 'start')
     },
-    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return layoutColumnChildren(this.getChildren(), contentArea, measuredSizes, 'start')
-    },
+  )
+  if (currentDestination) {
+    currentDestination.content()
   }
+  ctx.endGroup()
 }
 
-export type { NavDestination, NavGraph, NavController, NavHostComponent }
+export type { NavDestination, NavGraph, NavController }
 export { createNavGraph, createNavController, NavHost, MAX_BACK_STACK_SIZE }

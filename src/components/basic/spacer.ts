@@ -1,30 +1,21 @@
-import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
-
-type SpacerComponent = {
-  readonly kind: 'spacer'
-  readonly width: number
-  readonly height: number
-} & ComponentBase
+import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, normalizeModifier } from '@/components/shared/imports'
+import type { ReadonlyModifier } from '@/components/shared/imports'
+import type { CompositionContext } from '@/core/composition-context'
 
 function Spacer(
+  ctx: CompositionContext,
   width: number = 0,
   height: number = 0,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-): SpacerComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = ConstrainedMeasurePolicy(width, height)
-  return {
-    kind: 'spacer',
-    modifier: mod,
-    width,
-    height,
+  ctx.emitLeaf(
+    { width, height },
+    mod,
     measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+    NOOP_DRAW_POLICY,
+  )
 }
 
-export type { SpacerComponent }
 export { Spacer }

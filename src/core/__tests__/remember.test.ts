@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { remember } from '@/core/remember'
 import { createRecomposer } from '@/core/recomposer'
 import { createSnapshot } from '@/core/snapshot'
-import type { ComposerContext } from '@/core/types'
+import { CompositionContextImpl } from '@/core/composition-context'
 
 function createTestContext() {
   const recomposer = createRecomposer()
   const snapshot = createSnapshot()
-  const ctx: ComposerContext = { recomposer, snapshot }
+  const ctx = new CompositionContextImpl(snapshot, recomposer)
   return { ctx, recomposer }
 }
 

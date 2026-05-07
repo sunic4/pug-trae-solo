@@ -63,8 +63,8 @@ class Bar { static create(opts): Bar { return new Bar(opts); } }
 // ❌ 禁止
 <Text text="Hello" />
 
-// ✅ 正确：纯函数调用链
-Text({ text: 'Hello' });
+// ✅ 正确：纯函数调用链，ctx 显式传递
+Text(ctx, 'Hello')
 ```
 
 ### 3.3 禁止 DOM 依赖
@@ -96,7 +96,7 @@ Modifier.weight(1f), Arrangement.SpaceBetween, Alignment.CenterHorizontally
 props.count++;
 
 // ✅ 正确：回调向上冒泡
-Button({ onClick: () => onIncrement() });
+Button(ctx, () => onIncrement(), '+')
 ```
 
 ### 3.6 禁止静默吞错
@@ -109,6 +109,22 @@ try { risky(); } catch (e) { }
 try { risky(); } catch (e) { handleError(e); }
 ```
 
+### 3.7 显式 Context 传递（禁止隐式/全局上下文）
+
+所有 Composable 函数和组件调用必须显式传递 `ctx: CompositionContext` 作为第一个参数。禁止通过全局变量、模块级单例或闭包捕获隐式获取 context。
+
+```typescript
+// ❌ 禁止：隐式 context / 全局获取
+Text({ text: 'Hello' })
+getCurrentContext().emitNode(...)
+
+// ✅ 正确：ctx 始终作为第一个参数显式传递
+Text(ctx, 'Hello')
+Column(ctx, Modifier.create().freeze(), 'start', () => {
+  Text(ctx, 'Child')
+})
+```
+
 ---
 
 ## 4. Composable 函数规范
@@ -116,37 +132,60 @@ try { risky(); } catch (e) { handleError(e); }
 ### 4.1 必须使用 `composable()` HOC 包装
 
 ```typescript
-const MyComponent = composable<{ name: string }>(({ name }, ctx) => {
-  const count = remember(() => mutableStateOf(0));
-  return Column() {
-    Text({ text: `Hello, ${name}! Count: ${count.value}` });
-    Button({ text: '+', onClick: () => count.value++ });
-  };
-});
+const MyComponent = composable<{ name: string }>((ctx, { name }) => {
+  const count = remember(ctx, () => mutableStateOf(0, ctx.snapshot))
+  Column(ctx, Modifier.create().fillMaxSize().freeze(), 'start', () => {
+    Text(ctx, `Hello, ${name}! Count: ${count.value}`)
+    Button(ctx, () => { count.value++ }, '+')
+  })
+})
 ```
 
 ### 4.2 签名约定
 
-- 第一个参数：`props`（泛型约束 `Record<string, any>`）
-- 第二个参数：`ctx: ComposerContext`（只读，AppContext 的投影）
-- 返回类型：`ComposableNode`（`LayoutNode | LeafNode | null`）
+- 第一个参数：`ctx: CompositionContext`（显式上下文，用于 emit 节点和访问 snapshot/recomposer）
+- 第二个参数：`props: TProps`（泛型约束的组件属性）
+- 返回类型：`void`（组件通过 `ctx.startGroup()` / `ctx.endGroup()` 向 CompositionContext emit 节点，不返回对象）
+
+```typescript
+function composable<TProps>(
+  fn: (ctx: CompositionContext, props: TProps) => void,
+): ComposableFunction<TProps>
+```
 
 ### 4.3 尾随 Lambda（Trailing Lambda）
 
+容器组件使用尾随 lambda 声明子组件，lambda 内部继续显式传递 `ctx`：
+
 ```typescript
-// 容器组件使用尾随 lambda 声明子组件
-Column({ modifier: Modifier.fillMaxSize() }) {
-  Text({ text: 'Child 1' });
-  Text({ text: 'Child 2' });
-}
+Column(ctx, Modifier.create().fillMaxSize().freeze(), 'start', 'start', () => {
+  Text(ctx, 'Child 1')
+  Text(ctx, 'Child 2')
+  Row(ctx, Modifier.create().freeze(), 'center', 'center', () => {
+    Text(ctx, 'Nested A')
+    Text(ctx, 'Nested B')
+  })
+})
+
+Button(ctx, onClick, () => {
+  Text(ctx, 'Click Me')
+})
 ```
 
 ### 4.4 条件渲染
 
+条件渲染通过 if 语句在 childrenFn 内部控制，不返回 null：
+
 ```typescript
-// 返回 null 表示不渲染
-if (!user) return null;
-return Text({ text: user.name });
+Column(ctx, mod, 'start', () => {
+  Text(ctx, 'Always shown')
+  if (isLoggedIn) {
+    Text(ctx, `Welcome, ${user.name}`)
+    Button(ctx, onLogout, () => { Text(ctx, 'Logout') })
+  } else {
+    Button(ctx, onLogin, () => { Text(ctx, 'Login') })
+  }
+})
 ```
 
 ---
@@ -156,30 +195,48 @@ return Text({ text: user.name });
 ### 5.1 状态声明
 
 ```typescript
-// 本地状态
-const count = remember(() => mutableStateOf(0));
-
-// 派生状态
-const total = useMemo(() => items.value.reduce((s, i) => s + i.price, 0), [items]);
+const MyCounter = composable<{}>((ctx) => {
+  const count = remember(ctx, () => mutableStateOf(0, ctx.snapshot))
+  Column(ctx, Modifier.create().freeze(), 'center', () => {
+    Text(ctx, `Count: ${count.value}`)
+    Button(ctx, () => { count.value++ }, '+')
+  })
+})
 ```
+
+- `remember(ctx, calculation)` — 跨重组缓存值，首次执行 `calculation` 后续复用
+- `mutableStateOf(initialValue, ctx.snapshot)` — 创建可观察状态，绑定到当前 snapshot
+- 状态变更自动触发依赖该状态的 RecomposeScope 重新组合
 
 ### 5.2 状态提升
 
 ```typescript
-// 多组件共享状态 → 提升到共同父组件
-const sharedCount = remember(() => mutableStateOf(0));
-CounterDisplay({ count: sharedCount.value });
-CounterControls({ onIncrement: () => sharedCount.value++ });
+const Parent = composable<{}>((ctx) => {
+  const sharedCount = remember(ctx, () => mutableStateOf(0, ctx.snapshot))
+  Column(ctx, Modifier.create().freeze(), 'start', () => {
+    CounterDisplay(ctx, sharedCount.value)
+    CounterControls(ctx, () => { sharedCount.value++ })
+  })
+})
 ```
+
+多组件共享状态时，将状态提升到共同祖先 composable，通过 props 向下传递、回调向上冒泡。
 
 ### 5.3 Context 跨层级共享
 
 ```typescript
-const ThemeContext = createContext<ThemeContextValue>();
-ThemeContext.Provider({ value: theme }) {
-  DeepChild();
-}
-const { theme } = useContext(ThemeContext);
+const ThemeContextKey = 'theme' as const
+
+const ThemedApp = composable<{}>((ctx) => {
+  const theme = remember(ctx, () => mutableStateOf(defaultTheme, ctx.snapshot))
+  Column(ctx, Modifier.create().freeze(), 'start', () => {
+    DeepChild(ctx, theme.value)
+  })
+})
+
+const DeepChild = composable<{ theme: Theme }>((ctx, { theme }) => {
+  Surface(ctx, () => { Text(ctx, 'Themed content') }, { color: theme.surface })
+})
 ```
 
 ---
@@ -283,19 +340,39 @@ e2e/user-journey.spec.ts
 ### 9.2 禁止反模式
 
 ```typescript
-// ❌ 渲染路径中创建新对象（破坏引用相等性）
-Child({ options: { color: 'red' } });
+// ❌ 渲染路径中创建新对象（破坏引用相等性，导致不必要的子组件重组）
+Column(ctx, mod, 'start', () => {
+  Text(ctx, 'label', Modifier.create().padding(8).freeze())
+})
 
-// ✅ useMemo 缓存
-const options = useMemo(() => ({ color: 'red' }), []);
-Child({ options });
+// ✅ 使用 remember 缓存不可变配置，仅在依赖变化时重建
+const paddedMod = remember(ctx, () => Modifier.create().padding(8).freeze())
+Column(ctx, mod, 'start', () => {
+  Text(ctx, 'label', paddedMod)
+})
 
-// ❌ 内联函数
-Button({ onClick: () => handleClick() });
+// ❌ 在 composable 函数体内创建 Snapshot（每个重组周期都产生新实例）
+const MyBad = composable<{}>((ctx) => {
+  const localSnapshot = createSnapshot()
+  const state = mutableStateOf(0, localSnapshot)
+})
 
-// ✅ useCallback
-const onClick = useCallback(() => handleClick(), []);
-Button({ onClick });
+// ✅ 始终使用 ctx.snapshot（与 Recomposer 生命周期绑定）
+const MyGood = composable<{}>((ctx) => {
+  const state = remember(ctx, () => mutableStateOf(0, ctx.snapshot))
+})
+
+// ❌ 在 childrenFn 中执行重计算（每次父组件重组都重新执行）
+Column(ctx, mod, 'start', () => {
+  const expensive = heavyCompute(data.value)
+  Text(ctx, expensive)
+})
+
+// ✅ 将计算结果提升为 remember 缓存
+const cached = remember(ctx, () => heavyCompute(data.value), [data.value])
+Column(ctx, mod, 'start', () => {
+  Text(ctx, cached)
+})
 ```
 
 ---

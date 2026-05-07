@@ -1,54 +1,80 @@
-﻿import { describe, it, expect } from 'vitest'
-import { LazyColumn, LazyRow, computeVisibleItems } from '@/components/index'
+import { describe, it, expect } from 'vitest'
+import { LazyColumn, LazyRow, computeVisibleItems } from '@/components/lazy/lazy-column'
 import { Modifier } from '@/layout/modifier'
+import { createSnapshot } from '@/core/snapshot'
+import { createRecomposer } from '@/core/recomposer'
+import { CompositionContextImpl } from '@/core/composition-context'
+
+function createTestCtx() {
+  return new CompositionContextImpl(createSnapshot(), createRecomposer())
+}
 
 describe('LazyColumn', () => {
-  it('should create a lazy column with default params', () => {
-    const lazy = LazyColumn(10)
-    expect(lazy.kind).toBe('lazy-column')
-    expect(lazy.itemCount).toBe(10)
-    expect(lazy.itemSize).toBeNull()
-    expect(lazy.spacing).toBe(0)
-    expect(lazy.contentPadding).toBe(0)
-    expect(lazy.firstVisibleItemIndex).toBe(0)
-    expect(lazy.firstVisibleItemScrollOffset).toBe(0)
+  it('should emit a group node with default params', () => {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 10)
+    expect(ctx.emittedNodes.size).toBe(1)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { kind: string; itemCount: number; itemSize: number | null; spacing: number; contentPadding: number; firstVisibleItemIndex: number; firstVisibleItemScrollOffset: number }
+    expect(data.kind).toBe('lazy-column')
+    expect(data.itemCount).toBe(10)
+    expect(data.itemSize).toBeNull()
+    expect(data.spacing).toBe(0)
+    expect(data.contentPadding).toBe(0)
+    expect(data.firstVisibleItemIndex).toBe(0)
+    expect(data.firstVisibleItemScrollOffset).toBe(0)
   })
 
-  it('should create a lazy column with custom itemSize', () => {
-    const lazy = LazyColumn(20, Modifier.create().freeze(), 64)
-    expect(lazy.itemSize).toBe(64)
+  it('should emit a lazy column with custom itemSize', () => {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 20, undefined, Modifier.create().freeze(), 64)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { itemSize: number | null }
+    expect(data.itemSize).toBe(64)
   })
 
-  it('should create a lazy column with spacing and padding', () => {
-    const lazy = LazyColumn(10, Modifier.create().freeze(), null, 8, 16)
-    expect(lazy.spacing).toBe(8)
-    expect(lazy.contentPadding).toBe(16)
+  it('should emit a lazy column with spacing and padding', () => {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 10, undefined, Modifier.create().freeze(), null, 8, 16)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { spacing: number; contentPadding: number }
+    expect(data.spacing).toBe(8)
+    expect(data.contentPadding).toBe(16)
   })
 
-  it('should create a lazy column with scroll state', () => {
-    const lazy = LazyColumn(100, Modifier.create().freeze(), null, 0, 0, 5, 120)
-    expect(lazy.firstVisibleItemIndex).toBe(5)
-    expect(lazy.firstVisibleItemScrollOffset).toBe(120)
+  it('should emit a lazy column with scroll state', () => {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 100, undefined, Modifier.create().freeze(), null, 0, 0, 5, 120)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { firstVisibleItemIndex: number; firstVisibleItemScrollOffset: number }
+    expect(data.firstVisibleItemIndex).toBe(5)
+    expect(data.firstVisibleItemScrollOffset).toBe(120)
   })
 
   it('should have a measure policy', () => {
-    const lazy = LazyColumn(10)
-    expect(lazy.measurePolicy).toBeDefined()
-    expect(typeof lazy.measurePolicy.measure).toBe('function')
-    expect(typeof lazy.measurePolicy.measureWithWeights).toBe('function')
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 10)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(node.measurePolicy).toBeDefined()
+    expect(typeof node.measurePolicy.measure).toBe('function')
+    expect(typeof (node.measurePolicy as unknown as { measureWithWeights?: () => unknown }).measureWithWeights).toBe('function')
   })
 
   it('should measure empty lazy column', () => {
-    const lazy = LazyColumn(0)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 600,
     })
     expect(result.width).toBe(360)
   })
 
   it('should measure lazy column with items', () => {
-    const lazy = LazyColumn(10, Modifier.create().freeze(), 48)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 10, undefined, Modifier.create().freeze(), 48)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 600,
     })
     expect(result.width).toBe(360)
@@ -56,14 +82,18 @@ describe('LazyColumn', () => {
   })
 
   it('should compute minIntrinsicHeight correctly', () => {
-    const lazy = LazyColumn(5, Modifier.create().freeze(), 80, 8, 0)
-    const height = lazy.measurePolicy.minIntrinsicHeight([], 360)
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 5, undefined, Modifier.create().freeze(), 80, 8, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const height = (node.measurePolicy as { minIntrinsicHeight: (measurables: unknown[], width: number) => number }).minIntrinsicHeight([], 360)
     expect(height).toBe(5 * 80 + 4 * 8)
   })
 
   it('should handle zero items', () => {
-    const lazy = LazyColumn(0)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyColumn(ctx, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 600,
     })
     expect(result.width).toBe(360)
@@ -106,64 +136,87 @@ describe('computeVisibleItems', () => {
 })
 
 describe('LazyRow', () => {
-  it('should create a lazy row with default params', () => {
-    const lazy = LazyRow(10)
-    expect(lazy.kind).toBe('lazy-row')
-    expect(lazy.itemCount).toBe(10)
-    expect(lazy.itemSize).toBeNull()
-    expect(lazy.spacing).toBe(0)
-    expect(lazy.contentPadding).toBe(0)
+  it('should emit a group node with default params', () => {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 10)
+    expect(ctx.emittedNodes.size).toBe(1)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { kind: string; itemCount: number; itemSize: number | null; spacing: number; contentPadding: number }
+    expect(data.kind).toBe('lazy-row')
+    expect(data.itemCount).toBe(10)
+    expect(data.itemSize).toBeNull()
+    expect(data.spacing).toBe(0)
+    expect(data.contentPadding).toBe(0)
   })
 
-  it('should create a lazy row with custom itemSize', () => {
-    const lazy = LazyRow(15, Modifier.create().freeze(), 120)
-    expect(lazy.itemSize).toBe(120)
+  it('should emit a lazy row with custom itemSize', () => {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 15, undefined, Modifier.create().freeze(), 120)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { itemSize: number | null }
+    expect(data.itemSize).toBe(120)
   })
 
-  it('should create a lazy row with spacing and padding', () => {
-    const lazy = LazyRow(10, Modifier.create().freeze(), null, 12, 8)
-    expect(lazy.spacing).toBe(12)
-    expect(lazy.contentPadding).toBe(8)
+  it('should emit a lazy row with spacing and padding', () => {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 10, undefined, Modifier.create().freeze(), null, 12, 8)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { spacing: number; contentPadding: number }
+    expect(data.spacing).toBe(12)
+    expect(data.contentPadding).toBe(8)
   })
 
-  it('should create a lazy row with scroll state', () => {
-    const lazy = LazyRow(50, Modifier.create().freeze(), null, 0, 0, 3, 80)
-    expect(lazy.firstVisibleItemIndex).toBe(3)
-    expect(lazy.firstVisibleItemScrollOffset).toBe(80)
+  it('should emit a lazy row with scroll state', () => {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 50, undefined, Modifier.create().freeze(), null, 0, 0, 3, 80)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { firstVisibleItemIndex: number; firstVisibleItemScrollOffset: number }
+    expect(data.firstVisibleItemIndex).toBe(3)
+    expect(data.firstVisibleItemScrollOffset).toBe(80)
   })
 
   it('should have a measure policy', () => {
-    const lazy = LazyRow(10)
-    expect(lazy.measurePolicy).toBeDefined()
-    expect(typeof lazy.measurePolicy.measure).toBe('function')
-    expect(typeof lazy.measurePolicy.measureWithWeights).toBe('function')
+    const ctx = createTestCtx()
+    LazyRow(ctx, 10)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(node.measurePolicy).toBeDefined()
+    expect(typeof node.measurePolicy.measure).toBe('function')
+    expect(typeof (node.measurePolicy as unknown as { measureWithWeights?: () => unknown }).measureWithWeights).toBe('function')
   })
 
   it('should measure empty lazy row', () => {
-    const lazy = LazyRow(0)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 200,
     })
     expect(result.height).toBe(200)
   })
 
   it('should measure lazy row with items', () => {
-    const lazy = LazyRow(10, Modifier.create().freeze(), 120)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 10, undefined, Modifier.create().freeze(), 120)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 200,
     })
     expect(result.height).toBe(200)
   })
 
   it('should compute minIntrinsicWidth correctly', () => {
-    const lazy = LazyRow(5, Modifier.create().freeze(), 100, 8, 0)
-    const width = lazy.measurePolicy.minIntrinsicWidth([], 200)
+    const ctx = createTestCtx()
+    LazyRow(ctx, 5, undefined, Modifier.create().freeze(), 100, 8, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const width = (node.measurePolicy as { minIntrinsicWidth: (measurables: unknown[], height: number) => number }).minIntrinsicWidth([], 200)
     expect(width).toBe(5 * 100 + 4 * 8)
   })
 
   it('should handle zero items', () => {
-    const lazy = LazyRow(0)
-    const result = lazy.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LazyRow(ctx, 0)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 360, minHeight: 0, maxHeight: 200,
     })
     expect(result.height).toBe(200)

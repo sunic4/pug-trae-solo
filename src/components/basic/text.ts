@@ -1,8 +1,9 @@
 import type { TextStyle, DrawScope, Rect } from '@/renderer/types'
 import { defaultTextStyle } from '@/renderer/text-style'
-import { DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
-import type { DrawPolicy, ComponentNode } from '@/components/basic/types'
+import { DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, normalizeModifier } from '@/components/shared/imports'
+import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function textMeasurePolicy(text: string, style: TextStyle): MeasurePolicy {
   if (style.fontSize <= 0) {
@@ -47,31 +48,21 @@ function textDrawPolicy(text: string, style: TextStyle): DrawPolicy {
   }
 }
 
-type TextComponent = {
-  readonly kind: 'text'
-  readonly text: string
-  readonly style: TextStyle
-} & ComponentBase
-
 function Text(
+  ctx: CompositionContext,
   text: string,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   style: TextStyle = defaultTextStyle(),
-): TextComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = textMeasurePolicy(text, style)
   const drawPolicy = textDrawPolicy(text, style)
-  return {
-    kind: 'text',
-    modifier: mod,
-    text,
-    style,
+  ctx.emitNode(
+    { text, style },
+    mod,
     measurePolicy,
     drawPolicy,
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+  )
 }
 
-export type { TextComponent }
 export { Text }

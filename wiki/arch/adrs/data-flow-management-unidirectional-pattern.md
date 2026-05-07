@@ -219,39 +219,37 @@ const UserProfileAvatar = composable(() => {
 **适用场景**：根据现有状态计算得出的值，避免冗余存储
 
 ```typescript
-const ShoppingCart = composable(() => {
-  const items = remember(() => mutableStateOf<CartItem[]>([]));
-  
-  // ✅ 派生状态：每次渲染时实时计算（利用 Snapshot 优化）
-  const totalPrice = useMemo(() => {
-    return items.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [items]);  // 仅当 items 变化时重计算
-  
-  const itemCount = useMemo(() => {
-    return items.value.reduce((sum, item) => sum + item.quantity, 0);
-  }, [items]);
-  
-  return Column() {
-    Text({ text: `共 ${itemCount} 件商品` });
-    Text({ text: `总计: ¥${totalPrice.toFixed(2)}` });
-    CartItemList({ items: items.value });
-  };
+const ShoppingCart = composable<Record<string, never>>((ctx) => {
+  const items = remember(ctx, () => mutableStateOf<CartItem[]>([]));
+
+  const totalPrice = remember(ctx, () => derivedStateOf(() =>
+    items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  ));
+
+  const itemCount = remember(ctx, () => derivedStateOf(() =>
+    items.value.reduce((sum, item) => sum + item.quantity, 0)
+  ));
+
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(4)', 'start', () => {
+    Text(ctx, `共 ${itemCount.value} 件商品`, Modifier.create().freeze());
+    Text(ctx, `总计: ¥${totalPrice.value.toFixed(2)}`, Modifier.create().freeze());
+    CartItemList(ctx, { items: items.value });
+  });
 });
 ```
 
 ### 副作用管理（Side Effects）
 
-**核心原则**：副作用必须与数据流解耦，通过 `useEffect` 隔离
+**核心原则**：副作用必须与数据流解耦，通过 `sideEffect` 隔离
 
 ```typescript
-const UserProfile = composable<{ userId: string }>(({ userId }) => {
-  const user = remember(() => mutableStateOf<User | null>(null));
-  const loading = remember(() => mutableStateOf(true));
-  
-  // ✅ 副作用通过 useEffect 管理
-  useEffect(() => {
+const UserProfile = composable<{ userId: string }>((ctx, { userId }) => {
+  const user = remember(ctx, () => mutableStateOf<User | null>(null));
+  const loading = remember(ctx, () => mutableStateOf(true));
+
+  sideEffect(ctx.composerContext, () => {
     loading.value = true;
-    
+
     fetchUser(userId)
       .then(data => {
         user.value = data;
@@ -261,25 +259,26 @@ const UserProfile = composable<{ userId: string }>(({ userId }) => {
         console.error('Failed to load user:', error);
         loading.value = false;
       });
-      
+
     return () => {
-      // 清理函数：组件销毁时取消未完成的请求
       cancelFetchUser(userId);
     };
-  }, [userId]);  // 依赖数组：仅 userId 变化时重新执行
-  
+  });
+
   if (loading.value) {
-    return LoadingSpinner();
+    LoadingSpinner(ctx);
+    return;
   }
-  
+
   if (!user.value) {
-    return ErrorView({ message: '用户不存在' });
+    ErrorView(ctx, { message: '用户不存在' });
+    return;
   }
-  
-  return Column() {
-    Avatar({ url: user.value.avatarUrl });
-    Text({ text: user.value.name });
-  };
+
+  Column(ctx, Modifier.create().freeze(), 'spacedBy(8)', 'start', () => {
+    Avatar(ctx, { url: user.value.avatarUrl });
+    Text(ctx, user.value.name, Modifier.create().freeze());
+  });
 });
 ```
 
@@ -306,7 +305,7 @@ const UserProfile = composable<{ userId: string }>(({ userId }) => {
    - 副作用可隔离和模拟
 
 5. **性能优化空间大**：
-   - 派生状态自动缓存（useMemo）
+   - 派生状态自动缓存（derivedStateOf + remember）
    - 未变化的子组件跳过重组
    - Context 消费者精准订阅
 
@@ -412,29 +411,35 @@ const ParentComponent = composable(() => {
 });
 
 // 最佳实践 2：Context 按领域拆分
-const App = composable(() => {
-  return AuthContext.Provider({ value: authState }) {
-    ThemeContext.Provider({ value: themeState }) {
-      Router();
-    };
-  };
+const App = composable<Record<string, never>>((ctx) => {
+  Scaffold(ctx,
+    () => TopAppBar(ctx, 'App'),
+    () => {
+      Router(ctx);
+    },
+    () => BottomNavigation(ctx, []),
+  );
 });
 
 // 最佳实践 3：副作用正确隔离
-const DataFetcher = composable<{ url: string }>(({ url }) => {
-  const data = remember(() => mutableStateOf<any>(null));
-  
-  useEffect(() => {
+const DataFetcher = composable<{ url: string }>((ctx, { url }) => {
+  const data = remember(ctx, () => mutableStateOf<any>(null));
+
+  sideEffect(ctx.composerContext, () => {
     let cancelled = false;
-    
+
     fetchData(url).then(result => {
       if (!cancelled) data.value = result;
     });
-    
-    return () => { cancelled = true; };  // 清理
-  }, [url]);
-  
-  return data.value ? JsonViewer({ data: data.value }) : LoadingSpinner();
+
+    return () => { cancelled = true; };
+  });
+
+  if (data.value) {
+    JsonViewer(ctx, { data: data.value });
+  } else {
+    LoadingSpinner(ctx);
+  }
 });
 ```
 
@@ -442,7 +447,7 @@ const DataFetcher = composable<{ url: string }>(({ url }) => {
 
 | 阶段 | 实现内容 | 目标 | 预计工作量 |
 |------|---------|------|-----------|
-| **Phase 1 (MVP)** | useState/useMemo/useEffect + 基本 Context API | 支持本地状态和简单的父子通信 | 3-4 天 |
+| **Phase 1 (MVP)** | mutableStateOf/remember/derivedStateOf + 基本 Snapshot API | 支持本地状态和简单的父子通信 | 3-4 天 |
 | **Phase 2** | useContext/createContext + Provider 模式 | 支持跨层级状态共享 | 2 天 |
 | **Phase 3** | 派生状态优化 + 依赖追踪增强 | 自动化 memoization 和脏检查优化 | 2-3 天 |
 | **Phase 4** | 副作用生命周期管理（cleanup/abort） | 完善异步操作和资源释放 | 2 天 |

@@ -1,4 +1,4 @@
-import type { ComponentBase, ComponentNode, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { MeasurePolicy, Measurable, Constraints, MeasureResult } from '@/layout/types'
 import { DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
 import type { ReadonlyModifier } from '@/layout/modifier'
@@ -7,6 +7,7 @@ import { constrainWidth, constrainHeight } from '@/layout/constraints'
 import { createMeasurePolicy } from '@/layout/simple-measure-policy'
 import { NOOP_DRAW_POLICY } from '@/components/basic/types'
 import type { Rect } from '@/renderer/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 type LazyDirection = 'vertical' | 'horizontal'
 
@@ -16,24 +17,6 @@ interface LazyItemInfo {
   readonly offset: number
   readonly size: number
 }
-
-type LazyComponentBase = {
-  readonly itemCount: number
-  readonly itemSize: number | null
-  readonly spacing: number
-  readonly contentPadding: number
-  readonly firstVisibleItemIndex: number
-  readonly firstVisibleItemScrollOffset: number
-  readonly visibleItems: readonly LazyItemInfo[]
-} & ComponentBase
-
-type LazyColumnComponent = {
-  readonly kind: 'lazy-column'
-} & LazyComponentBase
-
-type LazyRowComponent = {
-  readonly kind: 'lazy-row'
-} & LazyComponentBase
 
 function lazyLayoutMeasurePolicy(
   direction: LazyDirection,
@@ -150,78 +133,68 @@ function computeVisibleItems(
 }
 
 function LazyColumn(
+  ctx: CompositionContext,
   itemCount: number,
+  itemFn?: (index: number) => void,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   itemSize: number | null = null,
   spacing: number = 0,
   contentPadding: number = 0,
   firstVisibleItemIndex: number = 0,
   firstVisibleItemScrollOffset: number = 0,
-): LazyColumnComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = lazyLayoutMeasurePolicy(
     'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
   )
-  const visibleItems = computeVisibleItems(
-    'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 600, 'lazy-column-item',
-  )
-  return {
-    kind: 'lazy-column',
-    modifier: mod,
-    itemCount,
-    itemSize,
-    spacing,
-    contentPadding,
-    firstVisibleItemIndex,
-    firstVisibleItemScrollOffset,
-    visibleItems,
+  ctx.emitNode(
+    { kind: 'LazyColumn', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset },
+    mod,
     measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    getChildren(): ComponentNode[] {
-      return []
-    },
-    layoutChildren(_contentArea: Rect, _measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return []
-    },
+    NOOP_DRAW_POLICY,
+  )
+  if (itemFn) {
+    const visibleItems = computeVisibleItems(
+      'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 600, 'lazy-column-item',
+    )
+    for (const item of visibleItems) {
+      itemFn(item.index)
+    }
   }
+  ctx.endGroup()
 }
 
 function LazyRow(
+  ctx: CompositionContext,
   itemCount: number,
+  itemFn?: (index: number) => void,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   itemSize: number | null = null,
   spacing: number = 0,
   contentPadding: number = 0,
   firstVisibleItemIndex: number = 0,
   firstVisibleItemScrollOffset: number = 0,
-): LazyRowComponent {
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = lazyLayoutMeasurePolicy(
     'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
   )
-  const visibleItems = computeVisibleItems(
-    'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 360, 'lazy-row-item',
-  )
-  return {
-    kind: 'lazy-row',
-    modifier: mod,
-    itemCount,
-    itemSize,
-    spacing,
-    contentPadding,
-    firstVisibleItemIndex,
-    firstVisibleItemScrollOffset,
-    visibleItems,
+  ctx.emitNode(
+    { kind: 'LazyRow', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset },
+    mod,
     measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    getChildren(): ComponentNode[] {
-      return []
-    },
-    layoutChildren(_contentArea: Rect, _measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return []
-    },
+    NOOP_DRAW_POLICY,
+  )
+  if (itemFn) {
+    const visibleItems = computeVisibleItems(
+      'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset, 360, 'lazy-row-item',
+    )
+    for (const item of visibleItems) {
+      itemFn(item.index)
+    }
   }
+  ctx.endGroup()
 }
 
-export type { LazyColumnComponent, LazyRowComponent, LazyItemInfo, LazyComponentBase }
+export type { LazyItemInfo }
 export { LazyColumn, LazyRow, lazyLayoutMeasurePolicy as LazyLayoutMeasurePolicy, computeVisibleItems }

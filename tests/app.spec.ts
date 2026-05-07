@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 const TAB_LABELS = ['首页', '交互', '布局', '反馈', '列表']
 
-async function navigateToTab(page: any, tabIndex: number) {
+async function navigateToTab(page: Page, tabIndex: number) {
   const canvas = page.locator('#canvas')
   const box = await canvas.boundingBox()
   if (box) {

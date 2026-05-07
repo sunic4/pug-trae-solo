@@ -1,8 +1,8 @@
 import { composable, createAppContext } from '@/core/composable'
-import type { ComposerContext, ComposableNode } from '@/core/types'
+import type { ComposerContext } from '@/core/types'
+import type { CompositionContext } from '@/core/composition-context'
 import { createCanvasHost } from '@/renderer/canvas-host'
-import { renderComponentTree } from '@/renderer/component-renderer'
-import type { ComponentNode } from '@/components/basic/types'
+import { renderEmittedTree } from '@/renderer/component-renderer'
 
 interface AppHost {
   requestRender: () => void
@@ -11,13 +11,9 @@ interface AppHost {
   appContext: ComposerContext
 }
 
-function isComponentNode(node: ComposableNode): node is ComponentNode {
-  return 'modifier' in node && 'measurePolicy' in node && 'drawPolicy' in node
-}
-
 export function setContent(
   canvas: HTMLCanvasElement,
-  appComposable: (ctx: ComposerContext) => ComposableNode | null,
+  appComposable: (ctx: CompositionContext) => void,
 ): AppHost {
   const dpr = window.devicePixelRatio || 1
   let width = canvas.clientWidth
@@ -25,15 +21,18 @@ export function setContent(
 
   canvas.width = width * dpr
   canvas.height = height * dpr
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to get 2D context')
-  ctx.scale(dpr, dpr)
+  const ctx2d = canvas.getContext('2d')
+  if (!ctx2d) throw new Error('Failed to get 2d context')
+  ctx2d.scale(dpr, dpr)
 
-  const host = createCanvasHost(canvas, ctx)
+  const host = createCanvasHost(canvas, ctx2d)
   const appCtx = createAppContext({ canvas })
 
-  const wrappedComposable = composable<{}>((_props, ctx) => {
-    return appComposable(ctx)
+  let rootCtx: CompositionContext | null = null
+
+  const wrappedComposable = composable<{}>((ctx: CompositionContext) => {
+    rootCtx = ctx
+    appComposable(rootCtx)
   })
 
   let needsRender = true
@@ -42,9 +41,8 @@ export function setContent(
     if (!needsRender) return
     needsRender = false
     host.clear()
-    const node = wrappedComposable({}, appCtx)
-    if (node && isComponentNode(node)) {
-      const commands = renderComponentTree(host.ctx, node, width, height)
+    if (rootCtx && rootCtx.rootNodeId !== null) {
+      const commands = renderEmittedTree(host.ctx, rootCtx.emittedNodes, rootCtx.rootNodeId, width, height)
       host.render(commands)
     }
   }
@@ -59,8 +57,8 @@ export function setContent(
     height = canvas.clientHeight
     canvas.width = width * dpr
     canvas.height = height * dpr
-    if (ctx) {
-      ctx.scale(dpr, dpr)
+    if (ctx2d) {
+      ctx2d.scale(dpr, dpr)
     }
     requestRender()
   }

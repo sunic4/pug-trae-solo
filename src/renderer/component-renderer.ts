@@ -1,10 +1,10 @@
 import type { DrawContext, DrawCommand, DrawScope, Rect } from '@/renderer/types'
 import { createDrawScope } from '@/renderer/draw-scope'
-import type { ComponentNode, DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
-import { NOOP_DRAW_POLICY } from '@/components/basic/types'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { Constraints } from '@/layout/types'
 import { createMeasurable, createMeasureResult } from '@/layout/measure'
-import type { ReadonlyModifier, FillMaxSizeElement, FillMaxWidthElement, FillMaxHeightElement, SizeElement, WidthElement, HeightElement } from '@/layout/modifier'
+import type { ReadonlyModifier } from '@/layout/modifier'
+import type { EmittedNode } from '@/core/composition-context'
 
 function extractPadding(modifier: ReadonlyModifier): { left: number; top: number; right: number; bottom: number } {
   const p = modifier.findPadding()
@@ -97,22 +97,23 @@ function applySizeModifiers(
   return result
 }
 
-function measureNode(
-  node: ComponentNode,
+function measureEmittedNode(
+  node: EmittedNode,
+  nodes: Map<number, EmittedNode>,
   constraints: Constraints,
   measuredSizes: MeasuredSizeMap,
 ): { width: number; height: number } {
   const padding = extractPadding(node.modifier)
 
-  const children = node.getChildren()
-  const childMeasurables = children.map(child =>
-    createMeasurable((childConstraints) => {
-      const result = measureNode(child, childConstraints, measuredSizes)
+  const childIds = node.childrenIds
+  const childMeasurables = childIds.map(childId => {
+    const child = nodes.get(childId)!
+    return createMeasurable((childConstraints) => {
+      const result = measureEmittedNode(child, nodes, childConstraints, measuredSizes)
       return createMeasureResult(result.width, result.height)
-    }),
-  )
+    })
+  })
 
-  // Adjust constraints for padding
   const adjustedConstraints: Constraints = {
     minWidth: Math.max(0, constraints.minWidth - padding.left - padding.right),
     maxWidth: Math.max(0, constraints.maxWidth - padding.left - padding.right),
@@ -122,17 +123,17 @@ function measureNode(
 
   const result = node.measurePolicy.measure(childMeasurables, adjustedConstraints)
 
-  // Add padding back to measured size
   const finalWidth = result.width + padding.left + padding.right
   const finalHeight = result.height + padding.top + padding.bottom
 
-  measuredSizes.set(node, { width: finalWidth, height: finalHeight })
+  measuredSizes.set(node.id, { width: finalWidth, height: finalHeight })
   return { width: finalWidth, height: finalHeight }
 }
 
-function renderNode(
+function renderEmittedNode(
   scope: DrawScope,
-  node: ComponentNode,
+  node: EmittedNode,
+  nodes: Map<number, EmittedNode>,
   x: number,
   y: number,
   availableWidth: number,
@@ -145,9 +146,9 @@ function renderNode(
     minHeight: 0,
     maxHeight: availableHeight,
   }
-  const measured = measureNode(node, constraints, measuredSizes)
+  const measured = measureEmittedNode(node, nodes, constraints, measuredSizes)
   const size = applySizeModifiers(node.modifier, measured, availableWidth, availableHeight)
-  measuredSizes.set(node, size)
+  measuredSizes.set(node.id, size)
 
   const bounds: Rect = { x, y, width: size.width, height: size.height }
 
@@ -158,10 +159,18 @@ function renderNode(
   const padding = extractPadding(node.modifier)
   const contentArea = subtractPadding(bounds, padding)
 
-  // Use the component's own layoutChildren method (which is already correctly implemented!)
-  const childLayouts = node.layoutChildren(contentArea, measuredSizes)
-  for (const cl of childLayouts) {
-    renderNode(scope, cl.node, cl.x, cl.y, cl.width, cl.height, measuredSizes)
+  if (node.layoutChildren !== null && node.childrenIds.length > 0) {
+    const childLayouts = node.layoutChildren(contentArea, measuredSizes, node.childrenIds)
+    for (const cl of childLayouts) {
+      const childNode = nodes.get(cl.nodeId)!
+      renderEmittedNode(scope, childNode, nodes, cl.x, cl.y, cl.width, cl.height, measuredSizes)
+    }
+  } else {
+    for (const childId of node.childrenIds) {
+      const childNode = nodes.get(childId)!
+      const childSize = measuredSizes.get(childId) ?? { width: contentArea.width, height: contentArea.height }
+      renderEmittedNode(scope, childNode, nodes, contentArea.x, contentArea.y, childSize.width, childSize.height, measuredSizes)
+    }
   }
 
   scope.restore()
@@ -169,16 +178,18 @@ function renderNode(
   return size
 }
 
-function renderComponentTree(
+function renderEmittedTree(
   ctx: DrawContext,
-  root: ComponentNode,
+  nodes: Map<number, EmittedNode>,
+  rootNodeId: number,
   width: number,
   height: number,
 ): DrawCommand[] {
   const scope = createDrawScope(ctx)
   const measuredSizes: MeasuredSizeMap = new Map()
-  renderNode(scope, root, 0, 0, width, height, measuredSizes)
+  const root = nodes.get(rootNodeId)!
+  renderEmittedNode(scope, root, nodes, 0, 0, width, height, measuredSizes)
   return scope.getCommands()
 }
 
-export { renderComponentTree, NOOP_DRAW_POLICY }
+export { renderEmittedTree }

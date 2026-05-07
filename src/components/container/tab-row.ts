@@ -1,69 +1,69 @@
-import { Modifier, DEFAULT_MODIFIER, createMeasurePolicy, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
-import type { DrawScope, Rect } from '@/renderer/types'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import { Surface } from '@/components/layout/surface'
+import { Column } from '@/components/layout/column'
+import { Row } from '@/components/layout/row'
+import { Text } from '@/components/basic/text'
+import { Spacer } from '@/components/basic/spacer'
+import { Modifier, DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
+import type { Color, ReadonlyModifier } from '@/components/shared/imports'
 import { PrimaryColor } from '@/theme/colors'
-import { EqualSplitMeasurePolicy } from '@/components/shared/equal-split-measure-policy'
 import type { SelectableItem } from '@/components/shared/selectable-item'
+import type { CompositionContext } from '@/core/composition-context'
 
-function tabRowDrawPolicy(tabs: readonly TabConfig[], selectedIndex: number, contentColor: Color, indicatorColor: Color): DrawPolicy {
-  return (scope: DrawScope, bounds: Rect): void => {
-    const tabWidth = bounds.width / tabs.length
-    for (let i = 0; i < tabs.length; i++) {
-      const tab = tabs[i]!
-      const tx = bounds.x + tabWidth * i
-      const color = i === selectedIndex ? indicatorColor : contentColor
-      scope.fillText(tab.label, { x: tx + tabWidth / 2 - 20, y: bounds.y + 28 }, color, 14)
-    }
-    const indicatorX = bounds.x + tabWidth * selectedIndex
-    scope.fillRect(
-      { x: indicatorX, y: bounds.y + bounds.height - 3, width: tabWidth, height: 3 },
-      indicatorColor,
-    )
-  }
+type TabRowOptions = {
+  readonly modifier?: ReadonlyModifier
+  readonly backgroundColor?: Color
+  readonly contentColor?: Color
+  readonly indicatorColor?: Color
 }
-
-type TabConfig = SelectableItem
-
-type TabRowComponent = {
-  readonly kind: 'tab-row'
-  readonly tabs: TabConfig[]
-  readonly selectedIndex: number
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-  readonly indicatorColor: Color
-  readonly children: ComponentNode[]
-} & ComponentBase
 
 function TabRow(
-  tabs: TabConfig[],
+  ctx: CompositionContext,
+  tabs: SelectableItem[],
   selectedIndex: number = 0,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-  backgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 },
-  contentColor: Color = { r: 33, g: 33, b: 33, a: 1 },
-  indicatorColor: Color = PrimaryColor,
-  children: ComponentNode[] = [],
-): TabRowComponent {
+  options?: TabRowOptions,
+): void {
+  const resolvedOptions: TabRowOptions = options ?? {}
+  const {
+    backgroundColor = { r: 255, g: 255, b: 255, a: 1 },
+    contentColor = { r: 33, g: 33, b: 33, a: 1 },
+    indicatorColor = PrimaryColor,
+  } = resolvedOptions
   const normalizedMod = normalizeModifier(modifier)
-  const tabRowModifier = Modifier.extendFrom(normalizedMod)
-    .background(backgroundColor)
-    .freeze()
-  const measurePolicy = EqualSplitMeasurePolicy(tabs.length, 48, 72)
-  return {
-    kind: 'tab-row',
-    modifier: tabRowModifier,
-    tabs,
-    selectedIndex,
-    backgroundColor,
-    contentColor,
-    indicatorColor,
-    children,
-    measurePolicy,
-    drawPolicy: tabRowDrawPolicy(tabs, selectedIndex, contentColor, indicatorColor),
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+
+  Surface(
+    ctx,
+    () => {
+      Column(ctx, DEFAULT_MODIFIER, 'start', 'start', () => {
+        Row(ctx, DEFAULT_MODIFIER, 'center', 'center', () => {
+          for (const tab of tabs) {
+            const color = tab.selected ? indicatorColor : contentColor
+            Text(ctx, tab.label, DEFAULT_MODIFIER, { fontSize: 14, fontFamily: 'sans-serif', fontWeight: 'normal', color })
+          }
+        })
+        Surface(ctx, () => {
+          Spacer(ctx, 0, 3)
+        }, {
+          modifier: Modifier.create()
+            .fillMaxWidth(tabs.length > 0 ? 1 / tabs.length : 0)
+            .freeze(),
+          color: indicatorColor,
+          elevation: 0,
+          borderRadius: 0,
+          alignment: 'start',
+        })
+      })
+    },
+    {
+      modifier: Modifier.extendFrom(normalizedMod)
+        .setHeight(48)
+        .freeze(),
+      color: backgroundColor,
+      elevation: 0,
+      borderRadius: 0,
+      alignment: 'start',
+    },
+  )
 }
 
-export type { TabRowComponent, TabConfig }
 export { TabRow }

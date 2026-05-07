@@ -1,9 +1,10 @@
 import type { TextStyle, Color, DrawScope, Rect } from '@/renderer/types'
 import { BackgroundColor, PrimaryColor } from '@/theme/colors'
 import { defaultTextStyle } from '@/renderer/text-style'
-import { Modifier, DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+import { Modifier, DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, normalizeModifier } from '@/components/shared/imports'
+import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawPolicy } from '@/components/basic/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 function textFieldDrawPolicy(value: string, placeholder: string, textStyle: TextStyle, cursorColor: Color): DrawPolicy {
   return (scope: DrawScope, bounds: Rect): void => {
@@ -18,17 +19,6 @@ function textFieldDrawPolicy(value: string, placeholder: string, textStyle: Text
     )
   }
 }
-
-type TextFieldComponent = {
-  readonly kind: 'text-field'
-  readonly value: string
-  readonly onValueChange: (value: string) => void
-  readonly placeholder: string
-  readonly singleLine: boolean
-  readonly textStyle: TextStyle
-  readonly backgroundColor: Color
-  readonly cursorColor: Color
-} & ComponentBase
 
 function textFieldMeasurePolicy(value: string, placeholder: string, singleLine: boolean, textStyle: TextStyle): MeasurePolicy {
   const fontSize = textStyle.fontSize ?? DEFAULT_FONT_SIZE
@@ -63,6 +53,7 @@ function textFieldMeasurePolicy(value: string, placeholder: string, singleLine: 
 }
 
 function TextField(
+  ctx: CompositionContext,
   value: string,
   onValueChange: (value: string) => void,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
@@ -71,28 +62,18 @@ function TextField(
   textStyle: TextStyle = defaultTextStyle(),
   backgroundColor: Color = BackgroundColor,
   cursorColor: Color = PrimaryColor,
-): TextFieldComponent {
+): void {
   const normalizedMod = normalizeModifier(modifier)
   const textFieldModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor, 4)
     .freeze()
   const measurePolicy = textFieldMeasurePolicy(value, placeholder, singleLine, textStyle)
-  return {
-    kind: 'text-field',
-    modifier: textFieldModifier,
-    value,
-    onValueChange,
-    placeholder,
-    singleLine,
-    textStyle,
-    backgroundColor,
-    cursorColor,
+  ctx.emitLeaf(
+    { value, onValueChange, placeholder, singleLine, textStyle, backgroundColor, cursorColor },
+    textFieldModifier,
     measurePolicy,
-    drawPolicy: textFieldDrawPolicy(value, placeholder, textStyle, cursorColor),
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+    textFieldDrawPolicy(value, placeholder, textStyle, cursorColor),
+  )
 }
 
-export type { TextFieldComponent }
 export { TextField }

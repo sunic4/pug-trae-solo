@@ -1,65 +1,54 @@
-import { Modifier, DEFAULT_MODIFIER, createShadow, createMeasurePolicy, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
-import type { DrawScope, Rect } from '@/renderer/types'
-import type { DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import { Surface } from '@/components/layout/surface'
+import { Row } from '@/components/layout/row'
+import { Text } from '@/components/basic/text'
+import { Modifier, DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
+import type { Color, ReadonlyModifier } from '@/components/shared/imports'
 import { PrimaryColor } from '@/theme/colors'
-import { EqualSplitMeasurePolicy } from '@/components/shared/equal-split-measure-policy'
 import type { SelectableItem } from '@/components/shared/selectable-item'
+import type { CompositionContext } from '@/core/composition-context'
 
-function bottomNavDrawPolicy(items: readonly BottomNavItem[], selectedColor: Color, unselectedColor: Color): DrawPolicy {
-  return (scope: DrawScope, bounds: Rect): void => {
-    const itemWidth = bounds.width / items.length
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]!
-      const ix = bounds.x + itemWidth * i
-      const color = item.selected ? selectedColor : unselectedColor
-      scope.fillText(item.label, { x: ix + itemWidth / 2 - 20, y: bounds.y + 36 }, color, 12)
-    }
-  }
+type BottomNavOptions = {
+  readonly modifier?: ReadonlyModifier
+  readonly backgroundColor?: Color
+  readonly contentColor?: Color
+  readonly selectedItemColor?: Color
 }
-
-type BottomNavItem = SelectableItem
-
-type BottomNavigationComponent = {
-  readonly kind: 'bottom-navigation'
-  readonly items: BottomNavItem[]
-  readonly selectedIndex: number
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-  readonly selectedItemColor: Color
-  readonly children: ComponentNode[]
-} & ComponentBase
 
 function BottomNavigation(
-  items: BottomNavItem[],
+  ctx: CompositionContext,
+  items: SelectableItem[],
   selectedIndex: number = 0,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-  backgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 },
-  contentColor: Color = { r: 117, g: 117, b: 117, a: 1 },
-  selectedItemColor: Color = PrimaryColor,
-  children: ComponentNode[] = [],
-): BottomNavigationComponent {
+  options?: BottomNavOptions,
+): void {
+  const resolvedOptions: BottomNavOptions = options ?? {}
+  const {
+    backgroundColor = { r: 255, g: 255, b: 255, a: 1 },
+    contentColor = { r: 117, g: 117, b: 117, a: 1 },
+    selectedItemColor = PrimaryColor,
+  } = resolvedOptions
   const normalizedMod = normalizeModifier(modifier)
-  const bottomNavModifier = Modifier.extendFrom(normalizedMod)
-    .background(backgroundColor)
-    .then(createShadow(8))
-    .freeze()
-  const measurePolicy = EqualSplitMeasurePolicy(items.length, 56, 56)
-  return {
-    kind: 'bottom-navigation',
-    modifier: bottomNavModifier,
-    items,
-    selectedIndex,
-    backgroundColor,
-    contentColor,
-    selectedItemColor,
-    children,
-    measurePolicy,
-    drawPolicy: bottomNavDrawPolicy(items, selectedItemColor, contentColor),
-    layoutChildren: leafLayoutChildren,
-    getChildren: leafGetChildren,
-  }
+
+  Surface(
+    ctx,
+    () => {
+      Row(ctx, DEFAULT_MODIFIER, 'center', 'center', () => {
+        for (const item of items) {
+          const color = item.selected ? selectedItemColor : contentColor
+          Text(ctx, item.label, DEFAULT_MODIFIER, { fontSize: 12, fontFamily: 'sans-serif', fontWeight: 'normal', color })
+        }
+      })
+    },
+    {
+      modifier: Modifier.extendFrom(normalizedMod)
+        .setHeight(56)
+        .freeze(),
+      color: backgroundColor,
+      elevation: 8,
+      borderRadius: 0,
+      alignment: 'start',
+    },
+  )
 }
 
-export type { BottomNavigationComponent, BottomNavItem }
 export { BottomNavigation }

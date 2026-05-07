@@ -3,20 +3,23 @@ import { composable, createAppContext } from '@/core/composable'
 import { mutableStateOf } from '@/core/state'
 import { createSnapshot } from '@/core/snapshot'
 import { createRecomposer, RecomposeScopeImpl } from '@/core/recomposer'
-import type { ComposerContext } from '@/core/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 describe('composable', () => {
   describe('when called with a function', () => {
-    it('should return a function that executes fn and returns the result', () => {
+    it('should return a function that executes fn with ctx as first param and props as second', () => {
       const ctx = createAppContext()
-      const fn = vi.fn((_props: { count: number }, _ctx: ComposerContext) => ({ kind: 'test' }))
+      const fn = vi.fn((_ctx: CompositionContext, _props: { count: number }) => {})
       const composed = composable(fn)
 
       const result = composed({ count: 1 }, ctx)
 
       expect(fn).toHaveBeenCalledOnce()
-      expect(fn).toHaveBeenCalledWith({ count: 1 }, ctx)
-      expect(result).toEqual({ kind: 'test' })
+      expect(fn).toHaveBeenCalledWith(expect.objectContaining({
+        snapshot: ctx.snapshot,
+        recomposer: ctx.recomposer,
+      }), { count: 1 })
+      expect(result).toBeNull()
     })
   })
 
@@ -24,11 +27,11 @@ describe('composable', () => {
     it('should call pushScope and popScope in pairs', () => {
       const snapshot = createSnapshot()
       const recomposer = createRecomposer()
-      const ctx: ComposerContext = { snapshot, recomposer }
+      const ctx = { snapshot, recomposer }
       const pushSpy = vi.spyOn(recomposer, 'pushScope')
       const popSpy = vi.spyOn(recomposer, 'popScope')
 
-      const composed = composable((_props: object, _ctx: ComposerContext) => null)
+      const composed = composable((_ctx: CompositionContext, _props: object) => {})
       composed({}, ctx)
 
       expect(pushSpy).toHaveBeenCalledOnce()
@@ -42,9 +45,8 @@ describe('composable', () => {
       const ctx = createAppContext()
       const state = mutableStateOf(42, ctx.snapshot)
 
-      const composed = composable((_props: object, _ctx: ComposerContext) => {
-        void state.value
-        return null
+      const composed = composable((compositionCtx: CompositionContext, _props: object) => {
+        void compositionCtx.snapshot.read(state)
       })
       composed({}, ctx)
 
@@ -57,10 +59,10 @@ describe('composable', () => {
     it('should still popScope correctly', () => {
       const snapshot = createSnapshot()
       const recomposer = createRecomposer()
-      const ctx: ComposerContext = { snapshot, recomposer }
+      const ctx = { snapshot, recomposer }
       const popSpy = vi.spyOn(recomposer, 'popScope')
 
-      const composed = composable((_props: object, _ctx: ComposerContext) => {
+      const composed = composable((_ctx: CompositionContext, _props: object) => {
         throw new Error('test error')
       })
 

@@ -1,16 +1,17 @@
-import type { SurfaceComponent, SurfaceOptions } from '@/components/layout/surface'
-import { Surface } from '@/components/layout/surface'
-import type { ComponentNode } from '@/components/basic/types'
-
-type CardComponent = Omit<SurfaceComponent, 'kind'> & { readonly kind: 'card' }
+import { Surface, type SurfaceOptions } from '@/components/layout/surface'
+import type { CompositionContext } from '@/core/composition-context'
 
 function Card(
-  children: ComponentNode[] = [],
+  ctx: CompositionContext,
+  childrenFn?: () => void,
   options: SurfaceOptions = {},
-): CardComponent {
-  const surface = Surface(children, { ...options, elevation: options.elevation ?? 1, borderRadius: options.borderRadius ?? 8 })
-  return { ...surface, kind: 'card' }
+): void {
+  const cardOptions: SurfaceOptions = {
+    ...options,
+    elevation: options.elevation ?? 1,
+    borderRadius: options.borderRadius ?? 8,
+  }
+  Surface(ctx, childrenFn, cardOptions)
 }
 
-export type { CardComponent }
 export { Card }

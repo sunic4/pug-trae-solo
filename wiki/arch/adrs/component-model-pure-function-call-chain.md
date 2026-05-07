@@ -2,17 +2,17 @@
 id: "component-model-pure-function-call-chain"
 type: architecture
 status: accepted
-title: "组件模型 — 纯函数调用链 (Compose 风格, 无 JSX)"
+title: "组件模型 — Emit-based 纯函数调用链 (ctx-first, void 返回, 无 JSX)"
 depends_on:
   - "../road-map/canvas-ui-runtime.md"
   - "./composable-tracking-runtime-hoc.md"
   - "./layout-engine-custom-linear-column-row.md"
 created: "2026-04-30 17:10"
-updated: "2026-04-30 17:15"
+updated: "2026-05-07 00:00"
 stale: false
 ---
 
-# ADR: 组件模型 — 纯函数调用链 (Compose 风格)
+# ADR: 组件模型 — Emit-based 纯函数调用链
 
 ## 背景
 
@@ -22,12 +22,12 @@ stale: false
 
 三大候选：
 - **JSX-like**：需要编译时转换，虚拟节点中间层
-- **纯函数调用链**：直接调用，无中间表示
+- **Emit-based 纯函数调用链**：通过 ctx 显式发射节点，void 返回值
 - **Widget Tree**：OOP class 继承，Flutter 风格
 
 ## 决策结果
 
-选择 **纯函数调用链模式（Compose 风格）**，完全避免 JSX 和虚拟 DOM。
+选择 **Emit-based 纯函数调用链模式（Compose 风格）**，核心特征为 **ctx-first 参数 + void 返回 + emit 节点**。
 
 ### 核心设计原则
 
@@ -35,171 +35,171 @@ stale: false
 ✅ 纯 TypeScript 函数调用
 ✅ 无 JSX Transform
 ✅ 无虚拟节点/虚拟 DOM
-✅ 直接返回 LayoutNode
+✅ ctx: CompositionContext 作为第一个参数
+✅ 返回 void（不返回节点树）
+✅ 通过 ctx.emitLeaf() / ctx.startGroup() / ctx.endGroup() 发射节点
 ✅ 尾随 lambda 支持子组件声明
 ```
 
 ### 公共 API 规范
 
 ```typescript
-// ===== 基础类型定义 =====
+// ===== 核心类型 =====
 
-interface ComposableFunction<TProps = void> {
-  (props: TProps): ComposableNode;
+interface CompositionContext extends ComposerContext {
+  emitLeaf(data, modifier, measurePolicy, drawPolicy): void
+  startGroup(data, modifier, measurePolicy, drawPolicy?, layoutChildren?): void
+  endGroup(): void
+  readonly emittedNodes: Map<NodeId, EmittedNode>
+  rootNodeId: NodeId | null
 }
-
-type ComposableNode = 
-  | LayoutNode          // 容器组件（Column/Row/Box等）
-  | LeafNode            // 叶子组件（Text/Image等）
-  | null;               // 条件渲染返回 null
 
 // ===== composable() HOC 定义 =====
 
-function composable<TProps extends Record<string, any> = Record<string, never>>(
-  fn: (props: TProps, context: ComposerContext) => ComposableNode
+function composable<TProps>(
+  fn: (ctx: CompositionContext, props: TProps) => void,
 ): ComposableFunction<TProps>;
 
-// ===== 内置布局组件签名 =====
+// ComposableFunction 的签名（外部调用视角）
+type ComposableFunction<TProps> = (props: TProps, ctx: ComposerContext) => ComposableNode | null;
 
-function Column(options?: {
-  modifier?: Modifier;
-  verticalArrangement?: Arrangement.Vertical;
-  horizontalAlignment?: Alignment.Horizontal;
-}, content?: () => ComposableNode): LayoutNode;
+// ===== L0 原子组件签名（实际源码）=====
 
-function Row(options?: {
-  modifier?: Modifier;
-  horizontalArrangement?: Arrangement.Horizontal;
-  verticalAlignment?: Alignment.Vertical;
-}, content?: () => ComposableNode): LayoutNode;
+function Text(
+  ctx: CompositionContext,
+  text: string,
+  modifier?: ReadonlyModifier,
+  style?: TextStyle,
+): void;
 
-function Box(options?: {
-  modifier?: Modifier;
-  contentAlignment?: Alignment;
-}, content?: () => ComposableNode): LayoutNode;
+function Image(
+  ctx: CompositionContext,
+  src: ImageSource,
+  modifier?: ReadonlyModifier,
+  options?: ImageOptions,
+): void;
 
-// ===== 叶子组件签名 =====
+function Spacer(
+  ctx: CompositionContext,
+  width?: number,
+  height?: number,
+  modifier?: ReadonlyModifier,
+): void;
 
-function Text(options: {
-  text: string;
-  modifier?: Modifier;
-  fontSize?: Sp;
-  fontWeight?: FontWeight;
-  color?: Color;
-  maxLines?: number;
-  overflow?: TextOverflow;
-  textAlign?: TextAlign;
-}): LeafNode;
+function Box(
+  ctx: CompositionContext,
+  contentFn?: () => void,
+  modifier?: ReadonlyModifier,
+  alignment?: Alignment,
+): void;
 
-function Image(options: {
-  src: ImageSource;
-  modifier?: Modifier;
-  contentScale?: ContentScale;
-  placeholder?: ComposableNode;
-}): LeafNode;
+function Column(
+  ctx: CompositionContext,
+  modifier?: ReadonlyModifier,
+  arrangement?: Arrangement,
+  alignment?: Alignment,
+  childrenFn?: () => void,
+): void;
 
-function Button(options: {
-  text?: string;
-  onClick: () => void;
-  enabled?: boolean;
-  modifier?: Modifier;
-  content?: () => ComposableNode; // 自定义内容
-}): LeafNode;
+function Row(
+  ctx: CompositionContext,
+  modifier?: ReadonlyModifier,
+  arrangement?: Arrangement,
+  alignment?: Alignment,
+  childrenFn?: () => void,
+): void;
 
-// ===== 使用示例 =====
+function Surface(
+  ctx: CompositionContext,
+  contentFn?: () => void,
+  options?: SurfaceOptions,
+): void;
+```
 
-const Greeting = composable<{ name: string }>(({ name }) => {
-  const count = remember(() => mutableStateOf(0));
-  
-  return Column({
-    modifier: Modifier.padding(16.dp).background(Color.White),
-    verticalArrangement: Arrangement.spacedBy(8.dp)
-  }) {
-    
-    // 子组件通过尾随 lambda 声明
-    Text({ 
-      text: `Hello, ${name}!`,
-      fontSize: 24.sp,
-      fontWeight: FontWeight.Bold 
+### 组件内部实现模式
+
+所有组件遵循统一的 emit 模式：
+
+```typescript
+function Text(ctx: CompositionContext, text: string, modifier, style): void {
+  const mod = normalizeModifier(modifier)
+  const measurePolicy = textMeasurePolicy(text, style)
+  const drawPolicy = textDrawPolicy(text, style)
+  ctx.emitLeaf({ text, style }, mod, measurePolicy, drawPolicy)
+}
+
+function Column(ctx: CompositionContext, modifier, arrangement, alignment, childrenFn): void {
+  const mod = normalizeModifier(modifier)
+  const measurePolicy = linearMeasurePolicy('vertical', arrangement, alignment)
+  ctx.startGroup({ arrangement, alignment }, mod, measurePolicy, NOOP_DRAW_POLICY,
+    (contentArea, measuredSizes, childrenIds) => {
+      return layoutColumnChildren(childrenIds, contentArea, measuredSizes, arrangement, alignment)
+    },
+  )
+  if (childrenFn) { childrenFn() }
+  ctx.endGroup()
+}
+```
+
+### 使用示例
+
+```typescript
+const Greeting = composable<{ name: string }>((ctx, { name }) => {
+  const count = remember(ctx, () => mutableStateOf(0));
+
+  Column(ctx, Modifier.create().padding(16).freeze(), 'spacedBy(8)', 'start', () => {
+
+    Text(ctx, `Hello, ${name}!`, Modifier.create().freeze(), {
+      fontSize: 24,
+      fontWeight: 'bold',
     });
-    
-    Text({ text: `Count: ${count.value}` });
-    
-    Button({
-      text: 'Increment',
-      onClick: () => count.value++
-    });
-  };
+
+    Text(ctx, `Count: ${count.value}`, Modifier.create().freeze());
+
+    Button(ctx, 'Increment', () => count.value++);
+  });
 });
 ```
 
 ### 尾随 Lambda（Trailing Lambda）语法
 
-这是本方案的核心创新点，提供类似 JSX 的嵌套体验但无需编译时转换：
-
 ```typescript
-// ===== 方式 1：options.content 参数 =====
+// 方式：尾随 lambda（子组件声明）
 
-Column({
-  modifier: Modifier.fillMaxSize(),
-  content: () => {
-    Text({ text: 'Child 1' });
-    Text({ text: 'Child 2' });
-  }
+Column(ctx, Modifier.create().fillMaxSize().freeze(), 'spacedBy(16)', 'center', () => {
+  Text(ctx, 'Child 1', Modifier.create().freeze());
+  Text(ctx, 'Child 2', Modifier.create().freeze());
 });
 
-// ===== 方式 2：尾随 lambda（更简洁）=====
-
-Column({ modifier: Modifier.fillMaxSize() }) {
-  Text({ text: 'Child 1' });   // ← 自动作为 content 参数
-  Text({ text: 'Child 2' });   // ← 自动作为 content 参数
-}
-
-// ===== 实现原理（TypeScript 函数重载）======
-
+// 实现原理：childrenFn 是最后一个可选参数
 function Column(
-  options: { modifier?: Modifier } & { content?: () => ComposableNode }
-): LayoutNode;
-
-// 当最后一个参数是函数时，自动映射到 options.content
-function Column(
-  modifier: Modifier,
-  content: () => ComposableNode
-): LayoutNode;
+  ctx: CompositionContext,
+  modifier?: ReadonlyModifier,
+  arrangement?: Arrangement,
+  alignment?: Alignment,
+  childrenFn?: () => void,
+): void;
 ```
 
 ### 条件渲染与列表
 
 ```typescript
-// ===== 条件渲染 =====
-
-const UserProfile = composable<{ user: User | null }>(({ user }) => {
-  return Column() {
+const UserProfile = composable<{ user: User | null }>((ctx, { user }) => {
+  Column(ctx, Modifier.create().padding(16).freeze(), 'spacedBy(8)', 'start', () => {
     if (user) {
-      // 已登录状态
-      Avatar({ url: user.avatarUrl });
-      Text({ text: user.name });
+      Avatar(ctx, { url: user.avatarUrl });
+      Text(ctx, user.name);
     } else {
-      // 未登录状态
-      Text({ text: 'Please login' });
-      Button({ text: 'Login', onClick: showLoginDialog });
+      Text(ctx, 'Please login');
+      Button(ctx, 'Login', showLoginDialog);
     }
-  };
+  });
 });
 
-// ===== 列表渲染 =====
-
-const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
-  return LazyColumn({
-    modifier: Modifier.fillMaxSize()
-  }) {
-    messages.forEach((msg) => {
-      MessageBubble({ 
-        key: msg.id,       // 列表 key（用于 Diff）
-        message: msg 
-      });
-    });
-  };
+const MessageList = composable<{ messages: Message[] }>((ctx, { messages }) => {
+  LazyColumn(ctx, messages.length, (index) => {
+    MessageBubble(ctx, messages[index]);
+  });
 });
 ```
 
@@ -207,9 +207,9 @@ const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
 
 1. **与已完成决策完美契合**：
    - `composable()` HOC → 函数即组件 ✅
-   - Context 显式传递 → `(props, ctx)` 参数 ✅
+   - **CompositionContext 显式传递 → `(ctx, props)` 参数，ctx 在前** ✅
    - Column/Row 布局 → 直接函数调用 ✅
-   - Hybrid 渲染 → 返回 LayoutNode 零开销 ✅
+   - **renderEmittedTree() → 遍历 emittedNodes Map，无需返回值** ✅
 
 2. **零构建工具依赖**：
    - 不需要 JSX Transform
@@ -218,99 +218,94 @@ const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
    - 纯 `.ts` 文件即可运行
 
 3. **性能最优**：
-   - 无虚拟 DOM 中间层（节省内存和 CPU）
-   - 无虚拟节点创建/回收（减少 GC 压力）
-   - 函数直接操作 LayoutNode（零抽象损耗）
+   - **无虚拟 DOM 中间层**
+   - **无返回值构造开销** — 组件直接向 Map 写入，不创建中间对象
+   - **EmittedNode 扁平存储** — Map 查找 O(1)，遍历高效
+   - 渲染器直接消费 Map，零抽象损耗
 
 4. **调试体验优秀**：
    - 调用栈每一层对应真实代码位置
    - 断点可直接设置在组件函数内部
-   - 无编译后代码映射问题
+   - emittedNodes Map 可在运行时检查完整树结构
 
 5. **TypeScript 类型安全**：
    - Props 类型完整推导
-   - 组件返回类型明确（ComposableNode）
+   - CompositionContext 接口明确
    - IDE 自动补全完善
+
+## 与旧架构的对比（已废弃）
+
+| 维度 | **Emit-based ✅ (当前)** | ~~返回 ComponentNode~~ (已废弃) |
+|------|--------------------------|-------------------------------|
+| 返回类型 | `void` | ~~`ComposableNode / LayoutNode / LeafNode`~~ |
+| 上下文获取 | **显式 `ctx` 参数第一** | ~~隐式 `getCurrentContext()`~~ |
+| 节点创建 | **`ctx.emitLeaf()` / `ctx.startGroup()`** | ~~`return new LayoutNode(...)` / `return new LeafNode(...)`~~ |
+| 树结构 | **Map<NodeId, EmittedNode> 扁平存储** | ~~递归嵌套对象树~~ |
+| 渲染入口 | **`renderEmittedTree(map, rootId)`** | ~~递归遍历 ComponentNode tree~~ |
+| 数据流向 | **单向：组件 → ctx → Map → 渲染器** | ~~双向：组件返回树 → 上层组装~~ |
+
+### 已移除的概念
+
+- ❌ `ComponentNode` / `ComponentBase` 返回类型
+- ❌ `getCurrentContext()` / `getCurrentCompositionContext()` 隐式上下文获取
+- ❌ `"return object"` 组件模型
+- ❌ `ComposableNode = LayoutNode | LeafNode | null` 联合返回
+- ❌ 组件函数返回树结构供上层组装
 
 ## 负面影响与风险
 
 | 风险 | 影响 | 缓解措施 |
 |------|------|---------|
-| React 开发者适应期 | 不熟悉 JSX-less 风格 | 提供迁移指南；API 设计直觉化 |
+| React 开发者适应期 | 不熟悉 emit 模式 + ctx-first | 提供迁移指南；API 设计直觉化 |
 | 深度嵌套缩进多 | 5+ 层嵌套时代码右移严重 | 使用 IDE 自动格式化；提取子组件 |
+| ctx 参数传递冗余 | 每个组件调用都需传入 ctx | TypeScript 类型系统保证正确性；IDE 自动补全 |
 | 无 JSX 语法高亮 | 编辑器可能无法识别自定义 DSL | 开发 VSCode 插件；或接受当前限制 |
-| 尾随 lambda 需要函数重载 | TypeScript 重载可能复杂 | 封装在库内部，用户无感知 |
 
-## 与其他方案的对比
-
-| 维度 | **纯函数调用链 ✅** | JSX-like | Widget Tree |
-|------|-------------------|----------|-------------|
-| 编译时依赖 | ❌ 无需 | ⚠️ 需要 JSX Transform | ❌ 无需 |
-| 虚拟节点 | ❌ 无 | ✅ 有（VDOM） | ⚠️ 轻量 Element |
-| 性能 | ⭐⭐⭐⭐⭐ 最优 | ⭐⭐⭐ 中等 | ⭐⭐⭐⭐ 良好 |
-| 学习曲线（React 开发者） | ⭐⭐⭐ 中等 | ⭐ 极低 | ⭐⭐ 较陡 |
-| 代码简洁性 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ 一般 |
-| 可组合性 | ✅✅ 函数组合 | ✅ JSX 嵌套 | ⚠️ 类继承 |
-| 与 HOC 兼容性 | ✅✅ 完美 | ⚠️ 需适配 | ❌ 冲突 |
-
-## 验证假设
-
-### 前提条件
-1. TypeScript 函数重载可完美实现尾随 lambda 语法
-2. 深度嵌套（5-7 层）时代码可读性仍可接受
-3. IDE 对自定义 DSL 的支持足够好（自动补全、跳转定义）
-
-### 验证方式
-- [ ] **Spike #1**: 实现核心组件 API + 尾随 lambda 语法验证
-  - 测试：Column/Row/Box/Text/Button 的组合使用
-  - 验证：TypeScript 类型推导正确性
-- [ ] **Spike #2**: 复杂 UI 示例实现（如聊天界面、设置页）
-  - 评估：代码可读性和开发效率
-  - 记录：嵌套深度、代码行数、开发时间
-- [ ] **Spike #3**: IDE 集成测试
-  - VSCode 自动补全、错误提示、重构功能
-
-## 可逆性评估
-
-**类别**: 🟢 **高度可逆**
-
-| 指标 | 数值 |
-|------|------|
-| 影响文件数 | ~4 文件（components/api.ts, components/builtins.ts 等） |
-| 影响模块数 | 1 个模块（components） |
-| 数据迁移 | 无（新代码） |
-| API 变更风险 | 低（公共 API 是函数签名，内部实现灵活） |
-
-**回退方案**：
-- 未来如果需要 JSX 支持 → 添加可选的 JSX Transform 层
-- 回退策略：保留函数式 API 作为底层，JSX 作为语法糖
-- 工作量：~3 天 JSX 适配器开发
-- 用户代码可选择任一风格
-
-## 实现约束（来自架构决策）
+## 实现约束
 
 1. **禁止 JSX 语法**：公共 API 不支持 `<Component />` 写法
-2. **必须支持尾随 lambda**：`Column() { Child() }` 必须工作
-3. **返回类型严格**：所有 Composable 函数必须返回 `ComposableNode`（不可返回 undefined）
-4. **Props 类型安全**：必须使用泛型约束 Props 类型
-5. **key 属性支持**：列表渲染时必须支持 `key` 用于 Diff 优化
-6. **条件返回 null**：允许返回 `null` 表示不渲染（条件渲染）
+2. **必须支持尾随 lambda**：`Column(ctx, mod, arr, align, () => { ... })` 必须工作
+3. **必须返回 void**：所有组件函数返回 void，不可返回任何节点对象
+4. **ctx 必须是第一个参数**：`fn(ctx: CompositionContext, ...props)` 签名不可省略 ctx
+5. **必须使用 emit API**：组件内部只能通过 ctx.emitLeaf/startGroup/endGroup 创建节点
+6. **Props 类型安全**：必须使用泛型约束 Props 类型
 
-## 分阶段实现路线图
+## L0 / L1 分层组件架构
 
-| 阶段 | 实现内容 | 目标 | 预计工作量 |
-|------|---------|------|-----------|
-| **Phase 1 (MVP)** | Column/Row/Box/Text/Image + 基础 Modifier | 能构建简单界面 | 2-3 天 |
-| **Phase 2** | Button/TextField/Switch + 交互事件 | 可交互原型 | 2 天 |
-| **Phase 3** | LazyColumn/LazyRow + key 支持 | 虚拟滚动列表 | 2-3 天 |
-| **Phase 4** | Scaffold/Card/Dialog + 复杂组件 | 完整组件库 | 3-4 天 |
-| **Phase 5** | 动画组件 + 过渡效果 | 生产级体验 | 2-3 天 |
+```
+L0 — 原子组件（直接 emit 节点到 ctx）
+├── Text          → ctx.emitLeaf()
+├── Image         → ctx.emitLeaf()
+├── Spacer        → ctx.emitLeaf()
+├── Box           → ctx.startGroup() / ctx.endGroup()
+├── Column        → ctx.startGroup(layoutChildren=columnLayout) / ctx.endGroup()
+├── Row           → ctx.startGroup(layoutChildren=rowLayout) / ctx.endGroup()
+├── Surface       → ctx.startGroup() / ctx.endGroup()
+├── Slider        → ctx.emitLeaf()
+├── Checkbox      → ctx.emitLeaf()
+├── TextField     → ctx.emitLeaf()
+├── CircularProgress → ctx.emitLeaf()
+└── LinearProgress   → ctx.emitLeaf()
+
+L1 — 组合组件（组合 L0 组件，自身也是 void 返回）
+├── Button        → Surface + Text + clickable Modifier
+├── FAB           → Surface + Icon/Text + 圆形裁剪
+├── Snackbar      → Surface + Text + Button
+├── Dialog        → Surface(半透明背景) + content + buttons
+├── TopAppBar     → Row(navigationIcon + title + actions)
+├── BottomNav     → Row(BottomNavItem[])
+├── TabRow        → Surface + Row(Tab[] + indicator)
+└── Scaffold      → topBar + content + bottomBar + snackbarHost
+```
 
 ## 相关文档
 
 - 上游 ADR:
   - [`composable-tracking-runtime-hoc.md`](./composable-tracking-runtime-hoc.md)
   - [`layout-engine-custom-linear-column-row.md`](./layout-engine-custom-linear-column-row.md)
+- 下游文档:
+  - [`rendering-architecture-hybrid-mode.md`](./rendering-architecture-hybrid-mode.md)
+  - [`appcontext-unified-root-architecture.md`](./appcontext-unified-root-architecture.md)
 - 需求文档: [`canvas-ui-runtime.md`](../road-map/canvas-ui-runtime.md)
 
 ## 决策记录
@@ -318,3 +313,4 @@ const MessageList = composable<{ messages: Message[] }>(({ messages }) => {
 | 时间 | 决策者 | 决策内容 |
 |------|--------|---------|
 | 2026-04-30 17:15 | 用户 + AI | 确认采用纯函数调用链模型（Compose 风格），支持尾随 lambda，禁止 JSX |
+| 2026-05-07 00:00 | 用户 + AI | **重大升级**：从"返回 ComponentNode"迁移到"Emit-based + ctx-first + void 返回"模型 |

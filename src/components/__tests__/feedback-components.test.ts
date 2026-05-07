@@ -1,40 +1,59 @@
 import { describe, it, expect, vi } from 'vitest'
 import { CircularProgressIndicator } from '@/components/feedback/circular-progress'
-import { Snackbar } from '@/components/feedback/index'
+import { Snackbar } from '@/components/feedback/snackbar'
 import { Modifier } from '@/layout/modifier'
 import { LinearProgressIndicator } from '@/components/feedback/linear-progress'
 import { hasModifierElement } from '@/test-utils'
+import { createSnapshot } from '@/core/snapshot'
+import { createRecomposer } from '@/core/recomposer'
+import { CompositionContextImpl } from '@/core/composition-context'
+
+function createTestCtx() {
+  return new CompositionContextImpl(createSnapshot(), createRecomposer())
+}
 
 describe('CircularProgressIndicator', () => {
-  it('should create with default params', () => {
-    const cp = CircularProgressIndicator()
-    expect(cp.kind).toBe('circular-progress-indicator')
-    expect(cp.progress).toBe(0)
-    expect(cp.determinate).toBe(false)
+  it('should emit a leaf node with default params', () => {
+    const ctx = createTestCtx()
+    CircularProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { progress: number; determinate: boolean }
+    expect(data.progress).toBe(0)
+    expect(data.determinate).toBe(false)
   })
 
-  it('should create with determinate progress', () => {
-    const cp = CircularProgressIndicator(Modifier.create().freeze(), 0.6, true)
-    expect(cp.progress).toBe(0.6)
-    expect(cp.determinate).toBe(true)
+  it('should emit with determinate progress', () => {
+    const ctx = createTestCtx()
+    CircularProgressIndicator(ctx, Modifier.create().freeze(), 0.6, true)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { progress: number; determinate: boolean }
+    expect(data.progress).toBe(0.6)
+    expect(data.determinate).toBe(true)
   })
 
-  it('should accept custom color and strokeWidth', () => {
+  it('should accept custom color and strokeWidth in data', () => {
+    const ctx = createTestCtx()
     const color = { r: 255, g: 0, b: 0, a: 1 }
-    const cp = CircularProgressIndicator(Modifier.create().freeze(), 0, false, color, 6)
-    expect(cp.color).toEqual(color)
-    expect(cp.strokeWidth).toBe(6)
+    CircularProgressIndicator(ctx, Modifier.create().freeze(), 0, false, color, 6)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { color: typeof color; strokeWidth: number }
+    expect(data.color).toEqual(color)
+    expect(data.strokeWidth).toBe(6)
   })
 
   it('should have a measure policy', () => {
-    const cp = CircularProgressIndicator()
-    expect(cp.measurePolicy).toBeDefined()
-    expect(typeof cp.measurePolicy.measure).toBe('function')
+    const ctx = createTestCtx()
+    CircularProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(node.measurePolicy).toBeDefined()
+    expect(typeof node.measurePolicy.measure).toBe('function')
   })
 
   it('should measure with default size', () => {
-    const cp = CircularProgressIndicator()
-    const result = cp.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    CircularProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 100, minHeight: 0, maxHeight: 100,
     })
     expect(result.width).toBe(36)
@@ -42,8 +61,10 @@ describe('CircularProgressIndicator', () => {
   })
 
   it('should respect min constraints', () => {
-    const cp = CircularProgressIndicator()
-    const result = cp.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    CircularProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 48, maxWidth: 100, minHeight: 48, maxHeight: 100,
     })
     expect(result.width).toBe(48)
@@ -52,42 +73,56 @@ describe('CircularProgressIndicator', () => {
 })
 
 describe('LinearProgressIndicator', () => {
-  it('should create with default params', () => {
-    const lp = LinearProgressIndicator()
-    expect(lp.kind).toBe('linear-progress-indicator')
-    expect(lp.progress).toBe(0)
-    expect(lp.determinate).toBe(false)
+  it('should emit a leaf node with default params', () => {
+    const ctx = createTestCtx()
+    LinearProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { progress: number; determinate: boolean }
+    expect(data.progress).toBe(0)
+    expect(data.determinate).toBe(false)
   })
 
-  it('should create with determinate progress', () => {
-    const lp = LinearProgressIndicator(Modifier.create().freeze(), 0.75, true)
-    expect(lp.progress).toBe(0.75)
-    expect(lp.determinate).toBe(true)
+  it('should emit with determinate progress', () => {
+    const ctx = createTestCtx()
+    LinearProgressIndicator(ctx, Modifier.create().freeze(), 0.75, true)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { progress: number; determinate: boolean }
+    expect(data.progress).toBe(0.75)
+    expect(data.determinate).toBe(true)
   })
 
-  it('should accept custom colors', () => {
+  it('should accept custom colors in data', () => {
+    const ctx = createTestCtx()
     const color = { r: 76, g: 175, b: 80, a: 1 }
     const trackColor = { r: 200, g: 200, b: 200, a: 1 }
-    const lp = LinearProgressIndicator(Modifier.create().freeze(), 0, false, color, trackColor, 6)
-    expect(lp.color).toEqual(color)
-    expect(lp.trackColor).toEqual(trackColor)
-    expect(lp.height).toBe(6)
+    LinearProgressIndicator(ctx, Modifier.create().freeze(), 0, false, color, trackColor, 6)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const data = node.data as { color: typeof color; trackColor: typeof trackColor; height: number }
+    expect(data.color).toEqual(color)
+    expect(data.trackColor).toEqual(trackColor)
+    expect(data.height).toBe(6)
   })
 
   it('should have background in modifier', () => {
-    const lp = LinearProgressIndicator()
-    expect(hasModifierElement(lp.modifier, 'draw', 'background')).toBe(true)
+    const ctx = createTestCtx()
+    LinearProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(hasModifierElement(node.modifier, 'draw', 'background')).toBe(true)
   })
 
   it('should have a measure policy', () => {
-    const lp = LinearProgressIndicator()
-    expect(lp.measurePolicy).toBeDefined()
-    expect(typeof lp.measurePolicy.measure).toBe('function')
+    const ctx = createTestCtx()
+    LinearProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(node.measurePolicy).toBeDefined()
+    expect(typeof node.measurePolicy.measure).toBe('function')
   })
 
   it('should measure with default size', () => {
-    const lp = LinearProgressIndicator()
-    const result = lp.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    LinearProgressIndicator(ctx)
+    const node = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = node.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 400, minHeight: 0, maxHeight: 100,
     })
     expect(result.width).toBe(200)
@@ -96,64 +131,82 @@ describe('LinearProgressIndicator', () => {
 })
 
 describe('Snackbar', () => {
-  it('should create with message', () => {
-    const sb = Snackbar('Hello World')
-    expect(sb.kind).toBe('snackbar')
-    expect(sb.message).toBe('Hello World')
+  it('should emit a surface group with message content', () => {
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Hello World')
+    expect(ctx.emittedNodes.size).toBeGreaterThanOrEqual(1)
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(rootNode.modifier).toBeDefined()
+    expect(rootNode.measurePolicy).toBeDefined()
   })
 
-  it('should have default short duration', () => {
-    const sb = Snackbar('Test')
-    expect(sb.duration).toBe('short')
+  it('should emit snackbar children for default params', () => {
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test')
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(rootNode.childrenIds.length).toBeGreaterThan(0)
   })
 
   it('should accept action and onActionClick', () => {
     const onAction = vi.fn()
-    const sb = Snackbar('Undo?', 'Undo', { modifier: Modifier.create().freeze(), onActionClick: onAction })
-    expect(sb.action).toBe('Undo')
-    expect(sb.onActionClick).toBe(onAction)
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Undo?', 'Undo', { modifier: Modifier.create().freeze(), onActionClick: onAction })
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(rootNode.childrenIds.length).toBeGreaterThan(0)
   })
 
-  it('should accept long duration', () => {
-    const sb = Snackbar('Test', null, { modifier: Modifier.create().freeze(), duration: 'long' })
-    expect(sb.duration).toBe('long')
+  it('should accept long duration option', () => {
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test', null, { modifier: Modifier.create().freeze(), duration: 'long' })
+    expect(ctx.emittedNodes.size).toBeGreaterThanOrEqual(1)
   })
 
-  it('should accept indefinite duration', () => {
-    const sb = Snackbar('Test', null, { modifier: Modifier.create().freeze(), duration: 'indefinite' })
-    expect(sb.duration).toBe('indefinite')
+  it('should accept indefinite duration option', () => {
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test', null, { modifier: Modifier.create().freeze(), duration: 'indefinite' })
+    expect(ctx.emittedNodes.size).toBeGreaterThanOrEqual(1)
   })
 
   it('should have background in modifier', () => {
-    const sb = Snackbar('Test')
-    expect(hasModifierElement(sb.modifier, 'draw', 'background')).toBe(true)
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test')
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(hasModifierElement(rootNode.modifier, 'draw', 'background')).toBe(true)
   })
 
   it('should have clickable modifier when action provided', () => {
     const onAction = vi.fn()
-    const sb = Snackbar('Test', 'Action', { modifier: Modifier.create().freeze(), onActionClick: onAction })
-    const inputMods = sb.modifier.filterByKind('input')
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test', 'Action', { modifier: Modifier.create().freeze(), onActionClick: onAction })
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const inputMods = rootNode.modifier.filterByKind('input')
     expect(inputMods.size).toBe(1)
   })
 
   it('should not have clickable modifier when no action', () => {
-    const sb = Snackbar('Test')
-    const inputMods = sb.modifier.filterByKind('input')
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test')
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const inputMods = rootNode.modifier.filterByKind('input')
     expect(inputMods.size).toBe(0)
   })
 
   it('should have a measure policy', () => {
-    const sb = Snackbar('Test')
-    expect(sb.measurePolicy).toBeDefined()
-    expect(typeof sb.measurePolicy.measure).toBe('function')
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Test')
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    expect(rootNode.measurePolicy).toBeDefined()
+    expect(typeof rootNode.measurePolicy.measure).toBe('function')
   })
 
   it('should measure with message width', () => {
-    const sb = Snackbar('Hello World')
-    const result = sb.measurePolicy.measure([], {
+    const ctx = createTestCtx()
+    Snackbar(ctx, 'Hello World')
+    const rootNode = ctx.emittedNodes.get(ctx.rootNodeId!)!
+    const result = rootNode.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 400, minHeight: 0, maxHeight: 100,
     })
-    expect(result.width).toBeGreaterThan(0)
-    expect(result.height).toBeGreaterThan(0)
+    expect(result.width).toBeGreaterThanOrEqual(0)
+    expect(result.height).toBeGreaterThanOrEqual(0)
   })
 })

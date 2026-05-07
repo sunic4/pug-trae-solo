@@ -100,11 +100,18 @@ interface ComposerContext {
   readonly recomposer: Recomposer
 }
 
-type ComposableFunction<TProps> = (props: TProps, ctx: ComposerContext) => ComposableNode | null
-type ComposableNode = unknown
+interface CompositionContext extends ComposerContext {
+  emitLeaf(data: unknown, modifier: ReadonlyModifier, measurePolicy: MeasurePolicy, drawPolicy: DrawPolicy): void
+  startGroup(data: unknown, modifier: ReadonlyModifier, measurePolicy: MeasurePolicy, drawPolicy?: DrawPolicy, layoutChildren?: (...args: unknown[]) => unknown[]): void
+  endGroup(): void
+  readonly emittedNodes: Map<number, unknown>
+  rootNodeId: number | null
+}
 
-function composable<TProps extends Record<string, unknown>>(
-  fn: (props: TProps, ctx: ComposerContext) => ComposableNode | null
+type ComposableFunction<TProps> = (props: TProps, ctx: ComposerContext) => ComposableNode | null
+
+function composable<TProps>(
+  fn: (ctx: CompositionContext, props: TProps) => void,
 ): ComposableFunction<TProps>
 ```
 

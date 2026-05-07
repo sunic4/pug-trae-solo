@@ -1,12 +1,6 @@
 import { Column } from '@/components/layout/column'
-import type { ColumnComponent } from '@/components/layout/column'
+import type { SurfaceOptions } from '@/components/layout/surface'
 import { Row } from '@/components/layout/row'
-import type { RowComponent } from '@/components/layout/row'
 import { Surface } from '@/components/layout/surface'
-import type { SurfaceComponent } from '@/components/layout/surface'
-export type { ColumnComponent } from '@/components/layout/column'
-export { Column } from '@/components/layout/column'
-export type { RowComponent } from '@/components/layout/row'
-export { Row } from '@/components/layout/row'
-export type { SurfaceComponent } from '@/components/layout/surface'
-export { Surface } from '@/components/layout/surface'
+export type { SurfaceOptions }
+export { Column, Row, Surface }

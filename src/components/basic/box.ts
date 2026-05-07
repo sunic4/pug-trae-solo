@@ -1,38 +1,32 @@
 import { BoxAlignmentMeasurePolicy, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, normalizeModifier } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, ReadonlyModifier } from '@/components/shared/imports'
+import type { ReadonlyModifier } from '@/components/shared/imports'
 import type { Alignment } from '@/layout/types'
-import type { ChildLayout, MeasuredSizeMap, DrawPolicy } from '@/components/basic/types'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { Rect } from '@/renderer/types'
 import { layoutBoxChildren } from '@/components/shared/layout-helpers'
-
-type BoxComponent = {
-  readonly kind: 'box'
-  readonly alignment: Alignment
-  readonly children: readonly ComponentNode[]
-} & ComponentBase
+import type { CompositionContext } from '@/core/composition-context'
 
 function Box(
+  ctx: CompositionContext,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   alignment: Alignment = 'center',
-  children: readonly ComponentNode[] = [],
-): BoxComponent {
+  childrenFn?: () => void,
+): void {
   const mod = normalizeModifier(modifier)
   const measurePolicy = BoxAlignmentMeasurePolicy(alignment)
-  return {
-    kind: 'box',
-    alignment,
-    modifier: mod,
-    children: [...children],
+  ctx.emitNode(
+    { alignment },
+    mod,
     measurePolicy,
-    drawPolicy: NOOP_DRAW_POLICY,
-    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
-      return layoutBoxChildren(this.children, contentArea, measuredSizes, this.alignment)
+    NOOP_DRAW_POLICY,
+    (contentArea: Rect, measuredSizes: MeasuredSizeMap, selfChildrenIds: readonly number[]): ChildLayout[] => {
+      return layoutBoxChildren(selfChildrenIds, contentArea, measuredSizes, alignment)
     },
-    getChildren(): ComponentNode[] {
-      return [...this.children]
-    },
+  )
+  if (childrenFn) {
+    childrenFn()
   }
+  ctx.endGroup()
 }
 
-export type { BoxComponent }
 export { Box }

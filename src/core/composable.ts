@@ -1,22 +1,25 @@
 import type { ComposerContext, ComposableFunction, ComposableNode, MutableState, RecomposeScope } from '@/core/types'
 import { createSnapshot } from '@/core/snapshot'
 import { createRecomposer } from '@/core/recomposer'
+import { CompositionContextImpl } from '@/core/composition-context'
+import type { CompositionContext } from '@/core/composition-context'
 
 function composable<TProps>(
-  fn: (props: TProps, ctx: ComposerContext) => ComposableNode | null,
+  fn: (ctx: CompositionContext, props: TProps) => void,
 ): ComposableFunction<TProps> {
-  return (props: TProps, ctx: ComposerContext): ComposableNode | null => {
+  return (_props: TProps, ctx: ComposerContext): ComposableNode | null => {
+    const compositionCtx = new CompositionContextImpl(ctx.snapshot, ctx.recomposer)
     let scope: RecomposeScope
 
     const readObserver = <T>(state: MutableState<T>): void => {
       scope.addDependency(state.id)
     }
 
-    const composeWithTracking = (): ComposableNode | null => {
-      return ctx.snapshot.withReadObserver(readObserver, () => {
+    const composeWithTracking = (): void => {
+      ctx.snapshot.withReadObserver(readObserver, () => {
         try {
           ctx.recomposer.pushScope(scope)
-          return fn(props, ctx)
+          fn(compositionCtx, _props)
         } finally {
           ctx.recomposer.popScope()
         }
@@ -24,7 +27,9 @@ function composable<TProps>(
     }
 
     scope = ctx.recomposer.createScope(composeWithTracking)
-    return composeWithTracking()
+    composeWithTracking()
+
+    return null
   }
 }
 
@@ -48,3 +53,4 @@ function createAppContext(_options?: AppContextOptions): ComposerContext {
 }
 
 export { composable, sideEffect, createAppContext }
+export type { CompositionContext }

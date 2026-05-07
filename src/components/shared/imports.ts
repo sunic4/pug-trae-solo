@@ -1,5 +1,4 @@
-export type { ComponentBase, ComponentNode } from '@/components/basic/types'
-export { NOOP_DRAW_POLICY, leafGetChildren, leafLayoutChildren } from '@/components/basic/types'
+export { NOOP_DRAW_POLICY } from '@/components/basic/types'
 export { DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth } from '@/components/shared/constants'
 export { defaultTextStyle } from '@/renderer/text-style'
 export { PrimaryColor, OnPrimaryColor } from '@/theme/colors'

@@ -15,7 +15,7 @@ updated: "2026-05-02T10:30"
 
 ## 一句话总结
 
-交互组件统一使用 `children: ComponentNode[]` 作为内容槽，不使用 `label`/`icon` 等专用字符串参数。文本内容由调用方组合 `Text()` 子组件传入。
+交互组件统一使用尾随 lambda `childrenFn?: () => void` 作为内容槽，不使用 `label`/`icon` 等专用字符串参数。文本内容由调用方在 childrenFn 中组合子组件传入。
 
 ## 问题/场景
 
@@ -33,48 +33,48 @@ function FAB(onClick, icon: string, ...): FabComponent           // ❌ 旧：ic
 
 ## 解决方案
 
-所有可容纳子内容的组件统一使用 `children: ComponentNode[]`：
+所有可容纳子内容的组件统一使用尾随 lambda `childrenFn?: () => void`：
 
 ```typescript
-interface ButtonComponent {
-  readonly kind: 'button'
-  readonly modifier: ReadonlyModifier
-  readonly onClick: GestureCallback
-  readonly children: ComponentNode[]          // ✅ content-slot
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-  readonly measurePolicy: MeasurePolicy
-}
+function Button(
+  ctx: CompositionContext,
+  onClick: () => void,
+  modifier?: ReadonlyModifier,
+  childrenFn?: () => void,
+): void
 
-interface FabComponent {
-  readonly kind: 'fab'
-  readonly modifier: ReadonlyModifier
-  readonly onClick: GestureCallback
-  readonly children: ComponentNode[]          // ✅ content-slot
-  readonly backgroundColor: Color
-  readonly contentColor: Color
-  readonly size: number
-  readonly elevation: number
-  readonly measurePolicy: MeasurePolicy
-}
+function FAB(
+  ctx: CompositionContext,
+  onClick: () => void,
+  modifier?: ReadonlyModifier,
+  childrenFn?: () => void,
+): void
 ```
 
 **使用方式**：
 
 ```typescript
-import { Button, FAB, Text } from './components'
 
 // 文本按钮
-Button(onClick, [Text('Save')])
+Button(ctx, handleClick, mod, () => {
+  Text(ctx, 'Save', Modifier.create().freeze());
+});
 
 // 图标按钮（原 IconButton）
-Button(onClick, [Text('🔍')])
+Button(ctx, handleClick, mod, () => {
+  Text(ctx, '🔍', Modifier.create().freeze());
+});
 
 // 图标+文字混合
-Button(onClick, [Text('➕'), Text(' Add')])
+Button(ctx, handleClick, mod, () => {
+  Text(ctx, '➕', Modifier.create().freeze());
+  Text(ctx, ' Add', Modifier.create().freeze());
+});
 
 // FAB
-FAB(onClick, [Text('+')])
+FAB(ctx, handleClick, mod, () => {
+  Text(ctx, '+', Modifier.create().freeze());
+});
 ```
 
 ## 为什么这样做
@@ -104,7 +104,10 @@ function IconButton(icon: string) { ... }       // 本不该存在
 function TextIconButton(icon: string, label: string) { ... }  // 更不该存在
 
 // ✅ 正例：一个 Button 覆盖全部
-function Button(children: ComponentNode[]) { ... }
+function Button(ctx, onClick, modifier, childrenFn?) { ... }
 // 调用方自由组合
-Button(onClick, [Text('📷'), Text(' Upload')])
+Button(ctx, handleClick, mod, () => {
+  Text(ctx, '📷', Modifier.create().freeze());
+  Text(ctx, ' Upload', Modifier.create().freeze());
+});
 ```

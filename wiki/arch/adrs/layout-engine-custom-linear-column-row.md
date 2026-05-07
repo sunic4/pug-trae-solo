@@ -61,37 +61,33 @@ stale: false
 ```typescript
 // ===== 基础布局组件 =====
 
-function Column(options?: {
-  modifier?: Modifier;
-  verticalArrangement?: Arrangement.Vertical; // top/center/bottom/spaceEvenly/spaceBetween
-  horizontalAlignment?: Alignment.Horizontal; // start/center/end
-}, content: () => ComposableNode): ComposableNode;
+function Column(
+  ctx: CompositionContext,
+  modifier?: ReadonlyModifier,
+  arrangement?: Arrangement,
+  alignment?: Alignment,
+  childrenFn?: () => void,
+): void;
 
-function Row(options?: {
-  modifier?: Modifier;
-  horizontalArrangement?: Arrangement.Horizontal; // start/center/end/spaceEvenly/spaceBetween
-  verticalAlignment?: Alignment.Vertical; // top/center/bottom
-}, content: () => ComposableNode): ComposableNode;
+function Row(
+  ctx: CompositionContext,
+  modifier?: ReadonlyModifier,
+  arrangement?: Arrangement,
+  alignment?: Alignment,
+  childrenFn?: () => void,
+): void;
 
 // ===== 使用示例 =====
 
-const MyApp = composable(() => {
-  return Column({
-    modifier: Modifier.fillMaxSize().padding(16),
-    verticalArrangement: Arrangement.spacedBy(10), // 子元素间距
-    horizontalAlignment: Alignment.CenterHorizontally
-  }) {
-    
-    Text({ text: 'Title', fontSize: 24 });
-    
-    Row({
-      horizontalArrangement: Arrangement.SpaceBetween,
-      modifier: Modifier.fillMaxWidth()
-    }) {
-      Button({ text: 'Cancel' });
-      Button({ text: 'OK', modifier: Modifier.primary() });
-    };
-  };
+const MyApp = composable<Record<string, never>>((ctx) => {
+  Column(ctx, Modifier.create().fillMaxSize().padding(16).freeze(), 'spacedBy(10)', 'center', () => {
+    Text(ctx, 'Title', Modifier.create().freeze(), { fontSize: 24 });
+
+    Row(ctx, Modifier.create().fillMaxWidth().freeze(), 'spaceBetween', 'center', () => {
+      Button(ctx, 'Cancel', () => {});
+      Button(ctx, 'OK', () => {}, Modifier.create().primary().freeze());
+    });
+  });
 });
 ```
 
@@ -231,26 +227,14 @@ const Modifier = {
 
 // ===== 使用权重示例 =====
 
-Column() {
-  // Header: 固定高度
-  Text({ 
-    text: 'Header', 
-    modifier: Modifier.height(56).fillMaxWidth() 
-  });
-  
-  // Content: 占据剩余空间
-  Box({
-    modifier: Modifier.weight(1f).fillMaxWidth()
-  }) {
-    // 可滚动内容...
-  };
-  
-  // Footer: 固定高度
-  Text({ 
-    text: 'Footer', 
-    modifier: Modifier.height(48).fillMaxWidth() 
-  });
-};
+Column(ctx, Modifier.create().freeze(), 'spacedBy(8)', 'start', () => {
+  Text(ctx, 'Header', Modifier.create().height(56).fillMaxWidth().freeze());
+
+  Box(ctx, () => {
+  }, Modifier.create().weight(1).fillMaxWidth().freeze());
+
+  Text(ctx, 'Footer', Modifier.create().height(48).fillMaxWidth().freeze());
+});
 ```
 
 ## 正面影响

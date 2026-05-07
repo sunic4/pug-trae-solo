@@ -57,7 +57,7 @@ NavHost(navController, navGraph) {
 ```typescript
 interface NavDestination {
   readonly route: string
-  readonly content: ComponentNode[]
+  readonly content: ComposableFunction<Record<string, never>> | null
 }
 
 interface NavGraph {

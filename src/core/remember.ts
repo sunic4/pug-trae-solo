@@ -1,4 +1,4 @@
-import type { ComposerContext } from '@/core/types'
+import type { CompositionContext } from '@/core/composition-context'
 
 type RememberKey = string | number | boolean | null | undefined
 
@@ -11,7 +11,7 @@ function isRememberCache<T>(value: object): value is RememberCache<T> {
   return 'value' in value && 'keys' in value
 }
 
-function remember<T>(ctx: ComposerContext, calculation: () => T, keys?: readonly RememberKey[]): T {
+function remember<T>(ctx: CompositionContext, calculation: () => T, keys?: readonly RememberKey[]): T {
   const scope = ctx.recomposer.currentScope
 
   if (!scope) {
