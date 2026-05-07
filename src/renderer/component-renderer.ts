@@ -57,25 +57,40 @@ function applySizeModifiers(
     if (el.kind !== 'layout') continue
 
     if (el.name === 'size') {
-      const sizeEl = el as SizeElement
-      result.width = sizeEl.width
-      result.height = sizeEl.height
+      const sizeEl = modifier.findSizeElement()
+      if (sizeEl) {
+        result.width = sizeEl.width
+        result.height = sizeEl.height
+      }
     } else if (el.name === 'width') {
-      const widthEl = el as WidthElement
-      result.width = widthEl.value
+      const widthEl = modifier.findWidthElement()
+      if (widthEl) {
+        result.width = widthEl.value
+      }
     } else if (el.name === 'height') {
-      const heightEl = el as HeightElement
-      result.height = heightEl.value
+      const heightEl = modifier.findHeightElement()
+      if (heightEl) {
+        result.height = heightEl.value
+      }
     } else if (el.name === 'fillMaxSize') {
-      const fraction = (el as FillMaxSizeElement).fraction
-      result.width = Math.max(result.width, availableWidth * fraction)
-      result.height = Math.max(result.height, availableHeight * fraction)
+      const fillEl = modifier.findFillMaxSizeElement()
+      if (fillEl) {
+        const fraction = fillEl.fraction
+        result.width = Math.max(result.width, availableWidth * fraction)
+        result.height = Math.max(result.height, availableHeight * fraction)
+      }
     } else if (el.name === 'fillMaxWidth') {
-      const fraction = (el as FillMaxWidthElement).fraction
-      result.width = Math.max(result.width, availableWidth * fraction)
+      const fillEl = modifier.findFillMaxWidthElement()
+      if (fillEl) {
+        const fraction = fillEl.fraction
+        result.width = Math.max(result.width, availableWidth * fraction)
+      }
     } else if (el.name === 'fillMaxHeight') {
-      const fraction = (el as FillMaxHeightElement).fraction
-      result.height = Math.max(result.height, availableHeight * fraction)
+      const fillEl = modifier.findFillMaxHeightElement()
+      if (fillEl) {
+        const fraction = fillEl.fraction
+        result.height = Math.max(result.height, availableHeight * fraction)
+      }
     }
   }
 

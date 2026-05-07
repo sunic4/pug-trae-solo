@@ -161,6 +161,12 @@ interface ReadonlyModifier {
   findPadding(): PaddingElement | null
   findBackgrounds(): readonly BackgroundElement[]
   findShadows(): readonly ShadowElement[]
+  findSizeElement(): SizeElement | null
+  findWidthElement(): WidthElement | null
+  findHeightElement(): HeightElement | null
+  findFillMaxSizeElement(): FillMaxSizeElement | null
+  findFillMaxWidthElement(): FillMaxWidthElement | null
+  findFillMaxHeightElement(): FillMaxHeightElement | null
 }
 
 function createPadding(left: number, top: number, right: number, bottom: number): PaddingElement {
@@ -371,6 +377,60 @@ class Modifier implements ReadonlyModifier {
       }
     }
     return result
+  }
+
+  findSizeElement(): SizeElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'size') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findWidthElement(): WidthElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'width') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findHeightElement(): HeightElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'height') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findFillMaxSizeElement(): FillMaxSizeElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'fillMaxSize') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findFillMaxWidthElement(): FillMaxWidthElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'fillMaxWidth') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findFillMaxHeightElement(): FillMaxHeightElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'fillMaxHeight') {
+        return el
+      }
+    }
+    return null
   }
 }
 

@@ -8,7 +8,6 @@
 - 必须消除内联 import
 - 统一 `@/` 作为根目录导入
 - 确保功能完整，精简代码
-- 规范测试代码（单元 65-80% + 集成 15-25% + E2E 5-10%）
 - 必须消除重复功能的组件，要求单一职责
 
 ## 涉及范围
@@ -22,12 +21,7 @@
 1. 停止所有服务：`npx kill-port 3000`
 2. 启动 dev server：`npm run dev`（端口 3000）
 3. 运行全部 Playwright E2E 测试：`npx playwright test --reporter=list`
-4. **逐页查看所有截图**，识别渲染问题：
-   - `tests/screenshots/example-app.png` — 首页
-   - `tests/screenshots/complete-interaction.png` — 交互页
-   - `tests/screenshots/complete-layout.png` — 布局页
-   - `tests/screenshots/complete-feedback.png` — 反馈页
-   - `tests/screenshots/complete-list.png` — 列表页
+4. **逐页查看所有截图**
 5. 修复问题后回到步骤 3，直到**所有页面截图均符合预期**
 
 > 按 check 流程识别并修复所有渲染问题。
