@@ -1,5 +1,19 @@
-import { Modifier, DEFAULT_MODIFIER, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
 import type { ComponentBase, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawScope, Rect } from '@/renderer/types'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+
+function dropdownMenuDrawPolicy(items: readonly DropdownMenuItem[], itemColor: Color, disabledColor: Color): DrawPolicy {
+  return (scope: DrawScope, bounds: Rect): void => {
+    const itemHeight = 48
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!
+      const y = bounds.y + i * itemHeight
+      const color = item.enabled === false ? disabledColor : itemColor
+      scope.fillText(item.label, { x: bounds.x + 16, y: y + 28 }, color, 14)
+    }
+  }
+}
 
 interface DropdownMenuItem {
   readonly label: string
@@ -48,7 +62,8 @@ function DropdownMenu(
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   backgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 },
 ): DropdownMenuComponent {
-  const menuModifier = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const menuModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor, 8)
     .freeze()
   const measurePolicy = dropdownMenuMeasurePolicy(items)
@@ -60,6 +75,9 @@ function DropdownMenu(
     onDismissRequest,
     backgroundColor,
     measurePolicy,
+    drawPolicy: dropdownMenuDrawPolicy(items, { r: 33, g: 33, b: 33, a: 1 }, { r: 158, g: 158, b: 158, a: 1 }),
+    getChildren: leafGetChildren,
+    layoutChildren: leafLayoutChildren,
   }
 }
 

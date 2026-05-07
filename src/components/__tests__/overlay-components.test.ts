@@ -10,24 +10,29 @@ import { hasModifierElement } from '@/test-utils'
 describe('Dialog', () => {
   it('should create a dialog with title', () => {
     const onDismiss = vi.fn()
-    const dialog = Dialog(onDismiss, 'Confirm')
+    const dialog = Dialog({ title: 'Confirm', onDismiss })
     expect(dialog.kind).toBe('dialog')
     expect(dialog.title).toBe('Confirm')
   })
 
   it('should accept content', () => {
     const onDismiss = vi.fn()
-    const dialog = Dialog(onDismiss, 'Title', [Text('Body text')])
+    const dialog = Dialog({ title: 'Title', onDismiss, content: [Text('Body text')] })
     expect(dialog.content.length).toBe(1)
   })
 
   it('should accept buttons', () => {
     const onDismiss = vi.fn()
     const onConfirm = vi.fn()
-    const dialog = Dialog(onDismiss, 'Title', [], [
-      { label: 'Cancel', onClick: onDismiss },
-      { label: 'OK', onClick: onConfirm },
-    ])
+    const dialog = Dialog({
+      title: 'Title',
+      onDismiss,
+      content: [],
+      buttons: [
+        { label: 'Cancel', onClick: onDismiss },
+        { label: 'OK', onClick: onConfirm },
+      ],
+    })
     expect(dialog.buttons.length).toBe(2)
     expect(dialog.buttons[0]!.label).toBe('Cancel')
     expect(dialog.buttons[1]!.label).toBe('OK')
@@ -35,20 +40,20 @@ describe('Dialog', () => {
 
   it('should have background in modifier', () => {
     const onDismiss = vi.fn()
-    const dialog = Dialog(onDismiss, 'Title')
+    const dialog = Dialog({ title: 'Title', onDismiss })
     expect(hasModifierElement(dialog.modifier, 'draw', 'background')).toBe(true)
   })
 
   it('should have a measure policy', () => {
     const onDismiss = vi.fn()
-    const dialog = Dialog(onDismiss, 'Title')
+    const dialog = Dialog({ title: 'Title', onDismiss })
     expect(dialog.measurePolicy).toBeDefined()
     expect(typeof dialog.measurePolicy.measure).toBe('function')
   })
 
   it('should measure with min width', () => {
     const onDismiss = vi.fn()
-    const dialog = Dialog(onDismiss, 'Title')
+    const dialog = Dialog({ title: 'Title', onDismiss })
     const result = dialog.measurePolicy.measure([], {
       minWidth: 0, maxWidth: 600, minHeight: 0, maxHeight: 800,
     })

@@ -1,8 +1,23 @@
-import type { TextStyle, Color } from '@/renderer/types'
+import type { TextStyle, Color, DrawScope, Rect } from '@/renderer/types'
 import { BackgroundColor, PrimaryColor } from '@/theme/colors'
 import { defaultTextStyle } from '@/renderer/text-style'
-import { Modifier, DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
 import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+
+function textFieldDrawPolicy(value: string, placeholder: string, textStyle: TextStyle, cursorColor: Color): DrawPolicy {
+  return (scope: DrawScope, bounds: Rect): void => {
+    const displayText = value || placeholder
+    const textColor = value ? textStyle.color : { r: 158, g: 158, b: 158, a: 1 }
+    if (displayText.length > 0) {
+      scope.fillText(displayText, { x: bounds.x + 16, y: bounds.y + textStyle.fontSize + 8 }, textColor, textStyle.fontSize)
+    }
+    scope.fillRect(
+      { x: bounds.x, y: bounds.y + bounds.height - 2, width: bounds.width, height: 2 },
+      cursorColor,
+    )
+  }
+}
 
 type TextFieldComponent = {
   readonly kind: 'text-field'
@@ -57,7 +72,8 @@ function TextField(
   backgroundColor: Color = BackgroundColor,
   cursorColor: Color = PrimaryColor,
 ): TextFieldComponent {
-  const textFieldModifier = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const textFieldModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor, 4)
     .freeze()
   const measurePolicy = textFieldMeasurePolicy(value, placeholder, singleLine, textStyle)
@@ -72,6 +88,9 @@ function TextField(
     backgroundColor,
     cursorColor,
     measurePolicy,
+    drawPolicy: textFieldDrawPolicy(value, placeholder, textStyle, cursorColor),
+    layoutChildren: leafLayoutChildren,
+    getChildren: leafGetChildren,
   }
 }
 

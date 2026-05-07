@@ -1,20 +1,14 @@
-import type { SurfaceComponent } from '@/components/layout/surface'
-import { DEFAULT_MODIFIER } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, ReadonlyModifier } from '@/components/shared/imports'
-import type { Alignment } from '@/layout/types'
+import type { SurfaceComponent, SurfaceOptions } from '@/components/layout/surface'
 import { Surface } from '@/components/layout/surface'
+import type { ComponentNode } from '@/components/basic/types'
 
 type CardComponent = Omit<SurfaceComponent, 'kind'> & { readonly kind: 'card' }
 
 function Card(
-  modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-  color: Color = { r: 255, g: 255, b: 255, a: 1 },
-  elevation: number = 1,
-  borderRadius: number = 8,
-  alignment: Alignment = 'start',
   children: ComponentNode[] = [],
+  options: SurfaceOptions = {},
 ): CardComponent {
-  const surface = Surface(modifier, color, elevation, borderRadius, alignment, children)
+  const surface = Surface(children, { ...options, elevation: options.elevation ?? 1, borderRadius: options.borderRadius ?? 8 })
   return { ...surface, kind: 'card' }
 }
 

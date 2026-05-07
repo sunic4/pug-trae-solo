@@ -85,6 +85,9 @@ function executePathCommands(ctx: DrawContext, path: VectorPath): void {
       case 'arcTo':
         ctx.arcTo(a[0]!, a[1]!, a[2]!, a[3]!, a[4]!)
         break
+      case 'arc':
+        ctx.arc(a[0]!, a[1]!, a[2]!, a[3]!, a[4]!, a[5] !== 0)
+        break
       case 'closePath':
         ctx.closePath()
         break

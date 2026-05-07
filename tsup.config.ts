@@ -9,7 +9,9 @@ export default defineConfig({
   sourcemap: true,
   minify: false,
   target: 'es2022',
-  alias: {
-    '@': path.resolve(__dirname, 'src'),
+  esbuildOptions(options) {
+    options.alias = {
+      '@': path.resolve(__dirname, 'src'),
+    }
   },
 })

@@ -33,6 +33,7 @@ type PathCommandType =
   | 'quadraticCurveTo'
   | 'bezierCurveTo'
   | 'arcTo'
+  | 'arc'
   | 'closePath'
 
 type BlendMode =
@@ -446,6 +447,8 @@ interface TextMeasurer {
   measure(text: string, style: TextStyle, maxWidth?: number): TextLayoutResult
 }
 
+type DrawPolicy = (scope: DrawScope, bounds: Rect) => void
+
 function colorToString(c: Color): string {
   return `rgba(${c.r},${c.g},${c.b},${c.a})`
 }
@@ -510,6 +513,7 @@ export type {
   BatchStrokeCommand,
   BatchTextCommand,
   DrawScope,
+  DrawPolicy,
   CanvasHost,
   LayerNode,
   LayerTree,

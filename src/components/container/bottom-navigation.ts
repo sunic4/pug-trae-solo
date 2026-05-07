@@ -1,8 +1,22 @@
-import { Modifier, createShadow, DEFAULT_MODIFIER } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, ReadonlyModifier } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, createShadow, createMeasurePolicy, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
+import type { ComponentBase, ComponentNode, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawScope, Rect } from '@/renderer/types'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import { PrimaryColor } from '@/theme/colors'
 import { EqualSplitMeasurePolicy } from '@/components/shared/equal-split-measure-policy'
 import type { SelectableItem } from '@/components/shared/selectable-item'
+
+function bottomNavDrawPolicy(items: readonly BottomNavItem[], selectedColor: Color, unselectedColor: Color): DrawPolicy {
+  return (scope: DrawScope, bounds: Rect): void => {
+    const itemWidth = bounds.width / items.length
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!
+      const ix = bounds.x + itemWidth * i
+      const color = item.selected ? selectedColor : unselectedColor
+      scope.fillText(item.label, { x: ix + itemWidth / 2 - 20, y: bounds.y + 36 }, color, 12)
+    }
+  }
+}
 
 type BottomNavItem = SelectableItem
 
@@ -25,7 +39,8 @@ function BottomNavigation(
   selectedItemColor: Color = PrimaryColor,
   children: ComponentNode[] = [],
 ): BottomNavigationComponent {
-  const bottomNavModifier = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const bottomNavModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor)
     .then(createShadow(8))
     .freeze()
@@ -40,6 +55,9 @@ function BottomNavigation(
     selectedItemColor,
     children,
     measurePolicy,
+    drawPolicy: bottomNavDrawPolicy(items, selectedItemColor, contentColor),
+    layoutChildren: leafLayoutChildren,
+    getChildren: leafGetChildren,
   }
 }
 

@@ -1,14 +1,20 @@
 import { defineConfig } from 'vite'
-import path from 'path'
+import { resolve } from 'path'
 
 export default defineConfig({
-  root: '.',
+  root: 'example',
+  publicDir: false,
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      '@': resolve(__dirname, 'src'),
     },
   },
+  server: {
+    port: 3000,
+    open: false,
+  },
   build: {
-    outDir: 'dist',
+    outDir: '../dist-example',
+    emptyOutDir: true,
   },
 })

@@ -7,12 +7,7 @@ class TestSnapshot implements Snapshot {
   parent: Snapshot | null = null
   readCount = 0
   writeCount = 0
-  private _lastWriteValue: { value: unknown } | null = null
   private _nextId: StateId = 0
-
-  getLastWriteValue<T>(): T | null {
-    return this._lastWriteValue?.value as T | null ?? null
-  }
 
   read<E>(state: MutableState<E>): E {
     this.readCount++
@@ -22,9 +17,8 @@ class TestSnapshot implements Snapshot {
     throw new Error('TestSnapshot.read: state is not a MutableStateImpl')
   }
 
-  write<E>(_state: MutableState<E>, value: E): void {
+  write<E>(_state: MutableState<E>, _value: E): void {
     this.writeCount++
-    this._lastWriteValue = { value }
   }
 
   resolveValue<E>(state: MutableState<E>): E {
@@ -78,7 +72,7 @@ describe('MutableState', () => {
       const state = mutableStateOf(0, snapshot)
       state.value = 1
       expect(snapshot.writeCount).toBe(1)
-      expect(snapshot.getLastWriteValue<number>()).toBe(1)
+      expect(state.value).toBe(1)
     })
   })
 

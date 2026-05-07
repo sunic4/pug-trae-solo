@@ -1,9 +1,32 @@
-import { ConstrainedMeasurePolicy, Modifier, DEFAULT_MODIFIER } from '@/components/shared/imports'
+import { ConstrainedMeasurePolicy, Modifier, DEFAULT_MODIFIER, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
 import type { ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
-import type { Color } from '@/renderer/types'
+import type { Color, DrawScope, Rect } from '@/renderer/types'
 import { PrimaryColor } from '@/theme/colors'
 import type { GestureCallback } from '@/input/gesture-recognizer'
 import { clickable } from '@/input/gesture-modifier'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap, ComponentNode } from '@/components/basic/types'
+
+function checkboxDrawPolicy(checked: boolean, checkmarkColor: Color): DrawPolicy {
+  return (scope: DrawScope, bounds: Rect): void => {
+    if (checked) {
+      const size = Math.min(bounds.width, bounds.height)
+      const ox = bounds.x + (bounds.width - size) / 2
+      const oy = bounds.y + (bounds.height - size) / 2
+      scope.drawLine(
+        { x: ox + size * 0.2, y: oy + size * 0.5 },
+        { x: ox + size * 0.4, y: oy + size * 0.7 },
+        checkmarkColor,
+        2.5,
+      )
+      scope.drawLine(
+        { x: ox + size * 0.4, y: oy + size * 0.7 },
+        { x: ox + size * 0.75, y: oy + size * 0.3 },
+        checkmarkColor,
+        2.5,
+      )
+    }
+  }
+}
 
 type CheckboxComponent = {
   readonly kind: 'checkbox'
@@ -25,7 +48,8 @@ function Checkbox(
   const onClick: GestureCallback = () => {
     onCheckedChange(!checked)
   }
-  const modWithClick = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const modWithClick = Modifier.extendFrom(normalizedMod)
     .then(clickable(onClick))
     .background(checked ? checkedColor : uncheckedColor, 4)
     .freeze()
@@ -39,6 +63,9 @@ function Checkbox(
     uncheckedColor,
     checkmarkColor,
     measurePolicy,
+    drawPolicy: checkboxDrawPolicy(checked, checkmarkColor),
+    layoutChildren: leafLayoutChildren,
+    getChildren: leafGetChildren,
   }
 }
 

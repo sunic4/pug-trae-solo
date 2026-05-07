@@ -23,6 +23,8 @@ export { composable, sideEffect, createAppContext } from '@/core/composable'
 export { remember } from '@/core/remember'
 export { derivedStateOf } from '@/core/derived-state'
 
+export { setContent } from '@/app-host'
+
 export type { IdGenerator } from '@/core/id-generator'
 export { createIdGenerator } from '@/core/id-generator'
 
@@ -52,6 +54,8 @@ export type {
 
 export { createDrawScope } from '@/renderer/draw-scope'
 export { createCanvasHost } from '@/renderer/canvas-host'
+export { renderComponentTree } from '@/renderer/component-renderer'
+export { NOOP_DRAW_POLICY } from '@/components/basic/types'
 export { createVectorPathBuilder } from '@/renderer/path'
 export { createLayerNode, createLayerTree } from '@/renderer/layer'
 export { createDirtyRegion, mergeRects } from '@/renderer/dirty-region'
@@ -289,7 +293,7 @@ export {
 } from '@/input/keyboard'
 
 export type { BoxComponent } from '@/components/basic/box'
-export type { ComponentBase, ComponentNode } from '@/components/basic/types'
+export type { ComponentBase, ComponentNode, DrawPolicy } from '@/components/basic/types'
 export { Box } from '@/components/basic/box'
 export type { TextComponent } from '@/components/basic/text'
 export { Text } from '@/components/basic/text'
@@ -374,8 +378,6 @@ export {
 export type { NavDestination, NavGraph, NavController, NavHostComponent } from '@/components/navigation/nav-controller'
 export { createNavGraph, createNavController, NavHost, MAX_BACK_STACK_SIZE } from '@/components/navigation/nav-controller'
 
-export type { CardComponent } from '@/components/container/card'
-export { Card } from '@/components/container/card'
 export type { ScaffoldComponent } from '@/components/container/scaffold'
 export { Scaffold } from '@/components/container/scaffold'
 export type { TopAppBarComponent } from '@/components/container/top-app-bar'

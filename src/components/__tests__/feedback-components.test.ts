@@ -109,18 +109,18 @@ describe('Snackbar', () => {
 
   it('should accept action and onActionClick', () => {
     const onAction = vi.fn()
-    const sb = Snackbar('Undo?', Modifier.create().freeze(), 'Undo', onAction)
+    const sb = Snackbar('Undo?', 'Undo', { modifier: Modifier.create().freeze(), onActionClick: onAction })
     expect(sb.action).toBe('Undo')
     expect(sb.onActionClick).toBe(onAction)
   })
 
   it('should accept long duration', () => {
-    const sb = Snackbar('Test', Modifier.create().freeze(), null, null, 'long')
+    const sb = Snackbar('Test', null, { modifier: Modifier.create().freeze(), duration: 'long' })
     expect(sb.duration).toBe('long')
   })
 
   it('should accept indefinite duration', () => {
-    const sb = Snackbar('Test', Modifier.create().freeze(), null, null, 'indefinite')
+    const sb = Snackbar('Test', null, { modifier: Modifier.create().freeze(), duration: 'indefinite' })
     expect(sb.duration).toBe('indefinite')
   })
 
@@ -131,7 +131,7 @@ describe('Snackbar', () => {
 
   it('should have clickable modifier when action provided', () => {
     const onAction = vi.fn()
-    const sb = Snackbar('Test', Modifier.create().freeze(), 'Action', onAction)
+    const sb = Snackbar('Test', 'Action', { modifier: Modifier.create().freeze(), onActionClick: onAction })
     const inputMods = sb.modifier.filterByKind('input')
     expect(inputMods.size).toBe(1)
   })

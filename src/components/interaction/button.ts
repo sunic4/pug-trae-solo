@@ -1,10 +1,11 @@
-import { BoxAlignmentMeasurePolicy } from '@/components/shared/measure-policies'
-import { Modifier, DEFAULT_MODIFIER } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, ReadonlyModifier } from '@/components/shared/imports'
+import { BoxAlignmentMeasurePolicy, Modifier, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, OnPrimaryColor, PrimaryColor, defaultTextStyle, normalizeModifier } from '@/components/shared/imports'
+import type { ComponentBase, ComponentNode, ReadonlyModifier, Color } from '@/components/shared/imports'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { GestureCallback } from '@/input/gesture-recognizer'
-import type { Color } from '@/renderer/types'
-import { PrimaryColor, OnPrimaryColor } from '@/theme/colors'
+import type { Rect } from '@/renderer/types'
 import { clickable } from '@/input/gesture-modifier'
+import { layoutBoxChildren } from '@/components/shared/layout-helpers'
+import { Text } from '@/components/basic/text'
 
 type ButtonComponent = {
   readonly kind: 'button'
@@ -14,28 +15,54 @@ type ButtonComponent = {
   readonly contentColor: Color
 } & ComponentBase
 
+type ButtonOptions = {
+  readonly modifier?: ReadonlyModifier
+  readonly backgroundColor?: Color
+  readonly contentColor?: Color
+}
+
+function resolveChildren(content: string | readonly ComponentNode[]): readonly ComponentNode[] {
+  if (typeof content === 'string') {
+    return [Text(content, DEFAULT_MODIFIER, { ...defaultTextStyle(), color: OnPrimaryColor })]
+  }
+  return [...content]
+}
+
 function Button(
   onClick: GestureCallback,
-  children: readonly ComponentNode[] = [],
-  modifier: ReadonlyModifier = DEFAULT_MODIFIER,
-  backgroundColor: Color = PrimaryColor,
-  contentColor: Color = OnPrimaryColor,
+  content: string | readonly ComponentNode[] = [],
+  options: ButtonOptions = {},
 ): ButtonComponent {
-  const modWithClick = Modifier.extendFrom(modifier)
+  const {
+    modifier = DEFAULT_MODIFIER,
+    backgroundColor = PrimaryColor,
+    contentColor = OnPrimaryColor,
+  } = options
+  const children = resolveChildren(content)
+  const normalizedModifier = normalizeModifier(modifier)
+  const modWithClick = Modifier.extendFrom(normalizedModifier)
     .then(clickable(onClick))
-    .background(backgroundColor)
+    .padding(16, 8)
+    .background(backgroundColor, 8)
     .freeze()
   const measurePolicy = BoxAlignmentMeasurePolicy('center')
   return {
     kind: 'button',
     modifier: modWithClick,
     onClick,
-    children: [...children],
+    children,
     backgroundColor,
     contentColor,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return layoutBoxChildren(this.children, contentArea, measuredSizes, 'center')
+    },
+    getChildren(): ComponentNode[] {
+      return [...this.children]
+    },
   }
 }
 
-export type { ButtonComponent }
+export type { ButtonComponent, ButtonOptions }
 export { Button }

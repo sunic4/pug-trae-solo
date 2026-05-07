@@ -1,9 +1,12 @@
-import type { ComponentBase, ComponentNode } from '@/components/basic/types'
-import { DEFAULT_MODIFIER } from '@/components/shared/constants'
+import type { ComponentBase, ComponentNode, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import { DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
 import type { ReadonlyModifier } from '@/layout/modifier'
 import type { MeasurePolicy, Measurable, Constraints, MeasureResult } from '@/layout/types'
 import { createMeasureResult } from '@/layout/measure'
 import { createMeasurePolicy } from '@/layout/simple-measure-policy'
+import { NOOP_DRAW_POLICY } from '@/components/basic/types'
+import type { Rect } from '@/renderer/types'
+import { layoutColumnChildren } from '@/components/shared/layout-helpers'
 
 interface NavDestination {
   readonly route: string
@@ -128,14 +131,22 @@ function NavHost(
   navGraph: NavGraph,
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
 ): NavHostComponent {
+  const mod = normalizeModifier(modifier)
   const currentDestination = navGraph.findDestination(navController.currentRoute)
   return {
     kind: 'nav-host',
     navController,
     navGraph,
-    modifier,
+    modifier: mod,
     currentDestination,
     measurePolicy: navHostMeasurePolicy(),
+    drawPolicy: NOOP_DRAW_POLICY,
+    getChildren(): ComponentNode[] {
+      return this.currentDestination?.content ?? []
+    },
+    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return layoutColumnChildren(this.getChildren(), contentArea, measuredSizes, 'start')
+    },
   }
 }
 

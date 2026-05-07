@@ -1,5 +1,13 @@
-import { Modifier, createShadow, DEFAULT_MODIFIER, textPixelWidth, createMeasurePolicy, constrainWidth, createMeasureResult } from '@/components/shared/imports'
-import type { ComponentBase, ComponentNode, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, createShadow, LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, textPixelWidth, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
+import type { MeasurePolicy, Measurable, Constraints, MeasureResult, ComponentBase, ComponentNode, Color, ReadonlyModifier } from '@/components/shared/imports'
+import type { DrawScope, Rect } from '@/renderer/types'
+import type { DrawPolicy, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+
+function topAppBarDrawPolicy(title: string, titleColor: Color): DrawPolicy {
+  return (scope: DrawScope, bounds: Rect): void => {
+    scope.fillText(title, { x: bounds.x + 16, y: bounds.y + 16 + DEFAULT_FONT_SIZE }, titleColor, DEFAULT_FONT_SIZE)
+  }
+}
 
 type TopAppBarComponent = {
   readonly kind: 'top-app-bar'
@@ -41,7 +49,8 @@ function TopAppBar(
   contentColor: Color = { r: 33, g: 33, b: 33, a: 1 },
   elevation: number = 0,
 ): TopAppBarComponent {
-  const builder = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const builder = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor)
   if (elevation > 0) {
     builder.then(createShadow(elevation))
@@ -58,6 +67,9 @@ function TopAppBar(
     contentColor,
     elevation,
     measurePolicy,
+    drawPolicy: topAppBarDrawPolicy(title, contentColor),
+    layoutChildren: leafLayoutChildren,
+    getChildren: leafGetChildren,
   }
 }
 

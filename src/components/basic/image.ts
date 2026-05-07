@@ -1,5 +1,5 @@
 import type { NinePatchConfig } from '@/renderer/image-loader'
-import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER } from '@/components/shared/imports'
+import { ConstrainedMeasurePolicy, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, leafGetChildren, leafLayoutChildren, normalizeModifier } from '@/components/shared/imports'
 import type { ComponentBase, ReadonlyModifier } from '@/components/shared/imports'
 
 type ImageComponent = {
@@ -17,15 +17,19 @@ function Image(
   modifier: ReadonlyModifier = DEFAULT_MODIFIER,
   ninePatch: NinePatchConfig | null = null,
 ): ImageComponent {
+  const mod = normalizeModifier(modifier)
   const measurePolicy = ConstrainedMeasurePolicy(width, height)
   return {
     kind: 'image',
-    modifier,
+    modifier: mod,
     src,
     width,
     height,
     ninePatch,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    layoutChildren: leafLayoutChildren,
+    getChildren: leafGetChildren,
   }
 }
 

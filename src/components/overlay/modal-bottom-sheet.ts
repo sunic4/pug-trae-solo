@@ -1,5 +1,8 @@
-import { Modifier, DEFAULT_MODIFIER, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult } from '@/components/shared/imports'
+import { Modifier, DEFAULT_MODIFIER, createMeasurePolicy, constrainWidth, constrainHeight, createMeasureResult, NOOP_DRAW_POLICY, normalizeModifier } from '@/components/shared/imports'
 import type { ComponentBase, ComponentNode, Color, MeasurePolicy, Measurable, Constraints, MeasureResult, ReadonlyModifier } from '@/components/shared/imports'
+import type { Rect } from '@/renderer/types'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
+import { layoutBoxChildren } from '@/components/shared/layout-helpers'
 
 type ModalBottomSheetComponent = {
   readonly kind: 'modal-bottom-sheet'
@@ -32,7 +35,8 @@ function ModalBottomSheet(
   peekHeight: number = 200,
   backgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 },
 ): ModalBottomSheetComponent {
-  const sheetModifier = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const sheetModifier = Modifier.extendFrom(normalizedMod)
     .background(backgroundColor, 16)
     .freeze()
   const measurePolicy = modalBottomSheetMeasurePolicy(peekHeight)
@@ -44,6 +48,13 @@ function ModalBottomSheet(
     peekHeight,
     backgroundColor,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    getChildren(): ComponentNode[] {
+      return this.content
+    },
+    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return layoutBoxChildren(this.content, contentArea, measuredSizes, 'center')
+    },
   }
 }
 

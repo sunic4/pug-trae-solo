@@ -25,7 +25,7 @@ describe('Button', () => {
     const onClick = vi.fn()
     const customBg = { r: 255, g: 0, b: 0, a: 1 }
     const customContent = { r: 255, g: 255, b: 255, a: 1 }
-    const button = Button(onClick, [Text('Test')], Modifier.create().freeze(), customBg, customContent)
+    const button = Button(onClick, [Text('Test')], { modifier: Modifier.create().freeze(), backgroundColor: customBg, contentColor: customContent })
     expect(button.backgroundColor).toEqual(customBg)
     expect(button.contentColor).toEqual(customContent)
   })

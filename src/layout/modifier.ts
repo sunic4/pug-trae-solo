@@ -1,11 +1,10 @@
 import type { Color } from '@/renderer/types'
+import type { GestureCallback, DragDirection } from '@/input/gesture-recognizer'
+import type { TransformCallback } from '@/input/pinch-recognizer'
+import type { PointerInputHandler } from '@/input/pointer-event'
+import type { KeyboardEventHandler } from '@/input/keyboard'
 
-interface ModifierElement {
-  readonly kind: 'layout' | 'draw' | 'input'
-  readonly name: string
-}
-
-type PaddingElement = ModifierElement & {
+type PaddingElement = {
   readonly kind: 'layout'
   readonly name: 'padding'
   readonly left: number
@@ -14,80 +13,154 @@ type PaddingElement = ModifierElement & {
   readonly bottom: number
 }
 
-type SizeElement = ModifierElement & {
+type SizeElement = {
   readonly kind: 'layout'
   readonly name: 'size'
   readonly width: number
   readonly height: number
 }
 
-type WidthElement = ModifierElement & {
+type WidthElement = {
   readonly kind: 'layout'
   readonly name: 'width'
   readonly value: number
 }
 
-type HeightElement = ModifierElement & {
+type HeightElement = {
   readonly kind: 'layout'
   readonly name: 'height'
   readonly value: number
 }
 
-type FillMaxSizeElement = ModifierElement & {
+type FillMaxSizeElement = {
   readonly kind: 'layout'
   readonly name: 'fillMaxSize'
   readonly fraction: number
 }
 
-type FillMaxWidthElement = ModifierElement & {
+type FillMaxWidthElement = {
   readonly kind: 'layout'
   readonly name: 'fillMaxWidth'
   readonly fraction: number
 }
 
-type FillMaxHeightElement = ModifierElement & {
+type FillMaxHeightElement = {
   readonly kind: 'layout'
   readonly name: 'fillMaxHeight'
   readonly fraction: number
 }
 
-type BackgroundElement = ModifierElement & {
+type BackgroundElement = {
   readonly kind: 'draw'
   readonly name: 'background'
   readonly color: Color
   readonly borderRadius: number
 }
 
-type ClipElement = ModifierElement & {
+type ClipElement = {
   readonly kind: 'draw'
   readonly name: 'clip'
   readonly borderRadius: number
 }
 
-type OffsetElement = ModifierElement & {
+type OffsetElement = {
   readonly kind: 'layout'
   readonly name: 'offset'
   readonly x: number
   readonly y: number
 }
 
-type AbsoluteOffsetElement = ModifierElement & {
+type AbsoluteOffsetElement = {
   readonly kind: 'layout'
   readonly name: 'absoluteOffset'
   readonly x: number
   readonly y: number
 }
 
-type ShadowElement = ModifierElement & {
+type ShadowElement = {
   readonly kind: 'draw'
   readonly name: 'shadow'
   readonly elevation: number
 }
 
+type ClickableElement = {
+  readonly kind: 'input'
+  readonly name: 'clickable'
+  readonly onClick: GestureCallback
+  readonly onLongClick: GestureCallback | null
+}
+
+type LongPressableElement = {
+  readonly kind: 'input'
+  readonly name: 'longPressable'
+  readonly onLongPress: GestureCallback
+}
+
+type DraggableElement = {
+  readonly kind: 'input'
+  readonly name: 'draggable'
+  readonly direction: DragDirection
+  readonly onDragStart: GestureCallback
+  readonly onDrag: GestureCallback
+  readonly onDragEnd: GestureCallback
+}
+
+type TransformableElement = {
+  readonly kind: 'input'
+  readonly name: 'transformable'
+  readonly onTransformStart: TransformCallback
+  readonly onTransform: TransformCallback
+  readonly onTransformEnd: TransformCallback
+}
+
+type ScrollableElement = {
+  readonly kind: 'input'
+  readonly name: 'scrollable'
+  readonly direction: DragDirection
+  readonly onScroll: GestureCallback
+  readonly onFling: GestureCallback | null
+}
+
+type PointerInputElement = {
+  readonly kind: 'input'
+  readonly name: 'pointerInput'
+  readonly handler: PointerInputHandler
+}
+
+type KeyboardInputElement = {
+  readonly kind: 'input'
+  readonly name: 'keyboardInput'
+  readonly onKeyEvent: KeyboardEventHandler
+}
+
+type ModifierElement =
+  | PaddingElement
+  | SizeElement
+  | WidthElement
+  | HeightElement
+  | FillMaxSizeElement
+  | FillMaxWidthElement
+  | FillMaxHeightElement
+  | BackgroundElement
+  | ClipElement
+  | OffsetElement
+  | AbsoluteOffsetElement
+  | ShadowElement
+  | ClickableElement
+  | LongPressableElement
+  | DraggableElement
+  | TransformableElement
+  | ScrollableElement
+  | PointerInputElement
+  | KeyboardInputElement
+
 interface ReadonlyModifier {
   readonly size: number
   get(index: number): ModifierElement
   filterByKind(kind: ModifierElement['kind']): ReadonlyModifier
+  findPadding(): PaddingElement | null
+  findBackgrounds(): readonly BackgroundElement[]
+  findShadows(): readonly ShadowElement[]
 }
 
 function createPadding(left: number, top: number, right: number, bottom: number): PaddingElement {
@@ -270,6 +343,35 @@ class Modifier implements ReadonlyModifier {
     }
     return filtered.freeze()
   }
+
+  findPadding(): PaddingElement | null {
+    for (const el of this._elements) {
+      if (el.kind === 'layout' && el.name === 'padding') {
+        return el
+      }
+    }
+    return null
+  }
+
+  findBackgrounds(): readonly BackgroundElement[] {
+    const result: BackgroundElement[] = []
+    for (const el of this._elements) {
+      if (el.kind === 'draw' && el.name === 'background') {
+        result.push(el)
+      }
+    }
+    return result
+  }
+
+  findShadows(): readonly ShadowElement[] {
+    const result: ShadowElement[] = []
+    for (const el of this._elements) {
+      if (el.kind === 'draw' && el.name === 'shadow') {
+        result.push(el)
+      }
+    }
+    return result
+  }
 }
 
 export type {
@@ -286,6 +388,13 @@ export type {
   OffsetElement,
   AbsoluteOffsetElement,
   ShadowElement,
+  ClickableElement,
+  LongPressableElement,
+  DraggableElement,
+  TransformableElement,
+  ScrollableElement,
+  PointerInputElement,
+  KeyboardInputElement,
   ReadonlyModifier,
 }
 

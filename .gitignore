@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+dist-example/
 
 # TypeScript cache
 *.tsbuildinfo
@@ -16,6 +17,10 @@ coverage/
 
 # Vitest
 vitest.config.ts.snap
+
+# Playwright
+playwright-report/
+test-results/
 
 # Logs
 logs/
@@ -35,14 +40,16 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-.DS_Store
-Thumbs.db
 
 # OS files
 .DS_Store
+Thumbs.db
 Desktop.ini
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+.playwright-cli
+snapshot/
+screenshots

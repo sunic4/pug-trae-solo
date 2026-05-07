@@ -1,10 +1,12 @@
-import type { ComponentBase } from '@/components/basic/types'
+import type { ComponentBase, ComponentNode, ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { MeasurePolicy, Measurable, Constraints, MeasureResult } from '@/layout/types'
-import { DEFAULT_MODIFIER } from '@/components/shared/constants'
+import { DEFAULT_MODIFIER, normalizeModifier } from '@/components/shared/imports'
 import type { ReadonlyModifier } from '@/layout/modifier'
 import { createMeasureResult } from '@/layout/measure'
 import { constrainWidth, constrainHeight } from '@/layout/constraints'
 import { createMeasurePolicy } from '@/layout/simple-measure-policy'
+import { NOOP_DRAW_POLICY } from '@/components/basic/types'
+import type { Rect } from '@/renderer/types'
 
 type LazyDirection = 'vertical' | 'horizontal'
 
@@ -156,6 +158,7 @@ function LazyColumn(
   firstVisibleItemIndex: number = 0,
   firstVisibleItemScrollOffset: number = 0,
 ): LazyColumnComponent {
+  const mod = normalizeModifier(modifier)
   const measurePolicy = lazyLayoutMeasurePolicy(
     'vertical', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
   )
@@ -164,7 +167,7 @@ function LazyColumn(
   )
   return {
     kind: 'lazy-column',
-    modifier,
+    modifier: mod,
     itemCount,
     itemSize,
     spacing,
@@ -173,6 +176,13 @@ function LazyColumn(
     firstVisibleItemScrollOffset,
     visibleItems,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    getChildren(): ComponentNode[] {
+      return []
+    },
+    layoutChildren(_contentArea: Rect, _measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return []
+    },
   }
 }
 
@@ -185,6 +195,7 @@ function LazyRow(
   firstVisibleItemIndex: number = 0,
   firstVisibleItemScrollOffset: number = 0,
 ): LazyRowComponent {
+  const mod = normalizeModifier(modifier)
   const measurePolicy = lazyLayoutMeasurePolicy(
     'horizontal', itemCount, itemSize, spacing, contentPadding, firstVisibleItemIndex, firstVisibleItemScrollOffset,
   )
@@ -193,7 +204,7 @@ function LazyRow(
   )
   return {
     kind: 'lazy-row',
-    modifier,
+    modifier: mod,
     itemCount,
     itemSize,
     spacing,
@@ -202,6 +213,13 @@ function LazyRow(
     firstVisibleItemScrollOffset,
     visibleItems,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    getChildren(): ComponentNode[] {
+      return []
+    },
+    layoutChildren(_contentArea: Rect, _measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return []
+    },
   }
 }
 

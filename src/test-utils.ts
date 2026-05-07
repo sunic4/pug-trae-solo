@@ -1,7 +1,6 @@
 import { vi } from 'vitest'
 import type { DrawContext } from '@/renderer/types'
-import type { ModifierElement, PaddingElement, FillMaxSizeElement, BackgroundElement, ReadonlyModifier } from '@/layout/modifier'
-import type { ClickableElement } from '@/input/gesture-modifier'
+import type { ModifierElement, PaddingElement, FillMaxSizeElement, BackgroundElement, ReadonlyModifier, ClickableElement } from '@/layout/modifier'
 import type { NativePointerEvent, CanvasRect } from '@/input/pointer-event'
 
 function createMockTextMetrics(width: number = 10): TextMetrics {

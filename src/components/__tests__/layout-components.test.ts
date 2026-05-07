@@ -6,7 +6,6 @@ import { Row } from '@/components/layout/row'
 import { Box } from '@/components/basic/box'
 import { Text } from '@/components/basic/text'
 import { Modifier } from '@/layout/modifier'
-import { Card } from '@/components/container/card'
 import { hasModifierElement } from '@/test-utils'
 
 describe('Column', () => {
@@ -128,28 +127,24 @@ describe('Surface', () => {
 
   it('should create a surface with custom color', () => {
     const color = { r: 33, g: 150, b: 243, a: 1 }
-    const surface = Surface(Modifier.create().freeze(), color)
+    const surface = Surface([], { modifier: Modifier.create().freeze(), color })
     expect(surface.color).toEqual(color)
   })
 
   it('should create a surface with elevation', () => {
-    const surface = Surface(Modifier.create().freeze(), undefined, 4)
+    const surface = Surface([], { modifier: Modifier.create().freeze(), elevation: 4 })
     expect(surface.elevation).toBe(4)
   })
 
   it('should create a surface with borderRadius', () => {
-    const surface = Surface(Modifier.create().freeze(), undefined, 0, 12)
+    const surface = Surface([], { modifier: Modifier.create().freeze(), borderRadius: 12 })
     expect(surface.borderRadius).toBe(12)
   })
 
   it('should create a surface with children', () => {
     const surface = Surface(
-      Modifier.create().freeze(),
-      undefined,
-      0,
-      0,
-      'center',
       [Text('Hello')],
+      { modifier: Modifier.create().freeze(), alignment: 'center' },
     )
     expect(surface.children.length).toBe(1)
     expect(surface.children[0]!.kind).toBe('text')
@@ -163,18 +158,18 @@ describe('Surface', () => {
 
   it('should include background in modifier', () => {
     const color = { r: 100, g: 100, b: 100, a: 1 }
-    const surface = Surface(Modifier.create().freeze(), color, 0, 8)
+    const surface = Surface([], { modifier: Modifier.create().freeze(), color, borderRadius: 8 })
     expect(hasModifierElement(surface.modifier, 'draw', 'background')).toBe(true)
     expect(hasModifierElement(surface.modifier, 'draw', 'clip')).toBe(true)
   })
 
   it('should include shadow element when elevation > 0', () => {
-    const surface = Surface(Modifier.create().freeze(), undefined, 4, 0)
+    const surface = Surface([], { modifier: Modifier.create().freeze(), elevation: 4 })
     expect(hasModifierElement(surface.modifier, 'draw', 'shadow')).toBe(true)
   })
 
   it('should not include shadow element when elevation is 0', () => {
-    const surface = Surface(Modifier.create().freeze(), undefined, 0, 0)
+    const surface = Surface([], { modifier: Modifier.create().freeze() })
     expect(hasModifierElement(surface.modifier, 'draw', 'shadow')).toBe(false)
   })
 })
@@ -208,11 +203,6 @@ describe('Layout component composition', () => {
 
   it('should compose Surface with Column', () => {
     const layout = Surface(
-      Modifier.create().freeze(),
-      { r: 255, g: 255, b: 255, a: 1 },
-      2,
-      8,
-      'center',
       [
         Column(
           Modifier.create().padding(16).freeze(),
@@ -221,6 +211,7 @@ describe('Layout component composition', () => {
           [Text('Card Title'), Text('Card Content')],
         ),
       ],
+      { modifier: Modifier.create().freeze(), color: { r: 255, g: 255, b: 255, a: 1 }, elevation: 2, borderRadius: 8, alignment: 'center' },
     )
     expect(layout.kind).toBe('surface')
     expect(layout.children.length).toBe(1)

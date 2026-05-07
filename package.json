@@ -23,10 +23,13 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "e2e": "playwright test",
+    "check": "tsc --noEmit && vitest run && playwright test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
     "eslint": "^10.2.1",
     "jsdom": "^29.1.1",

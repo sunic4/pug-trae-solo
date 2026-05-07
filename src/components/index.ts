@@ -26,8 +26,6 @@ export { Row } from '@/components/layout/row'
 export type { SurfaceComponent } from '@/components/layout/surface'
 export { Surface } from '@/components/layout/surface'
 
-export type { CardComponent } from '@/components/container/card'
-export { Card } from '@/components/container/card'
 export type { ScaffoldComponent } from '@/components/container/scaffold'
 export { Scaffold } from '@/components/container/scaffold'
 export type { TopAppBarComponent } from '@/components/container/top-app-bar'

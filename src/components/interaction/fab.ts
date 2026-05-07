@@ -1,10 +1,11 @@
-import { SquareMeasurePolicy } from '@/components/shared/measure-policies'
-import { Modifier, DEFAULT_MODIFIER } from '@/components/shared/imports'
+import { SquareMeasurePolicy, Modifier, DEFAULT_MODIFIER, NOOP_DRAW_POLICY, normalizeModifier } from '@/components/shared/imports'
 import type { ComponentBase, ComponentNode, ReadonlyModifier } from '@/components/shared/imports'
+import type { ChildLayout, MeasuredSizeMap } from '@/components/basic/types'
 import type { GestureCallback } from '@/input/gesture-recognizer'
-import type { Color } from '@/renderer/types'
+import type { Color, Rect } from '@/renderer/types'
 import { PrimaryColor, OnPrimaryColor } from '@/theme/colors'
 import { clickable } from '@/input/gesture-modifier'
+import { layoutBoxChildren } from '@/components/shared/layout-helpers'
 
 type FabComponent = {
   readonly kind: 'fab'
@@ -25,7 +26,8 @@ function FAB(
   size: number = 56,
   elevation: number = 6,
 ): FabComponent {
-  const modWithClick = Modifier.extendFrom(modifier)
+  const normalizedMod = normalizeModifier(modifier)
+  const modWithClick = Modifier.extendFrom(normalizedMod)
     .then(clickable(onClick))
     .background(backgroundColor)
     .freeze()
@@ -40,6 +42,13 @@ function FAB(
     size,
     elevation,
     measurePolicy,
+    drawPolicy: NOOP_DRAW_POLICY,
+    layoutChildren(contentArea: Rect, measuredSizes: MeasuredSizeMap): ChildLayout[] {
+      return layoutBoxChildren(this.children, contentArea, measuredSizes, 'center')
+    },
+    getChildren(): ComponentNode[] {
+      return this.children
+    },
   }
 }
 
