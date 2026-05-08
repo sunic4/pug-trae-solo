@@ -13,7 +13,7 @@
 | 构建 | Vite (dev) + tsup (bundle) |
 | 测试 | Vitest (单元) + Playwright (E2E) + MSW (mock) |
 | 覆盖率 | c8 (V8 内置) |
-| 包管理 | npm |
+| 包管理 | pnpm (workspace monorepo) |
 
 ## 3. 关键约定
 
@@ -37,94 +37,151 @@
 
 ```
 pug-canvas-ui/
-├── src/
-│   ├── core/              # 响应式核心
-│   │   ├── snapshot.ts
-│   │   ├── state.ts
-│   │   ├── recomposer.ts
-│   │   ├── composable.ts
-│   │   ├── derived-state.ts
-│   │   ├── id-generator.ts
-│   │   ├── remember.ts
-│   │   └── types.ts
-│   ├── renderer/          # Canvas 渲染
-│   │   ├── draw-command.ts
-│   │   ├── draw-scope.ts
-│   │   ├── draw-batch.ts
-│   │   ├── layer.ts
-│   │   ├── canvas-host.ts
-│   │   ├── dirty-region.ts
-│   │   ├── image-loader.ts
-│   │   ├── path.ts
-│   │   ├── text-style.ts
-│   │   └── types.ts
-│   ├── layout/            # 布局引擎
-│   │   ├── box-layout.ts
-│   │   ├── constraints.ts
-│   │   ├── layout-node.ts
-│   │   ├── measure.ts
-│   │   ├── measure-policy.ts
-│   │   ├── modifier.ts
-│   │   └── types.ts
-│   ├── input/             # 手势系统
-│   │   ├── pointer-event.ts
-│   │   ├── pointer-dispatcher.ts
-│   │   ├── gesture-recognizer.ts
-│   │   ├── pinch-recognizer.ts
-│   │   ├── gesture-modifier.ts
-│   │   ├── event-bubble.ts
-│   │   ├── focus-manager.ts
-│   │   ├── hit-test.ts
-│   │   └── keyboard.ts
-│   ├── animation/         # 动画系统
-│   │   ├── animatable.ts
-│   │   ├── animation-spec.ts
-│   │   ├── transition.ts
-│   │   ├── gesture-animation.ts
-│   │   └── vector-converter.ts
-│   ├── components/        # 组件库
-│   │   ├── basic/
-│   │   ├── interaction/
-│   │   ├── layout/
-│   │   ├── container/
-│   │   ├── feedback/
-│   │   ├── lazy/
-│   │   ├── navigation/
-│   │   ├── overlay/
-│   │   ├── shared/
-│   │   └── transition/
-│   ├── theme/             # 主题系统
-│   │   └── colors.ts
-│   ├── platform/          # 平台适配
-│   │   ├── accessibility.ts
-│   │   ├── density.ts
-│   │   ├── memory.ts
-│   │   ├── perf-monitor.ts
-│   │   ├── safe-area.ts
-│   │   └── screen-info.ts
-│   └── index.ts           # 公共 API 导出
-├── wiki/                  # 项目文档
-│   ├── arch/adrs/         # 架构决策记录 (10 篇 ADR)
-│   ├── road-map/          # 需求与路线图
-│   └── raw/               # 原始输入
+├── packages/
+│   ├── types/              # 共享类型定义
+│   │   └── src/
+│   │       ├── base-types.ts       # Point, Rect, Color, PathCommand, ChildLayout, MeasuredSizeMap
+│   │       ├── layout-types.ts     # ReadonlyModifier, ModifierElement, LayoutChildrenFn
+│   │       ├── gesture-types.ts    # GestureState, GestureEvent, GestureCallback, DragDirection
+│   │       ├── transform-types.ts  # TransformEvent, TransformCallback
+│   │       ├── pointer-types.ts    # PointerEventType, PointerEventData, PointerInputHandler
+│   │       ├── keyboard-types.ts   # KeyboardEventType, KeyboardEventData, KeyboardEventHandler
+│   │       └── index.ts
+│   ├── core/               # 响应式核心 (@pug-canvas-ui/core)
+│   │   └── src/
+│   │       ├── snapshot.ts
+│   │       ├── state.ts
+│   │       ├── recomposer.ts
+│   │       ├── composable.ts
+│   │       ├── composition-context.ts
+│   │       ├── derived-state.ts
+│   │       ├── id-generator.ts
+│   │       ├── remember.ts
+│   │       └── types.ts
+│   ├── theme/              # 主题系统 (@pug-canvas-ui/theme)
+│   │   └── src/
+│   │       └── colors.ts
+│   ├── render/             # Canvas 渲染 (@pug-canvas-ui/render)
+│   │   └── src/
+│   │       ├── draw-command.ts
+│   │       ├── draw-scope.ts
+│   │       ├── draw-batch.ts
+│   │       ├── layer.ts
+│   │       ├── canvas-host.ts
+│   │       ├── dirty-region.ts
+│   │       ├── image-loader.ts
+│   │       ├── path.ts
+│   │       ├── text-style.ts
+│   │       ├── text-utils.ts
+│   │       └── types.ts
+│   ├── layout/             # 布局引擎 (@pug-canvas-ui/layout)
+│   │   └── src/
+│   │       ├── box-layout.ts
+│   │       ├── constraints.ts
+│   │       ├── layout-node.ts
+│   │       ├── measure.ts
+│   │       ├── measure-policy.ts
+│   │       ├── modifier.ts
+│   │       ├── simple-measure-policy.ts
+│   │       └── types.ts
+│   ├── input/              # 手势系统 (@pug-canvas-ui/input)
+│   │   └── src/
+│   │       ├── pointer-event.ts
+│   │       ├── pointer-dispatcher.ts
+│   │       ├── gesture-recognizer.ts
+│   │       ├── pinch-recognizer.ts
+│   │       ├── gesture-modifier.ts
+│   │       ├── event-bubble.ts
+│   │       ├── focus-manager.ts
+│   │       ├── hit-test.ts
+│   │       └── keyboard.ts
+│   ├── animation/          # 动画系统 (@pug-canvas-ui/animation)
+│   │   └── src/
+│   │       ├── animatable.ts
+│   │       ├── animation-spec.ts
+│   │       ├── transition.ts
+│   │       ├── gesture-animation.ts
+│   │       └── vector-converter.ts
+│   ├── platform/           # 平台适配 (@pug-canvas-ui/platform)
+│   │   └── src/
+│   │       ├── accessibility.ts
+│   │       ├── density.ts
+│   │       ├── memory.ts
+│   │       ├── perf-monitor.ts
+│   │       ├── safe-area.ts
+│   │       └── screen-info.ts
+│   ├── components/         # 组件库 (@pug-canvas-ui/components)
+│   │   └── src/
+│   │       ├── basic/
+│   │       ├── interaction/
+│   │       ├── layout/
+│   │       ├── container/
+│   │       ├── feedback/
+│   │       ├── lazy/
+│   │       ├── navigation/
+│   │       ├── overlay/
+│   │       ├── shared/
+│   │       ├── transition/
+│   │       └── node-data.ts
+│   └── app/                # 聚合包 (pug-canvas-ui)
+│       └── src/
+│           ├── app-host.ts
+│           ├── component-renderer.ts
+│           └── index.ts
+├── example/                # 示例应用
+│   ├── pages/
+│   ├── theme/
+│   ├── app.ts
+│   └── index.html
+├── wiki/                   # 项目文档
+│   ├── arch/adrs/          # 架构决策记录 (12 篇 ADR)
+│   ├── road-map/           # 需求与路线图
+│   └── raw/                # 原始输入
 ├── package.json
+├── pnpm-workspace.yaml
 ├── tsconfig.json
 ├── vite.config.ts
-├── tsup.config.ts
+├── vitest.config.ts
 ├── codestyle.md
 └── AGENTS.md
 ```
 
-## 5. 常用命令
+## 5. 包依赖关系
+
+```
+types (无依赖)
+  ↑
+core → types
+  ↑
+theme (无依赖，内联 Color)
+  ↑
+render → core, types
+  ↑
+layout → core, render, types
+  ↑
+input → core, render, layout, types
+  ↑
+animation → core, render
+  ↑
+platform → core
+  ↑
+components → core, render, layout, input, animation, theme
+  ↑
+app → core, render, layout, types (聚合所有包)
+```
+
+## 6. 常用命令
 
 | 命令 | 用途 |
 |------|------|
-| `npm run dev` | Vite 开发服务器 |
-| `npm run build` | tsup 生产构建 |
-| `npm test` | Vitest 运行测试 |
-| `npm run typecheck` | `tsc --noEmit` 类型检查 |
+| `pnpm install` | 安装依赖 |
+| `pnpm run dev` | Vite 开发服务器 |
+| `pnpm -r run build` | 所有包生产构建 |
+| `pnpm test` | Vitest 运行测试 |
+| `pnpm -r run typecheck` | 所有包类型检查 |
+| `pnpm --filter @pug-canvas-ui/core run build` | 构建指定包 |
 
-## 6. 架构决策索引
+## 7. 架构决策索引
 
 | ADR | 标题 | 核心决策 |
 |-----|------|---------|
@@ -140,15 +197,16 @@ pug-canvas-ui/
 | #10 | 错误处理 | ErrorBoundary + 全局捕获 + 分级恢复 |
 | #11 | 测试策略 | 测试金字塔 (单元 65-80% + 集成 15-25% + E2E 5-10%) |
 | #12 | 性能优化 | 虚拟化 + 智能缓存 + 增量渲染 |
+| #13 | Multi-Packages | pnpm workspace monorepo，@pug-canvas-ui/* 作用域包，types 包打破循环依赖 |
 
 ***任何情况都不应该简化任务,你的目标是高质量完成任务***
 
-## 7. 重要
+## 8. 重要
 
 > 重组代替继承
 > 高效利用已有代码,
 > 禁止使用any,unknown,as
 > 禁止内敛import
-> `@/`作为根目录导入
+> `@pug-canvas-ui/*` 作为包导入
 > 禁止绕过或者简化功能
 > 遇到端口占用,先停止原有端口,再运行

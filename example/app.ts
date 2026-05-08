@@ -1,23 +1,16 @@
-import {
-  composable,
-  mutableStateOf,
-  remember,
-  setContent,
-  Scaffold,
-  TopAppBar,
-  BottomNavigation,
-  Modifier,
-  AppColors,
-} from './index'
-import type { MutableState } from './index'
-import type { CompositionContext } from './index'
-import { HomePageComposable } from './pages/home-page'
+import { composable, remember, useState, setContent, Modifier, Scaffold, TopAppBar, BottomNavigation } from 'pug-canvas-ui'
+import type { CompositionContext, MutableState } from 'pug-canvas-ui'
+import { QuickStartPageComposable } from './pages/quickstart-page'
 import { InteractionPageComposable } from './pages/interaction-page'
 import { LayoutPageComposable } from './pages/layout-page'
 import { FeedbackPageComposable } from './pages/feedback-page'
 import { ListPageComposable } from './pages/list-page'
-
-const TAB_LABELS = ['首页', '交互', '布局', '反馈', '列表'] as const
+import { AnimationPageComposable } from './pages/animation-page'
+import { ComponentsPageComposable } from './pages/components-page'
+import { GesturesPageComposable } from './pages/gestures-page'
+import { NavigationPageComposable } from './pages/navigation-page'
+import { AdvancedPageComposable } from './pages/advanced-page'
+import { AppColors, TAB_LABELS } from './theme/tabs'
 
 interface AppState {
   selectedTab: MutableState<number>
@@ -36,26 +29,41 @@ function App(ctx: CompositionContext, state: AppState): void {
   const bodyContent = () => {
     switch (tab) {
       case 0:
-        HomePageComposable(ctx, {})
+        QuickStartPageComposable({}, ctx)
         break
       case 1:
-        InteractionPageComposable(ctx, {
+        InteractionPageComposable({
           showSnackbar: state.showSnackbar,
           snackbarMessage: state.snackbarMessage,
-        })
+        }, ctx)
         break
       case 2:
-        LayoutPageComposable(ctx, {})
+        LayoutPageComposable({}, ctx)
         break
       case 3:
-        FeedbackPageComposable(ctx, {
+        AnimationPageComposable({}, ctx)
+        break
+      case 4:
+        FeedbackPageComposable({
           showDialog: state.showDialog,
           showSnackbar: state.showSnackbar,
           snackbarMsg: state.snackbarMessage,
-        })
+        }, ctx)
         break
-      case 4:
-        ListPageComposable(ctx, {})
+      case 5:
+        ListPageComposable({}, ctx)
+        break
+      case 6:
+        ComponentsPageComposable({}, ctx)
+        break
+      case 7:
+        GesturesPageComposable({}, ctx)
+        break
+      case 8:
+        NavigationPageComposable({}, ctx)
+        break
+      case 9:
+        AdvancedPageComposable({}, ctx)
         break
     }
   }
@@ -101,20 +109,20 @@ function main(): void {
 
   const appHost = setContent(canvasEl, (rootCtx) => {
     const selectedTab = remember(rootCtx, () => {
-      const state = mutableStateOf(0, rootCtx.snapshot)
+      const state = useState(rootCtx, 0)
       selectedTabState = state
       return state
     })
-    const showSnackbar = remember(rootCtx, () => mutableStateOf(false, rootCtx.snapshot))
-    const snackbarMessage = remember(rootCtx, () => mutableStateOf('', rootCtx.snapshot))
-    const showDialog = remember(rootCtx, () => mutableStateOf(false, rootCtx.snapshot))
+    const showSnackbar = useState(rootCtx, false)
+    const snackbarMessage = useState(rootCtx, '')
+    const showDialog = useState(rootCtx, false)
 
-    AppComposable(rootCtx, {
+    AppComposable({
       selectedTab,
       showSnackbar,
       snackbarMessage,
       showDialog,
-    })
+    }, rootCtx)
   })
 
   canvasEl.addEventListener('pointerdown', (e) => {

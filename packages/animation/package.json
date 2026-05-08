@@ -1,0 +1,32 @@
+﻿{
+  "name": "@pug-canvas-ui/animation",
+  "version": "0.1.0",
+  "description": "动画系统 - Animatable + AnimationSpec + Transition",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@pug-canvas-ui/core": "workspace:*",
+    "@pug-canvas-ui/render": "workspace:*"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT"
+}

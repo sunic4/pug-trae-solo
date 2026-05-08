@@ -1,0 +1,17 @@
+{
+  "name": "pug-canvas-ui-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "pug-canvas-ui": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^6.3.0",
+    "typescript": "^5.7.0"
+  }
+}

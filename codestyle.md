@@ -22,7 +22,7 @@
 ```
 
 - 所有文件使用 `.ts` 扩展名（禁止 `.tsx`，项目无 JSX）
-- 禁止 `any`，必须提供具体类型或泛型约束
+- 禁止 `any` | `unknown`，必须提供具体类型或泛型约束
 - 禁止非空断言 `!`，使用类型守卫或 `null` 检查
 - 优先使用 `interface` 定义对象形状，`type` 用于联合/交叉/工具类型
 
@@ -384,7 +384,7 @@ Column(ctx, mod, 'start', () => {
 ```
 src/
 ├── core/              # 响应式核心 (snapshot, state, recomposer, composable)
-├── renderer/          # Canvas 渲染 (draw-command, layer, hybrid-renderer)
+├── render/            # Canvas 渲染 (draw-command, layer, hybrid-renderer)
 ├── layout/            # 布局引擎 (column-row, measure, modifier-layout)
 ├── input/             # 手势系统 (pointer-events, gesture-recognizers)
 ├── animation/         # 动画系统 (animatable, animation-spec, transition)

@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "paths": {
+      "@pug-canvas-ui/types": ["../types/src/index.ts"],
+      "@pug-canvas-ui/types/*": ["../types/src/*"],
+      "@pug-canvas-ui/core": ["../core/src/index.ts"],
+      "@pug-canvas-ui/core/*": ["../core/src/*"],
+      "@pug-canvas-ui/layout": ["../layout/src/index.ts"],
+      "@pug-canvas-ui/layout/*": ["../layout/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__", "src/component-renderer.ts"]
+}

@@ -42,6 +42,231 @@ importers:
         specifier: ^3.1.0
         version: 3.2.4(@types/node@25.6.0)(jsdom@29.1.1)
 
+  example:
+    dependencies:
+      pug-canvas-ui:
+        specifier: workspace:*
+        version: link:../packages/app
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.3.0
+        version: 6.4.2(@types/node@25.6.0)
+
+  packages/animation:
+    dependencies:
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/app:
+    dependencies:
+      '@pug-canvas-ui/animation':
+        specifier: workspace:*
+        version: link:../animation
+      '@pug-canvas-ui/components':
+        specifier: workspace:*
+        version: link:../components
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/input':
+        specifier: workspace:*
+        version: link:../input
+      '@pug-canvas-ui/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@pug-canvas-ui/platform':
+        specifier: workspace:*
+        version: link:../platform
+      '@pug-canvas-ui/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      '@pug-canvas-ui/theme':
+        specifier: workspace:*
+        version: link:../theme
+      '@pug-canvas-ui/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/components:
+    dependencies:
+      '@pug-canvas-ui/animation':
+        specifier: workspace:*
+        version: link:../animation
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/input':
+        specifier: workspace:*
+        version: link:../input
+      '@pug-canvas-ui/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@pug-canvas-ui/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      '@pug-canvas-ui/theme':
+        specifier: workspace:*
+        version: link:../theme
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/core:
+    dependencies:
+      '@pug-canvas-ui/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/input:
+    dependencies:
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/layout':
+        specifier: workspace:*
+        version: link:../layout
+      '@pug-canvas-ui/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      '@pug-canvas-ui/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/layout:
+    dependencies:
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/renderer':
+        specifier: workspace:*
+        version: link:../renderer
+      '@pug-canvas-ui/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/platform:
+    dependencies:
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/renderer:
+    dependencies:
+      '@pug-canvas-ui/core':
+        specifier: workspace:*
+        version: link:../core
+      '@pug-canvas-ui/types':
+        specifier: workspace:*
+        version: link:../types
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/theme:
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/types:
+    devDependencies:
+      rimraf:
+        specifier: ^6.0.0
+        version: 6.1.3
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(postcss@8.5.14)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
 packages:
 
   '@asamuzakjp/css-color@5.1.11':
