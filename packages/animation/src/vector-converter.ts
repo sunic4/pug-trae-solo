@@ -1,5 +1,6 @@
 ﻿import type { Color, Rect, Point } from '@pug-canvas-ui/render'
 import { easeInOutCubic } from './animation-spec'
+import { AnimationFrameLoop } from './animation-frame-loop'
 
 type AnimationVector = number[]
 
@@ -58,10 +59,8 @@ class AnimatableVector<T, V extends AnimationVector> {
   private _value: T
   private _targetValue: T
   private _converter: TwoWayConverter<T, V>
-  private _animationFrameId: number | null = null
-  private _isRunning = false
+  private _loop: AnimationFrameLoop = new AnimationFrameLoop()
   private _onChange: ((value: T) => void) | null = null
-  private _resolveAnimation: (() => void) | null = null
 
   constructor(initialValue: T, converter: TwoWayConverter<T, V>) {
     this._value = initialValue
@@ -78,7 +77,7 @@ class AnimatableVector<T, V extends AnimationVector> {
   }
 
   get isRunning(): boolean {
-    return this._isRunning
+    return this._loop.isRunning
   }
 
   setOnChange(callback: (value: T) => void): void {
@@ -91,7 +90,7 @@ class AnimatableVector<T, V extends AnimationVector> {
         `AnimatableVector.animateTo: durationMillis must be a non-negative finite number, got ${durationMillis}`,
       )
     }
-    this.stop()
+    this._loop.stop()
     this._targetValue = target
     if (vectorEquals(this._value, target, this._converter)) {
       return Promise.resolve()
@@ -101,48 +100,35 @@ class AnimatableVector<T, V extends AnimationVector> {
     const startNanos = performance.now() * 1_000_000
     const durationNanos = durationMillis * 1_000_000
 
-    return new Promise<void>((resolve) => {
-      this._resolveAnimation = resolve
-      this._isRunning = true
+    return this._loop.start(() => {
+      const elapsed = performance.now() * 1_000_000 - startNanos
+      const fraction = Math.min(elapsed / durationNanos, 1)
 
-      const tick = (): void => {
-        const elapsed = performance.now() * 1_000_000 - startNanos
-        const fraction = Math.min(elapsed / durationNanos, 1)
-
-        if (fraction >= 1) {
-          this._value = target
-          this._isRunning = false
-          this._animationFrameId = null
-          if (this._onChange !== null) {
-            this._onChange(this._value)
-          }
-          if (this._resolveAnimation !== null) {
-            this._resolveAnimation()
-            this._resolveAnimation = null
-          }
-          return
-        }
-
-        const eased = easeInOutCubic(fraction)
-        const currentVector = startVector.map((s, i) => {
-          const e = endVector[i]!
-          return s + (e - s) * eased
-        })
-
-        this._value = this._converter.convertFromVector(currentVector)
+      if (fraction >= 1) {
+        this._value = target
         if (this._onChange !== null) {
           this._onChange(this._value)
         }
-
-        this._animationFrameId = requestAnimationFrame(tick)
+        return true
       }
 
-      this._animationFrameId = requestAnimationFrame(tick)
+      const eased = easeInOutCubic(fraction)
+      const currentVector = startVector.map((s, i) => {
+        const e = endVector[i]!
+        return s + (e - s) * eased
+      })
+
+      this._value = this._converter.convertFromVector(currentVector)
+      if (this._onChange !== null) {
+        this._onChange(this._value)
+      }
+
+      return false
     })
   }
 
   snapTo(value: T): void {
-    this.stop()
+    this._loop.stop()
     this._value = value
     this._targetValue = value
     if (this._onChange !== null) {
@@ -151,15 +137,7 @@ class AnimatableVector<T, V extends AnimationVector> {
   }
 
   stop(): void {
-    if (this._animationFrameId !== null) {
-      cancelAnimationFrame(this._animationFrameId)
-      this._animationFrameId = null
-    }
-    this._isRunning = false
-    if (this._resolveAnimation !== null) {
-      this._resolveAnimation()
-      this._resolveAnimation = null
-    }
+    this._loop.stop()
   }
 }
 

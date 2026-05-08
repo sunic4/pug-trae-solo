@@ -63,6 +63,7 @@ export { Modifier, createShadow } from './modifier'
 
 export {
   boxMeasurePolicy,
+  alignOffset,
   computeAlignmentX,
   computeAlignmentY,
   minIntrinsicWidth,
@@ -70,3 +71,6 @@ export {
   percentageConstraints,
   createBoxMeasurePolicy,
 } from './box-layout'
+
+export type { WeightedMeasureInput, WeightedMeasureResult } from './weight-measure'
+export { measureWithWeights, computeWeightedMeasureResult } from './weight-measure'

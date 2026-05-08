@@ -3,7 +3,7 @@ import { Column } from '../layout/column'
 import { Surface } from '../layout/surface'
 import { Spacer } from '../basic/spacer'
 import { Row } from '../layout/row'
-import { Box } from '../basic/box'
+import { Box } from '../layout/box'
 import { Text } from '../basic/text'
 import { Modifier } from '@pug-canvas-ui/layout'
 import {

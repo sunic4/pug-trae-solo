@@ -1,4 +1,4 @@
-import { Box } from './box'
+import { Box } from '../layout/box'
 import { Text } from './text'
 import { Image } from './image'
 import { Spacer } from './spacer'

@@ -1,5 +1,6 @@
 import type { Constraints, MeasureResult, Measurable, LayoutNode, WeightConfig } from './types'
 import { createMeasureResult } from './measure'
+import { measureWithWeights, computeWeightedMeasureResult } from './weight-measure'
 
 class LayoutNodeImpl implements LayoutNode {
   readonly id: number
@@ -116,73 +117,25 @@ class LayoutTree {
     constraints: Constraints,
     measurableChildren: LayoutNode[],
   ): MeasureResult {
-    const totalWeight = weights.reduce((sum, w) => sum + (w?.weight ?? 0), 0)
-    if (totalWeight <= 0) {
-      for (const child of measurableChildren) {
-        child.measure(constraints)
-      }
-      return this._aggregateMeasuredSize(measurableChildren)
+    const inputs = measurables.map((m, i) => ({
+      measurable: m,
+      weight: (i < weights.length ? weights[i] : null) ?? null,
+    }))
+
+    const result = measureWithWeights(inputs, constraints, this._isHorizontal())
+
+    for (let i = 0; i < result.placeables.length; i++) {
+      const p = result.placeables[i]!
+      measurableChildren[i]!.measureResult = p.measureResult
+      measurableChildren[i]!.position = { ...p.position }
     }
 
-    const nonWeightedIndices: number[] = []
-    const weightedIndices: number[] = []
-    for (let i = 0; i < weights.length; i++) {
-      if (weights[i] !== null) {
-        weightedIndices.push(i)
-      } else {
-        nonWeightedIndices.push(i)
-      }
-    }
-
-    for (const idx of nonWeightedIndices) {
-      measurableChildren[idx]!.measure(constraints)
-    }
-
-    let usedMainSize = 0
-    for (const idx of nonWeightedIndices) {
-      const result = measurableChildren[idx]!.measureResult
-      if (result != null) {
-        usedMainSize += this._isHorizontal() ? result.width : result.height
-      }
-    }
-
-    const maxMain = this._isHorizontal() ? constraints.maxWidth : constraints.maxHeight
-    const remainingMainSize = Math.max(0, maxMain - usedMainSize)
-
-    for (const idx of weightedIndices) {
-      const w = weights[idx]!
-      const child = measurableChildren[idx]!
-
-      const share = (w.weight / totalWeight) * remainingMainSize
-      const childConstraints: Constraints = w.fill
-        ? this._isHorizontal()
-          ? { minWidth: share, maxWidth: share, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
-          : { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: share, maxHeight: share }
-        : this._isHorizontal()
-          ? { minWidth: 0, maxWidth: share, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
-          : { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: 0, maxHeight: share }
-      child.measure(childConstraints)
-    }
-
-    return this._aggregateMeasuredSize(measurableChildren)
-  }
-
-  private _aggregateMeasuredSize(children: LayoutNode[]): MeasureResult {
-    let totalMainSize = 0
-    let maxCrossSize = 0
-    for (const child of children) {
-      if (child.measureResult != null) {
-        const mainSize = this._isHorizontal() ? child.measureResult.width : child.measureResult.height
-        const crossSize = this._isHorizontal() ? child.measureResult.height : child.measureResult.width
-        totalMainSize += mainSize
-        if (crossSize > maxCrossSize) {
-          maxCrossSize = crossSize
-        }
-      }
-    }
-    const totalWidth = this._isHorizontal() ? totalMainSize : maxCrossSize
-    const totalHeight = this._isHorizontal() ? maxCrossSize : totalMainSize
-    return createMeasureResult(totalWidth, totalHeight)
+    return computeWeightedMeasureResult(
+      result.totalMainSize,
+      result.maxCrossSize,
+      constraints,
+      this._isHorizontal(),
+    )
   }
 }
 

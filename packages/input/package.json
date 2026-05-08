@@ -23,7 +23,8 @@
     "@pug-canvas-ui/core": "workspace:*",
     "@pug-canvas-ui/render": "workspace:*",
     "@pug-canvas-ui/layout": "workspace:*",
-    "@pug-canvas-ui/types": "workspace:*"
+    "@pug-canvas-ui/types": "workspace:*",
+    "@pug-canvas-ui/platform": "workspace:*"
   },
   "devDependencies": {
     "rimraf": "^6.0.0",

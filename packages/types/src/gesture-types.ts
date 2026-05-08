@@ -1,6 +1,6 @@
 import type { Point } from './base-types'
 
-type GestureState = 'possible' | 'recognized' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed'
+type GestureState = 'idle' | 'possible' | 'recognized' | 'began' | 'changed' | 'ended' | 'cancelled' | 'failed'
 
 interface GestureEvent {
   readonly type: 'tap' | 'doubleTap' | 'longPress' | 'dragStart' | 'drag' | 'dragEnd'

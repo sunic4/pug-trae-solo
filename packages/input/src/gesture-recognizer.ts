@@ -27,6 +27,7 @@ function isValidGestureTransition(from: GestureState, to: GestureState): boolean
   if (from === to) return true
   if (from === 'cancelled' || from === 'failed') return false
   switch (to) {
+    case 'possible': return from === 'idle' || from === 'recognized'
     case 'cancelled': return true
     case 'failed': return from === 'possible'
     case 'recognized': return from === 'possible'
@@ -46,7 +47,7 @@ interface GestureRecognizerState {
 }
 
 function createGestureRecognizerState(): GestureRecognizerState {
-  let _state: GestureState = 'possible'
+  let _state: GestureState = 'idle'
   let _disposed = false
 
   return {
@@ -65,7 +66,7 @@ function createGestureRecognizerState(): GestureRecognizerState {
       _disposed = true
     },
     resetState(): void {
-      _state = 'possible'
+      _state = 'idle'
     },
   }
 }
@@ -117,7 +118,8 @@ class TapGestureRecognizer implements GestureRecognizer {
           this._stateMachine.transitionState('failed')
           return
         }
-        if (computeDistance(event.localPosition, this._downPosition) > this.touchSlop) {
+        const dist = computeDistance(event.localPosition, this._downPosition)
+        if (dist > this.touchSlop) {
           this._stateMachine.transitionState('failed')
           return
         }

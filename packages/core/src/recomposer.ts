@@ -57,6 +57,7 @@ class RecomposeScopeImpl implements RecomposeScope {
 
   addDependency(stateId: StateId): void {
     this._dependencies.add(stateId)
+    this._recomposer.registerDependency(this.id, stateId)
   }
 
   getRememberCache<T extends object>(guard: (value: object) => value is T): T | null {
@@ -95,6 +96,7 @@ class RecomposerImpl implements Recomposer {
   private readonly _pendingScopes: Set<ScopeId> = new Set()
   private readonly _scopeMap: Map<ScopeId, RecomposeScopeImpl> = new Map()
   private readonly _nextId: () => ScopeId
+  private readonly _stateToScopes: Map<StateId, Set<ScopeId>> = new Map()
 
   constructor(nextId: () => ScopeId) {
     this._nextId = nextId
@@ -155,6 +157,24 @@ class RecomposerImpl implements Recomposer {
     const scope = new RecomposeScopeImpl(id, fn, this)
     this._scopeMap.set(id, scope)
     return scope
+  }
+
+  registerDependency(scopeId: ScopeId, stateId: StateId): void {
+    let scopes = this._stateToScopes.get(stateId)
+    if (!scopes) {
+      scopes = new Set()
+      this._stateToScopes.set(stateId, scopes)
+    }
+    scopes.add(scopeId)
+  }
+
+  invalidateScopesForState(stateId: StateId): void {
+    const scopes = this._stateToScopes.get(stateId)
+    if (!scopes) return
+    for (const scopeId of scopes) {
+      const scope = this._scopeMap.get(scopeId)
+      if (scope) scope.invalidate()
+    }
   }
 }
 

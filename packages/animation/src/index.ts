@@ -54,13 +54,18 @@ export type {
   DecaySpec,
   DraggableState,
   AnchorConfig,
-  AnchoredDraggable,
+  AnchoredDraggableConfig,
 } from './gesture-animation'
 
 export {
+  DraggableStateImpl,
+  AnchoredDraggable,
+  defaultDecaySpec,
   decay,
   createDraggableState,
   createAnchoredDraggable,
   DEFAULT_FRICTION,
   VELOCITY_THRESHOLD,
 } from './gesture-animation'
+
+export { AnimationFrameLoop } from './animation-frame-loop'

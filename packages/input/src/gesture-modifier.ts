@@ -1,24 +1,17 @@
 import type {
+  ClickableElement,
   LongPressableElement,
   DraggableElement,
   TransformableElement,
   ScrollableElement,
   PointerInputElement,
   KeyboardInputElement,
-} from '@pug-canvas-ui/layout'
+} from '@pug-canvas-ui/types'
 import type { GestureCallback, DragDirection } from '@pug-canvas-ui/types'
 import type { TransformCallback } from '@pug-canvas-ui/types'
 import type { PointerInputHandler } from '@pug-canvas-ui/types'
 import type { KeyboardEventHandler } from '@pug-canvas-ui/types'
 
-type ClickableElement = {
-  readonly kind: 'input'
-  readonly name: 'clickable'
-  readonly onClick: GestureCallback
-  readonly onLongClick: GestureCallback | null
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function clickable(
   onClick: GestureCallback,
   onLongClick: GestureCallback | null = null,

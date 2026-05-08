@@ -15,7 +15,7 @@ export type { ReadonlyModifier } from '@pug-canvas-ui/layout'
 
 export { clickable } from '@pug-canvas-ui/input'
 
-export { PrimaryColor, OnPrimaryColor, SurfaceColor, BackgroundColor } from '@pug-canvas-ui/theme'
+export { PrimaryColor, OnPrimaryColor, SurfaceColor, BackgroundColor, OnBackgroundColor } from '@pug-canvas-ui/theme'
 
 export { DEFAULT_MODIFIER } from '@pug-canvas-ui/components'
 

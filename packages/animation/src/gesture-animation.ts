@@ -1,210 +1,193 @@
-import type { AnimationSpec, AnimationResult } from './animation-spec'
+import type { AnimationSpec } from './animation-spec'
 import { spring } from './animation-spec'
+import type { AnimationResult } from './animation-spec'
+import { AnimationFrameLoop } from './animation-frame-loop'
 
-type DecaySpec = AnimationSpec<number> & {
+const DEFAULT_FRICTION = 0.02
+const VELOCITY_THRESHOLD = 10
+
+interface DecaySpec extends AnimationSpec<number> {
   readonly friction: number
 }
-
-const DEFAULT_FRICTION = 0.015
-const VELOCITY_THRESHOLD = 0.5
-
-class DecaySpecImpl implements DecaySpec {
-  readonly friction: number
-
-  constructor(friction: number = DEFAULT_FRICTION) {
-    this.friction = Math.max(0.001, friction)
-  }
-
-  getValueFromNanos(playTimeNanos: number, start: number, _end: number, startNanos: number): AnimationResult {
-    const elapsedMs = (playTimeNanos - startNanos) / 1_000_000
-    const friction = this.friction
-    const initialVelocity = _end - start
-    const displacement = initialVelocity / friction * (1 - Math.exp(-friction * elapsedMs))
-    const value = start + displacement
-    const currentVelocity = initialVelocity * Math.exp(-friction * elapsedMs)
-    const done = Math.abs(currentVelocity) < VELOCITY_THRESHOLD
-    return { value, done }
-  }
-}
-
 
 function decay(options?: { friction?: number }): DecaySpec {
-  return new DecaySpecImpl(options?.friction)
+  const friction = Math.max(0.001, options?.friction ?? DEFAULT_FRICTION)
+  return {
+    friction,
+    getValueFromNanos(
+      playTimeNanos: number,
+      start: number,
+      startVelocity: number,
+      startNanos: number,
+    ): AnimationResult {
+      const elapsedMs = (playTimeNanos - startNanos) / 1_000_000
+      if (Math.abs(startVelocity) < VELOCITY_THRESHOLD) {
+        return { value: start, done: true }
+      }
+      const displacement = startVelocity / friction * (1 - Math.exp(-friction * elapsedMs))
+      const currentVelocity = startVelocity * Math.exp(-friction * elapsedMs)
+      if (Math.abs(currentVelocity) < VELOCITY_THRESHOLD) {
+        return { value: start + displacement, done: true }
+      }
+      return { value: start + displacement, done: false }
+    },
+  }
 }
 
 interface DraggableState {
   readonly offset: number
+  readonly isDragging: boolean
   readonly isAnimationRunning: boolean
   dragTo(delta: number): void
-  fling(velocity: number, spec?: DecaySpec): Promise<void>
-  settle(target: number, spec?: AnimationSpec<number>): Promise<void>
+  animateToWithVelocity(target: number, velocity: number, spec?: AnimationSpec<number>): Promise<void>
   snapTo(value: number): void
   stop(): void
+  settle(target: number, spec?: AnimationSpec<number>): Promise<void>
+  fling(velocity: number, decaySpec?: DecaySpec): Promise<void>
 }
 
 class DraggableStateImpl implements DraggableState {
-  private _offset: number
-  private _isRunning = false
-  private _animationFrameId: number | null = null
-  private _resolveAnimation: (() => void) | null = null
+  private _offset = 0
+  private _isDragging = false
+  private _loop: AnimationFrameLoop = new AnimationFrameLoop()
   private _startNanos = 0
   private _startValue = 0
-  private _targetValue = 0
-  private _snapValue = 0
-  private _currentSpec: AnimationSpec<number> | null = null
-  private _onChange: ((offset: number) => void) | null
+  private _endValue = 0
+  private _spec: AnimationSpec<number>
+  private _onChange: ((offset: number) => void) | null = null
 
   constructor(initialOffset: number = 0, onChange?: (offset: number) => void) {
     this._offset = initialOffset
-    this._onChange = onChange ?? null
+    this._spec = spring({ dampingRatio: 1, stiffness: 10000 })
+    if (onChange !== undefined) {
+      this._onChange = onChange
+    }
   }
 
   get offset(): number {
     return this._offset
   }
 
+  get isDragging(): boolean {
+    return this._isDragging
+  }
+
   get isAnimationRunning(): boolean {
-    return this._isRunning
+    return this._loop.isRunning
+  }
+
+  setOnChange(callback: (offset: number) => void): void {
+    this._onChange = callback
   }
 
   dragTo(delta: number): void {
-    if (!Number.isFinite(delta)) {
-      throw new RangeError(`DraggableState.dragTo: delta must be a finite number, got ${delta}`)
-    }
-    this.stop()
+    this._loop.stop()
+    this._isDragging = true
     this._offset += delta
     if (this._onChange !== null) {
       this._onChange(this._offset)
     }
   }
 
-  fling(velocity: number, spec?: DecaySpec): Promise<void> {
-    if (!Number.isFinite(velocity)) {
-      throw new RangeError(`DraggableState.fling: velocity must be a finite number, got ${velocity}`)
-    }
-    this.stop()
-    const decaySpec = spec ?? decay()
-    this._startValue = this._offset
-    this._targetValue = this._offset + velocity
-    this._snapValue = this._offset + velocity / decaySpec.friction
-    this._currentSpec = decaySpec
-    return this._startAnimation()
-  }
-
-  settle(target: number, spec?: AnimationSpec<number>): Promise<void> {
-    if (!Number.isFinite(target)) {
-      throw new RangeError(`DraggableState.settle: target must be a finite number, got ${target}`)
-    }
-    this.stop()
-    if (Math.abs(this._offset - target) < 0.01) {
-      this._offset = target
-      if (this._onChange !== null) this._onChange(this._offset)
+  animateToWithVelocity(target: number, _velocity: number, spec?: AnimationSpec<number>): Promise<void> {
+    this._isDragging = false
+    this._loop.stop()
+    if (this._offset === target) {
       return Promise.resolve()
     }
+    this._endValue = target
     this._startValue = this._offset
-    this._targetValue = target
-    this._snapValue = target
-    this._currentSpec = spec ?? spring()
-    return this._startAnimation()
+    this._spec = spec ?? this._spec
+
+    this._startNanos = performance.now() * 1_000_000
+    return this._loop.start(() => this._tick())
   }
 
   snapTo(value: number): void {
-    if (!Number.isFinite(value)) {
-      throw new RangeError(`DraggableState.snapTo: value must be a finite number, got ${value}`)
-    }
-    this.stop()
+    this._loop.stop()
+    this._isDragging = false
     this._offset = value
-    if (this._onChange !== null) this._onChange(this._offset)
+    if (this._onChange !== null) {
+      this._onChange(this._offset)
+    }
   }
 
   stop(): void {
-    if (this._animationFrameId !== null) {
-      cancelAnimationFrame(this._animationFrameId)
-      this._animationFrameId = null
-    }
-    this._isRunning = false
-    if (this._resolveAnimation !== null) {
-      this._resolveAnimation()
-      this._resolveAnimation = null
-    }
+    this._loop.stop()
+    this._isDragging = false
   }
 
-  private _startAnimation(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this._resolveAnimation = resolve
-      this._isRunning = true
-      this._startNanos = performance.now() * 1_000_000
-      this._tick()
-    })
+  settle(target: number, spec?: AnimationSpec<number>): Promise<void> {
+    return this.animateToWithVelocity(target, 0, spec)
   }
 
-  private _tick = (): void => {
-    if (this._currentSpec === null) return
+  fling(velocity: number, decaySpec?: DecaySpec): Promise<void> {
+    const spec = decaySpec ?? decay()
+    this._isDragging = false
+    this._loop.stop()
+    this._startValue = this._offset
+    this._endValue = velocity
+    this._spec = spec
 
+    this._startNanos = performance.now() * 1_000_000
+    return this._loop.start(() => this._tick())
+  }
+
+  private _tick(): boolean {
     const playTimeNanos = performance.now() * 1_000_000
-    const result = this._currentSpec.getValueFromNanos(
+    const result = this._spec.getValueFromNanos(
       playTimeNanos,
       this._startValue,
-      this._targetValue,
+      this._endValue,
       this._startNanos,
     )
 
     if (result.done) {
-      this._offset = this._snapValue
-      this._isRunning = false
-      this._animationFrameId = null
-      if (this._onChange !== null) this._onChange(this._offset)
-      if (this._resolveAnimation !== null) {
-        this._resolveAnimation()
-        this._resolveAnimation = null
+      this._offset = result.value
+      if (this._onChange !== null) {
+        this._onChange(this._offset)
       }
-      return
+      return true
     }
 
     this._offset = result.value
-    if (this._onChange !== null) this._onChange(this._offset)
+    if (this._onChange !== null) {
+      this._onChange(this._offset)
+    }
 
-    this._animationFrameId = requestAnimationFrame(this._tick)
+    return false
   }
 }
 
-
-function createDraggableState(initialOffset: number = 0, onChange?: (offset: number) => void): DraggableState {
+function createDraggableState(initialOffset: number = 0, onChange?: (offset: number) => void): DraggableStateImpl {
   return new DraggableStateImpl(initialOffset, onChange)
 }
 
 interface AnchorConfig {
-  readonly anchors: ReadonlyMap<number, string>
-  readonly initialAnchor: number
+  anchors: Map<number, string>
+  initialAnchor: number
 }
 
-interface AnchoredDraggable {
-  readonly offset: number
-  readonly currentAnchor: number
-  readonly currentAnchorLabel: string
-  dragTo(delta: number): void
-  fling(velocity: number, decaySpec?: DecaySpec, springSpec?: AnimationSpec<number>): Promise<void>
-  settle(springSpec?: AnimationSpec<number>): Promise<void>
-  snapTo(anchor: number): void
-  dispose(): void
-}
-
-class AnchoredDraggableImpl implements AnchoredDraggable {
-  private _state: DraggableState
-  private _anchors: ReadonlyMap<number, string>
+class AnchoredDraggable {
+  private _state: DraggableStateImpl
+  private _anchors: Map<number, string>
   private _currentAnchor: number
-  private _springSpec: AnimationSpec<number>
   private _disposed = false
 
-  constructor(config: AnchorConfig, springSpec?: AnimationSpec<number>) {
+  constructor(config: AnchorConfig, spec: AnimationSpec<number>) {
     this._anchors = config.anchors
     this._currentAnchor = config.initialAnchor
-    this._springSpec = springSpec ?? spring()
-    this._state = createDraggableState(config.initialAnchor)
+    this._state = new DraggableStateImpl(config.initialAnchor)
+
+    void spec
   }
 
   get offset(): number {
     return this._state.offset
+  }
+
+  get isDragging(): boolean {
+    return this._state.isDragging
   }
 
   get currentAnchor(): number {
@@ -215,24 +198,16 @@ class AnchoredDraggableImpl implements AnchoredDraggable {
     return this._anchors.get(this._currentAnchor) ?? ''
   }
 
-  dragTo(delta: number): void {
+  dragTo(value: number): void {
     if (this._disposed) return
-    this._state.dragTo(delta)
+    this._state.dragTo(value)
   }
 
-  async fling(velocity: number, decaySpec?: DecaySpec, springSpec?: AnimationSpec<number>): Promise<void> {
-    if (this._disposed) return
-    await this._state.fling(velocity, decaySpec)
-    if (!this._disposed) {
-      await this.settle(springSpec)
-    }
-  }
-
-  async settle(springSpec?: AnimationSpec<number>): Promise<void> {
-    if (this._disposed) return
-    const nearest = this._findNearestAnchor(this._state.offset)
+  settle(): Promise<void> {
+    if (this._disposed) return Promise.resolve()
+    const nearest = this._findNearestAnchor()
     this._currentAnchor = nearest
-    await this._state.settle(nearest, springSpec ?? this._springSpec)
+    return this._state.settle(nearest)
   }
 
   snapTo(anchor: number): void {
@@ -242,29 +217,52 @@ class AnchoredDraggableImpl implements AnchoredDraggable {
     this._state.snapTo(anchor)
   }
 
+  stop(): void {
+    this._state.stop()
+  }
+
   dispose(): void {
     this._disposed = true
     this._state.stop()
   }
 
-  private _findNearestAnchor(offset: number): number {
-    let nearest = 0
-    let minDist = Infinity
+  private _findNearestAnchor(): number {
+    let best = this._currentAnchor
+    let bestDist = Infinity
     for (const anchor of this._anchors.keys()) {
-      const dist = Math.abs(offset - anchor)
-      if (dist < minDist) {
-        minDist = dist
-        nearest = anchor
+      const dist = Math.abs(anchor - this._state.offset)
+      if (dist < bestDist) {
+        bestDist = dist
+        best = anchor
       }
     }
-    return nearest
+    return best
   }
 }
 
-
-function createAnchoredDraggable(config: AnchorConfig, springSpec?: AnimationSpec<number>): AnchoredDraggable {
-  return new AnchoredDraggableImpl(config, springSpec)
+function createAnchoredDraggable(config: AnchorConfig, spec: AnimationSpec<number>): AnchoredDraggable {
+  return new AnchoredDraggable(config, spec)
 }
 
-export type { DecaySpec, DraggableState, AnchorConfig, AnchoredDraggable }
-export { decay, createDraggableState, createAnchoredDraggable, DEFAULT_FRICTION, VELOCITY_THRESHOLD }
+function defaultDecaySpec(): DecaySpec {
+  return decay()
+}
+
+interface AnchoredDraggableConfig {
+  anchors: readonly { position: number; label: string }[]
+  initialValue: string
+  spec: AnimationSpec<number>
+  confirmVelocityChange: (velocity: number) => boolean
+}
+
+export type { DecaySpec, DraggableState, AnchorConfig, AnchoredDraggableConfig }
+export {
+  DraggableStateImpl,
+  AnchoredDraggable,
+  defaultDecaySpec,
+  decay,
+  createDraggableState,
+  createAnchoredDraggable,
+  DEFAULT_FRICTION,
+  VELOCITY_THRESHOLD,
+}

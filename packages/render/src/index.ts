@@ -114,4 +114,4 @@ export {
   createBatchText,
 } from './draw-batch'
 
-export { LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, charWidth, lineHeight, textPixelWidth } from './text-utils'
+export { LINE_HEIGHT_RATIO, DEFAULT_FONT_SIZE, charWidth, lineHeight, textPixelWidth, measureTextWidth } from './text-utils'

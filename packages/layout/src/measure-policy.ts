@@ -12,6 +12,7 @@ import type {
 import { createMeasureResult } from './measure'
 import { constrainWidth, constrainHeight } from './constraints'
 import { alignOffset } from './box-layout'
+import { measureWithWeights, computeWeightedMeasureResult } from './weight-measure'
 
 class LinearMeasurePolicy implements MeasurePolicy {
   private readonly _orientation: 'horizontal' | 'vertical'
@@ -266,77 +267,20 @@ class LinearMeasurePolicy implements MeasurePolicy {
     weights: Array<WeightConfig | null>,
     constraints: Constraints,
   ): MeasureResult {
-    const totalWeight = weights.reduce((sum, w) => sum + (w?.weight ?? 0), 0)
-    if (totalWeight <= 0) {
-      return this._measureWithoutWeights(measurables, constraints)
-    }
+    const inputs = measurables.map((m, i) => ({
+      measurable: m,
+      weight: (i < weights.length ? weights[i] : null) ?? null,
+    }))
 
-    const nonWeightedIndices: number[] = []
-    const weightedIndices: number[] = []
-    for (let i = 0; i < measurables.length; i++) {
-      const w = i < weights.length ? weights[i] : null
-      if (w !== null && w !== undefined) {
-        weightedIndices.push(i)
-      } else {
-        nonWeightedIndices.push(i)
-      }
-    }
+    const result = measureWithWeights(inputs, constraints, this._isHorizontal())
 
-    const nonWeightedPlaceables: Map<number, Placeable> = new Map()
-    for (const idx of nonWeightedIndices) {
-      const m = measurables[idx]!
-      nonWeightedPlaceables.set(idx, m.measure(constraints))
-    }
+    const mainOffsets = this._computeMainOffsets(result.placeables, result.totalMainSize, constraints)
 
-    let usedMainSize = 0
-    for (const [, p] of nonWeightedPlaceables) {
-      usedMainSize += this._isHorizontal() ? p.measureResult.width : p.measureResult.height
-    }
-
-    const maxMain = this._isHorizontal() ? constraints.maxWidth : constraints.maxHeight
-    const remainingMainSize = Math.max(0, maxMain - usedMainSize)
-
-    const weightedPlaceables: Map<number, Placeable> = new Map()
-    for (const idx of weightedIndices) {
-      const w = weights[idx]!
-      const m = measurables[idx]!
-      const share = (w.weight / totalWeight) * remainingMainSize
-
-      const childConstraints: Constraints = w.fill
-        ? this._isHorizontal()
-          ? { minWidth: share, maxWidth: share, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
-          : { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: share, maxHeight: share }
-        : this._isHorizontal()
-          ? { minWidth: 0, maxWidth: share, minHeight: constraints.minHeight, maxHeight: constraints.maxHeight }
-          : { minWidth: constraints.minWidth, maxWidth: constraints.maxWidth, minHeight: 0, maxHeight: share }
-
-      weightedPlaceables.set(idx, m.measure(childConstraints))
-    }
-
-    const allPlaceables: Placeable[] = []
-    for (let i = 0; i < measurables.length; i++) {
-      const p = nonWeightedPlaceables.get(i) ?? weightedPlaceables.get(i)
-      if (p !== undefined) {
-        allPlaceables.push(p)
-      }
-    }
-
-    let totalMainSize = 0
-    let maxCrossSize = 0
-    for (const p of allPlaceables) {
-      const mainSize = this._isHorizontal() ? p.measureResult.width : p.measureResult.height
-      const crossSize = this._isHorizontal() ? p.measureResult.height : p.measureResult.width
-      totalMainSize += mainSize
-      if (crossSize > maxCrossSize) maxCrossSize = crossSize
-    }
-
-    const mainOffsets = this._computeMainOffsets(allPlaceables, totalMainSize, constraints)
-
-    for (let i = 0; i < allPlaceables.length; i++) {
-      const p = allPlaceables[i]!
+    for (let i = 0; i < result.placeables.length; i++) {
+      const p = result.placeables[i]!
       const mainOffset = mainOffsets[i]!
       const childCross = this._isHorizontal() ? p.measureResult.height : p.measureResult.width
-      const crossOffset = this._computeCrossOffset(maxCrossSize, childCross)
+      const crossOffset = this._computeCrossOffset(result.maxCrossSize, childCross)
 
       if (this._isHorizontal()) {
         p.place(mainOffset, crossOffset)
@@ -345,14 +289,12 @@ class LinearMeasurePolicy implements MeasurePolicy {
       }
     }
 
-    const totalWidth = this._isHorizontal()
-      ? constrainWidth(constraints, totalMainSize)
-      : constrainWidth(constraints, maxCrossSize)
-    const totalHeight = this._isHorizontal()
-      ? constrainHeight(constraints, maxCrossSize)
-      : constrainHeight(constraints, totalMainSize)
-
-    return createMeasureResult(totalWidth, totalHeight)
+    return computeWeightedMeasureResult(
+      result.totalMainSize,
+      result.maxCrossSize,
+      constraints,
+      this._isHorizontal(),
+    )
   }
 }
 

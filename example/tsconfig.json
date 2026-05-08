@@ -15,18 +15,17 @@
         "isolatedModules": true,
         "noEmit": true,
         "types": [],
-        "baseUrl": "..",
         "paths": {
-            "@pug-canvas-ui/types": ["packages/types/src/index.ts"],
-            "@pug-canvas-ui/core": ["packages/core/src/index.ts"],
-            "@pug-canvas-ui/theme": ["packages/theme/src/index.ts"],
-            "@pug-canvas-ui/render": ["packages/render/src/index.ts"],
-            "@pug-canvas-ui/layout": ["packages/layout/src/index.ts"],
-            "@pug-canvas-ui/input": ["packages/input/src/index.ts"],
-            "@pug-canvas-ui/animation": ["packages/animation/src/index.ts"],
-            "@pug-canvas-ui/platform": ["packages/platform/src/index.ts"],
-            "@pug-canvas-ui/components": ["packages/components/src/index.ts"],
-            "pug-canvas-ui": ["packages/app/src/index.ts"]
+            "@pug-canvas-ui/types": ["../packages/types/src/index.ts"],
+            "@pug-canvas-ui/core": ["../packages/core/src/index.ts"],
+            "@pug-canvas-ui/theme": ["../packages/theme/src/index.ts"],
+            "@pug-canvas-ui/render": ["../packages/render/src/index.ts"],
+            "@pug-canvas-ui/layout": ["../packages/layout/src/index.ts"],
+            "@pug-canvas-ui/input": ["../packages/input/src/index.ts"],
+            "@pug-canvas-ui/animation": ["../packages/animation/src/index.ts"],
+            "@pug-canvas-ui/platform": ["../packages/platform/src/index.ts"],
+            "@pug-canvas-ui/components": ["../packages/components/src/index.ts"],
+            "pug-canvas-ui": ["../packages/app/src/index.ts"]
         }
     },
     "include": [

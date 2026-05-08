@@ -1,6 +1,7 @@
 ﻿import type { Point } from '@pug-canvas-ui/render'
 import type { HitTestableNode, HitTestResult } from './hit-test'
 import type { PointerEventType, PointerEventData, PointerInputHandler } from '@pug-canvas-ui/types'
+import { createDensity } from '@pug-canvas-ui/platform'
 
 export type { PointerEventType, PointerEventData, PointerInputHandler }
 
@@ -40,10 +41,9 @@ function toPointerEventType(type: string): PointerEventType {
 }
 
 function resolveCanvasPosition(clientX: number, clientY: number, canvasRect: CanvasRect): Point {
-  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1
   return {
-    x: (clientX - canvasRect.left) * dpr,
-    y: (clientY - canvasRect.top) * dpr,
+    x: clientX - canvasRect.left,
+    y: clientY - canvasRect.top,
   }
 }
 

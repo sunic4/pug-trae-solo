@@ -1,4 +1,4 @@
-export { Box } from './basic/box'
+export { Box } from './layout/box'
 export { Text } from './basic/text'
 export { Image } from './basic/image'
 export { Spacer } from './basic/spacer'

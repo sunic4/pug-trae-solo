@@ -1,6 +1,7 @@
 ﻿import type { ChildLayout, MeasuredSizeMap } from '@pug-canvas-ui/render'
 import type { Rect } from '@pug-canvas-ui/render'
 import type { Alignment, Arrangement } from '@pug-canvas-ui/layout'
+import { alignOffset } from '@pug-canvas-ui/layout'
 
 type LayoutDirection = 'horizontal' | 'vertical'
 
@@ -45,27 +46,18 @@ function linearLayoutChildren(params: LinearLayoutParams): ChildLayout[] {
     const childMain = isHorizontal ? size.width : size.height
     const childCross = isHorizontal ? size.height : size.width
 
-    let crossOffset = 0
-    if (alignment === 'center') {
-      crossOffset = (crossContent - childCross) / 2
-    } else if (alignment === 'end') {
-      crossOffset = crossContent - childCross
-    }
+    const crossOffset = alignOffset(alignment, crossContent, childCross)
 
     const mainPos = isHorizontal
       ? { x: contentArea.x + mainOffset, y: contentArea.y + crossOffset }
       : { x: contentArea.x + crossOffset, y: contentArea.y + mainOffset }
 
-    const layoutSize = isHorizontal
-      ? { width: size.width, height: size.height }
-      : { width: size.width, height: size.height }
-
     layouts.push({
       nodeId: childId,
       x: mainPos.x,
       y: mainPos.y,
-      width: layoutSize.width,
-      height: layoutSize.height,
+      width: size.width,
+      height: size.height,
     })
 
     mainOffset += childMain
@@ -123,17 +115,8 @@ function layoutBoxChildren(
 ): ChildLayout[] {
   return childIds.map(childId => {
     const size = measuredSizes.get(childId) ?? { width: contentArea.width, height: contentArea.height }
-    let x = contentArea.x
-    let y = contentArea.y
-
-    if (alignment === 'center') {
-      x = contentArea.x + (contentArea.width - size.width) / 2
-      y = contentArea.y + (contentArea.height - size.height) / 2
-    } else if (alignment === 'end') {
-      x = contentArea.x + contentArea.width - size.width
-      y = contentArea.y + contentArea.height - size.height
-    }
-
+    const x = contentArea.x + alignOffset(alignment, contentArea.width, size.width)
+    const y = contentArea.y + alignOffset(alignment, contentArea.height, size.height)
     return { nodeId: childId, x, y, width: size.width, height: size.height }
   })
 }

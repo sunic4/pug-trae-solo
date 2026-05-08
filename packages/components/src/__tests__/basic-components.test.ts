@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest'
-import { Box } from '../basic/box'
+import { Box } from '../layout/box'
 import { Image } from '../basic/image'
 import { Text } from '../basic/text'
 import type { TextStyle } from '@pug-canvas-ui/render'

@@ -60,6 +60,8 @@ interface Recomposer {
   scheduleRecompose(scope: RecomposeScope): void
   performRecompose(): void
   createScope(fn: () => void): RecomposeScope
+  registerDependency(scopeId: ScopeId, stateId: StateId): void
+  invalidateScopesForState(stateId: StateId): void
 }
 
 interface ComposerContext {

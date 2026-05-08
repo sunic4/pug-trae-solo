@@ -57,6 +57,13 @@ class CompositionContextImpl implements CompositionContext {
     return this._rootNodeId
   }
 
+  resetForRecompose(): void {
+    this._nextId = 0
+    this._nodes.clear()
+    this._groupStack = []
+    this._rootNodeId = null
+  }
+
   emitNode(
     data: NodeData,
     modifier: ReadonlyModifier,

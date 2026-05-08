@@ -3,7 +3,8 @@ import { createDrawScope } from '@pug-canvas-ui/render'
 import type { Constraints, MeasurePolicy, Measurable, MeasureResult } from '@pug-canvas-ui/layout'
 import { createMeasurable, createMeasureResult } from '@pug-canvas-ui/layout'
 import type { EmittedNode } from '@pug-canvas-ui/core'
-import type { ReadonlyModifier } from '@pug-canvas-ui/types'
+import type { ReadonlyModifier } from '@pug-canvas-ui/layout'
+import type { HitTestableNode } from '@pug-canvas-ui/input'
 
 function isMeasurePolicy(value: unknown): value is MeasurePolicy {
   return value !== null && typeof value === 'object' && 'measure' in value
@@ -141,6 +142,11 @@ function measureEmittedNode(
   return { width: finalWidth, height: finalHeight }
 }
 
+interface RenderResult {
+  readonly commands: DrawCommand[]
+  readonly hitTestRoot: HitTestableNode | null
+}
+
 function renderEmittedNode(
   scope: DrawScope,
   node: EmittedNode,
@@ -150,6 +156,8 @@ function renderEmittedNode(
   availableWidth: number,
   availableHeight: number,
   measuredSizes: MeasuredSizeMap,
+  hitTestNodes: Map<number, HitTestableNode>,
+  parentHitTest: HitTestableNode | null,
 ): { width: number; height: number } {
   const constraints: Constraints = {
     minWidth: 0,
@@ -162,6 +170,18 @@ function renderEmittedNode(
   measuredSizes.set(node.id, size)
 
   const bounds: Rect = { x, y, width: size.width, height: size.height }
+
+  const htNode: HitTestableNode = {
+    id: node.id,
+    position: { x: bounds.x, y: bounds.y },
+    measureResult: { width: bounds.width, height: bounds.height, alignmentLines: new Map() },
+    children: [],
+    parent: parentHitTest,
+  }
+  hitTestNodes.set(node.id, htNode)
+  if (parentHitTest !== null) {
+    parentHitTest.children.push(htNode)
+  }
 
   scope.save()
   applyDrawModifiers(scope, node.modifier, bounds)
@@ -177,13 +197,13 @@ function renderEmittedNode(
     const childLayouts = node.layoutChildren(contentArea, measuredSizes, node.childrenIds)
     for (const cl of childLayouts) {
       const childNode = nodes.get(cl.nodeId)!
-      renderEmittedNode(scope, childNode, nodes, cl.x, cl.y, cl.width, cl.height, measuredSizes)
+      renderEmittedNode(scope, childNode, nodes, cl.x, cl.y, cl.width, cl.height, measuredSizes, hitTestNodes, htNode)
     }
   } else {
     for (const childId of node.childrenIds) {
       const childNode = nodes.get(childId)!
       const childSize = measuredSizes.get(childId) ?? { width: contentArea.width, height: contentArea.height }
-      renderEmittedNode(scope, childNode, nodes, contentArea.x, contentArea.y, childSize.width, childSize.height, measuredSizes)
+      renderEmittedNode(scope, childNode, nodes, contentArea.x, contentArea.y, childSize.width, childSize.height, measuredSizes, hitTestNodes, htNode)
     }
   }
 
@@ -198,12 +218,15 @@ function renderEmittedTree(
   rootNodeId: number,
   width: number,
   height: number,
-): DrawCommand[] {
+): RenderResult {
   const scope = createDrawScope(ctx)
   const measuredSizes: MeasuredSizeMap = new Map()
+  const hitTestNodes: Map<number, HitTestableNode> = new Map()
   const root = nodes.get(rootNodeId)!
-  renderEmittedNode(scope, root, nodes, 0, 0, width, height, measuredSizes)
-  return scope.getCommands()
+  renderEmittedNode(scope, root, nodes, 0, 0, width, height, measuredSizes, hitTestNodes, null)
+  const hitTestRoot = hitTestNodes.get(rootNodeId) ?? null
+  return { commands: scope.getCommands(), hitTestRoot }
 }
 
 export { renderEmittedTree }
+export type { RenderResult }

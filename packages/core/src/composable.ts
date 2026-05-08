@@ -11,6 +11,7 @@ function composable<TProps>(
     const compositionCtx = new CompositionContextImpl(ctx.snapshot, ctx.recomposer)
 
     const scope = ctx.recomposer.createScope(() => {
+      compositionCtx.resetForRecompose()
       ctx.snapshot.withReadObserver(
         (state) => { scope.addDependency(state.id) },
         () => {
@@ -45,6 +46,9 @@ interface AppContextOptions {
 function createAppContext(_options?: AppContextOptions): ComposerContext {
   const snapshot = createSnapshot()
   const recomposer = createRecomposer()
+  snapshot.setWriteObserver((state) => {
+    recomposer.invalidateScopesForState(state.id)
+  })
   return { snapshot, recomposer }
 }
 

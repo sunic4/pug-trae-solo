@@ -60,9 +60,9 @@ importers:
       '@pug-canvas-ui/core':
         specifier: workspace:*
         version: link:../core
-      '@pug-canvas-ui/renderer':
+      '@pug-canvas-ui/render':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../render
     devDependencies:
       rimraf:
         specifier: ^6.0.0
@@ -94,9 +94,9 @@ importers:
       '@pug-canvas-ui/platform':
         specifier: workspace:*
         version: link:../platform
-      '@pug-canvas-ui/renderer':
+      '@pug-canvas-ui/render':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../render
       '@pug-canvas-ui/theme':
         specifier: workspace:*
         version: link:../theme
@@ -128,9 +128,9 @@ importers:
       '@pug-canvas-ui/layout':
         specifier: workspace:*
         version: link:../layout
-      '@pug-canvas-ui/renderer':
+      '@pug-canvas-ui/render':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../render
       '@pug-canvas-ui/theme':
         specifier: workspace:*
         version: link:../theme
@@ -169,9 +169,12 @@ importers:
       '@pug-canvas-ui/layout':
         specifier: workspace:*
         version: link:../layout
-      '@pug-canvas-ui/renderer':
+      '@pug-canvas-ui/platform':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../platform
+      '@pug-canvas-ui/render':
+        specifier: workspace:*
+        version: link:../render
       '@pug-canvas-ui/types':
         specifier: workspace:*
         version: link:../types
@@ -191,9 +194,9 @@ importers:
       '@pug-canvas-ui/core':
         specifier: workspace:*
         version: link:../core
-      '@pug-canvas-ui/renderer':
+      '@pug-canvas-ui/render':
         specifier: workspace:*
-        version: link:../renderer
+        version: link:../render
       '@pug-canvas-ui/types':
         specifier: workspace:*
         version: link:../types
@@ -224,7 +227,7 @@ importers:
         specifier: ^5.7.0
         version: 5.9.3
 
-  packages/renderer:
+  packages/render:
     dependencies:
       '@pug-canvas-ui/core':
         specifier: workspace:*
