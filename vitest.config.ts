@@ -7,7 +7,7 @@ export default defineConfig({
       '@pug-canvas-ui/types': path.resolve(__dirname, 'packages/types/src/index.ts'),
       '@pug-canvas-ui/core': path.resolve(__dirname, 'packages/core/src/index.ts'),
       '@pug-canvas-ui/theme': path.resolve(__dirname, 'packages/theme/src/index.ts'),
-      '@pug-canvas-ui/renderer': path.resolve(__dirname, 'packages/renderer/src/index.ts'),
+      '@pug-canvas-ui/render': path.resolve(__dirname, 'packages/render/src/index.ts'),
       '@pug-canvas-ui/layout': path.resolve(__dirname, 'packages/layout/src/index.ts'),
       '@pug-canvas-ui/input': path.resolve(__dirname, 'packages/input/src/index.ts'),
       '@pug-canvas-ui/animation': path.resolve(__dirname, 'packages/animation/src/index.ts'),

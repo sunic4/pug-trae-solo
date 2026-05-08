@@ -15,7 +15,6 @@
         "isolatedModules": true,
         "noEmit": true,
         "types": [],
-        "ignoreDeprecations": "6.0",
         "baseUrl": "..",
         "paths": {
             "@pug-canvas-ui/types": ["packages/types/src/index.ts"],
